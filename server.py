@@ -1,14 +1,17 @@
-from flask import Flask, request
-from flask_pymongo import PyMongo
+import connexion
+from pymongo import MongoClient
 
 from expense import create_new_expense, expense_data_from_url_parameters
 
 
-app = Flask(__name__)
+# Create the application instance
+app = connexion.App(__name__, specification_dir='./')
+
+# Read the swagger.yml file to configure the endpoints
 app.add_api('swagger.yml')
 
-app.config['MONGO_DBNAME'] = 'slots_tracker'
-mongo = PyMongo(app)
+mongo_client = MongoClient()
+db = mongo_client['slots_tracker']
 
 
 @app.route('/')
@@ -20,11 +23,16 @@ def home_page():
 def create_expense():
     # TODO: find better way to do that
     amount, desc, pay_method, date = expense_data_from_url_parameters(request.args)
-    create_new_expense(mongo.db, amount, desc, pay_method, date)
+    create_new_expense(mongo_client, amount, desc, pay_method, date)
     return 'Expense Page post'
 
 
 @app.route('/expense/<int:expense_id>', methods=['GET'])
-def get_expense(expense_id):
-    expenses_q = mongo.db.expenses.find({'amount': 200})
+def read(expense_id):
+    expenses_q = mongo_client.expenses.find({'amount': 200})
     return 'Expense Page get'
+
+
+# If we're running in stand alone mode, run the application
+if __name__ == '__main__':
+    app.run(debug=True)
