@@ -1,12 +1,11 @@
 import datetime
 
 
-
 def expense_data_from_url_parameters(parameters):
-    amount     = parameters.get('amount')
-    desc       = parameters.get('desc')
+    amount = parameters.get('amount')
+    desc = parameters.get('desc')
     pay_method = parameters.get('pay_method')
-    date       = parameters.get('date', datetime.datetime.today())
+    date = parameters.get('date', datetime.datetime.today())
 
     return amount, desc, pay_method, date
 
