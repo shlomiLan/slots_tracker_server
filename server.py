@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, request
 from flask_pymongo import PyMongo
 
 from expense import create_new_expense, expense_data_from_url_parameters
@@ -6,6 +6,7 @@ from expense import create_new_expense, expense_data_from_url_parameters
 
 app = Flask(__name__)
 app.add_api('swagger.yml')
+
 app.config['MONGO_DBNAME'] = 'slots_tracker'
 mongo = PyMongo(app)
 
