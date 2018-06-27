@@ -4,34 +4,80 @@ info:
   version: "1.0.0"
   title: Expenses tracker API
 consumes:
-  - "application/json"
+  - application/json
 produces:
-  - "application/json"
+  - application/json
 
-basePath: "/api"
+basePath: /api
 
 # Paths supported by the server application
 paths:
   /expense:
     get:
-      operationId: "expense.read"
+      operationId: expense.read_all
       tags:
-        - "Expense"
-      summary: "The expense data structure supported by the server application"
-      description: "Read the list of expense"
+        - Expense
+      summary: The expense data structure supported by the server application
+      description: Read the list of expense
       responses:
         200:
-          description: "Successful read expense list"
+          description: Successful read expense list
           schema:
-            type: "array"
+            type: array
             items:
               properties:
                 amount:
-                  type: "integer"
+                  type: integer
                 desc:
-                  type: "string"
+                  type: string
                 pay_method:
-                  type: "string"
+                  type: string
                 timestamp:
-                  type: "string"
-                  format: "date"
+                  type: string
+                  format: date
+    post:
+      operationId: expense.create
+      tags:
+        - Expense
+      summary: Create an expense and add it to the expenses list
+      description: Create a new expense in the expenses list
+      parameters:
+        - name: expense
+          in: body
+          description: Expense to create
+          required: True
+          schema:
+            type: object
+            properties:
+              amount:
+                type: integer
+                description: Expense amount
+              desc:
+                type: string
+                description: Expense description
+              pay_method:
+                type: string
+                description: Which paying method was used
+              timestamp:
+                type: string
+                format: date
+                description: Time of the expense
+      responses:
+        201:
+          description: Successfully created expense in list
+  /expense/{expense_id}:
+    get:
+      operationId: expense.read_one
+      tags:
+        - Expense
+      summary: Read one expense from the expenses list
+      description: Read one expense from the expenses list
+      parameters:
+        - name: expense_id
+          in: path
+          description: id of the expense from the expenses list
+          type: string
+          required: True
+      responses:
+        200:
+          description: Successful read expense list
