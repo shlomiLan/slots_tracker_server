@@ -9,3 +9,8 @@ def run(c):
 @task
 def test(c):
     c.run("python -m pytest")
+
+
+@task
+def test_and_cov(c):
+    c.run("py.test --cov=slots_tracker --cov-report html")
