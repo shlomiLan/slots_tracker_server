@@ -4,7 +4,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
-from db import db
+from slots_tracker.db import db
 
 
 def create(expense):
