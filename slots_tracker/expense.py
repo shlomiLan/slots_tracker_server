@@ -1,3 +1,6 @@
+# system modules
+import datetime
+
 # 3rd party modules
 from flask import abort
 from bson.json_util import dumps
@@ -8,6 +11,9 @@ from slots_tracker.db import db
 
 
 def create(expense):
+    if 'timestamp' not in expense:
+        expense['timestamp'] = datetime.datetime.utcnow()
+
     expense_id = db.expenses.insert_one(expense).inserted_id
     return read_one(expense_id), 201
 
