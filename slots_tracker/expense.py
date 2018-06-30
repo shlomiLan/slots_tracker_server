@@ -4,11 +4,9 @@ import datetime
 # 3rd party modules
 from flask import abort
 from mongoengine import *
-from bson.json_util import dumps
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
-from slots_tracker.db import db
 from slots_tracker.pay_methods import PayMethods
 
 
@@ -25,8 +23,7 @@ def create(expense):
 
 
 def read_all():
-    expenses = db.expense.find()
-    return dumps(expenses)
+    return Expense.objects.to_json()
 
 
 def read_one(expense_id):
@@ -39,15 +36,13 @@ def read_one(expense_id):
     object_id = convert_to_object_id(expense_id)
 
     if object_id:
-        # Does the expense exist in the DB
-        expense = db.expense.find_one({'_id': object_id})
-        if expense:
-            return dumps(expense)
-        # otherwise, raise an error
-        else:
+        try:
+            # Does the expense exist in the DB
+            return Expense.objects.get(id=object_id).to_json()
+        except DoesNotExist:
             abort(404, 'Expense with id {} not found'.format(expense_id))
     else:
-        abort(404, '{} is not a valid object ID'.format(expense_id))
+        abort(400, '{} is not a valid object ID'.format(expense_id))
 
 
 def convert_to_object_id(expense_id):
