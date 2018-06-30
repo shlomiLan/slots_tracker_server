@@ -13,4 +13,4 @@ def test(c):
 
 @task
 def test_and_cov(c):
-    c.run("pytest --cov=slots_tracker")
+    c.run("pytest -s --cov=slots_tracker --cov-report term-missing")
