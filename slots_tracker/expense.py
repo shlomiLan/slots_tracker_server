@@ -12,9 +12,6 @@ from slots_tracker.db import db
 from slots_tracker.pay_methods import PayMethods
 
 
-connect('slots_tracker')
-
-
 class Expense(Document):
     amount = IntField()
     descreption = StringField(required=True, max_length=200)
