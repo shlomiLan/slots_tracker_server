@@ -30,9 +30,9 @@ def read_one(expense_id):
     :param expense_id: id of the expense to find
     :return:           expense matching id
     """
-    try:
-        # Does it a valid ID
-        object_id = ObjectId(expense_id)
+    object_id = convert_to_object_id(expense_id)
+
+    if object_id:
         # Does the expense exist in the DB
         expense = db.expenses.find_one({'_id': object_id})
         if expense:
@@ -40,5 +40,13 @@ def read_one(expense_id):
         # otherwise, raise an error
         else:
             abort(404, 'Expense with id {} not found'.format(expense_id))
-    except InvalidId:
+    else:
         abort(404, '{} is not a valid object ID'.format(expense_id))
+
+
+def convert_to_object_id(expense_id):
+    try:
+        # Does it a valid ID
+        return ObjectId(expense_id)
+    except InvalidId:
+        return None
