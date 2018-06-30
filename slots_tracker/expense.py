@@ -3,23 +3,32 @@ import datetime
 
 # 3rd party modules
 from flask import abort
+from mongoengine import *
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
 from slots_tracker.db import db
+from slots_tracker.pay_methods import PayMethods
+
+
+connect('slots_tracker')
+
+
+class Expense(Document):
+    amount = IntField()
+    descreption = StringField(required=True, max_length=200)
+    pay_method = ReferenceField(PayMethods, required=True)
+    timestamp = DateTimeField(default=datetime.datetime.utcnow)
 
 
 def create(expense):
-    if 'timestamp' not in expense:
-        expense['timestamp'] = datetime.datetime.utcnow()
-
-    expense_id = db.expenses.insert_one(expense).inserted_id
-    return read_one(expense_id), 201
+    new_expense = Expense(**expense).save()
+    return read_one(new_expense.id), 201
 
 
 def read_all():
-    expenses = db.expenses.find()
+    expenses = db.expense.find()
     return dumps(expenses)
 
 
@@ -34,7 +43,7 @@ def read_one(expense_id):
 
     if object_id:
         # Does the expense exist in the DB
-        expense = db.expenses.find_one({'_id': object_id})
+        expense = db.expense.find_one({'_id': object_id})
         if expense:
             return dumps(expense)
         # otherwise, raise an error
