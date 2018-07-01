@@ -7,7 +7,10 @@ from mongoengine import *
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
-from slots_tracker.expense.pay_methods import PayMethods
+
+# Find way to add data with migration script
+class PayMethods(Document):
+    name = StringField(required=True, max_length=200)
 
 
 class Expense(Document):
