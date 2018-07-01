@@ -4,8 +4,8 @@ import datetime
 # 3rd party modules
 from flask import abort
 from mongoengine import *
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
+
+from slots_tracker.utils import convert_to_object_id
 
 
 # Find way to add data with migration script
@@ -46,11 +46,3 @@ def read_one(expense_id):
             abort(404, 'Expense with id {} not found'.format(expense_id))
     else:
         abort(400, '{} is not a valid object ID'.format(expense_id))
-
-
-def convert_to_object_id(expense_id):
-    try:
-        # Does it a valid ID
-        return ObjectId(expense_id)
-    except InvalidId:
-        return None
