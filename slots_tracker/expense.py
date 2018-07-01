@@ -29,6 +29,7 @@ def read_all():
     return Expense.objects.to_json()
 
 
+@convert_to_object_id
 def read_one(expense_id):
     """
     This function responds to a request for /api/expense/{expenses_id}
@@ -36,13 +37,8 @@ def read_one(expense_id):
     :param expense_id: id of the expense to find
     :return:           expense matching id
     """
-    object_id = convert_to_object_id(expense_id)
-
-    if object_id:
-        try:
-            # Does the expense exist in the DB
-            return Expense.objects.get(id=object_id).to_json()
-        except DoesNotExist:
-            abort(404, 'Expense with id {} not found'.format(expense_id))
-    else:
-        abort(400, '{} is not a valid object ID'.format(expense_id))
+    try:
+        # Does the expense exist in the DB
+        return Expense.objects.get(id=expense_id).to_json()
+    except DoesNotExist:
+        abort(404, 'Expense with id {} not found'.format(expense_id))
