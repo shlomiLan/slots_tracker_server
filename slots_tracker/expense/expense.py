@@ -7,7 +7,7 @@ from mongoengine import *
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
-from slots_tracker.pay_methods import PayMethods
+from slots_tracker.expense.pay_methods import PayMethods
 
 
 class Expense(Document):

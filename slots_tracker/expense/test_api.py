@@ -6,8 +6,8 @@ from werkzeug.exceptions import NotFound, BadRequest
 from bson.json_util import loads
 from bson.objectid import ObjectId
 
-from slots_tracker.expense import create, read_all, read_one, convert_to_object_id
-from slots_tracker.pay_methods import PayMethods
+from slots_tracker.expense.expense import create, read_all, read_one, convert_to_object_id
+from slots_tracker.expense.pay_methods import PayMethods
 
 
 # TODO: Chnage test to not use the real DB
