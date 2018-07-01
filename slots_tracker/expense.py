@@ -5,7 +5,7 @@ import datetime
 from mongoengine import *
 
 from slots_tracker.base import Base
-# from slots_tracker.board import Board
+from slots_tracker.board import Board
 
 
 # Find way to add data with migration script
@@ -18,4 +18,4 @@ class Expense(Base):
     descreption = StringField(required=True, max_length=200)
     pay_method = ReferenceField(PayMethods, required=True)
     timestamp = DateTimeField(default=datetime.datetime.utcnow)
-    # board = ReferenceField(Board, required=True)
+    board = ReferenceField(Board, required=True)
