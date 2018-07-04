@@ -31,4 +31,4 @@ class Base(Document):
             # Does the expense exist in the DB
             return cls.objects.get(id=id).to_json()
         except DoesNotExist:
-            abort(404, '{} with id {} not found'.format(cls, id))
+            abort(404, '{} with id {} not found'.format(cls.__name__, id))

@@ -15,10 +15,10 @@ def test_create_expense():
     assert response[1] == 201
 
 
-def test_create_expense_no_date():
-    response = Expense().create(dict(amount=200, descreption='Random stuff',
-                                     pay_method=PayMethods.objects()[0],
-                                     board=Board.objects()[0]))
-    # We got a success code
-    assert response[1] == 201
-    assert 'timestamp' in response[0]
+# def test_create_expense_no_date():
+#     response = Expense().create(dict(amount=200, descreption='Random stuff',
+#                                      pay_method=PayMethods.objects()[0],
+#                                      board=Board.objects()[0]))
+#     # We got a success code
+#     assert response[1] == 201
+#     assert 'timestamp' in response[0]
