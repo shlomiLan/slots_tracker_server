@@ -1,8 +1,8 @@
 # stsyem modules
 import datetime
 
-from slots_tracker.expense import Expense, PayMethods
-from slots_tracker.board import Board
+from server.expense import Expense, PayMethods
+from server.board import Board
 
 
 # TODO: Chnage test to not use the real DB

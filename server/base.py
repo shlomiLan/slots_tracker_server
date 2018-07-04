@@ -2,7 +2,7 @@
 from flask import abort
 from mongoengine import *
 
-from slots_tracker.utils import convert_to_object_id
+from server.utils import convert_to_object_id
 
 
 class Base(Document):

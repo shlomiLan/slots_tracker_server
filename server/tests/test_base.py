@@ -3,9 +3,9 @@ import pytest
 from unittest.mock import Mock
 from werkzeug.exceptions import BadRequest
 
-from slots_tracker.base import Base
-from slots_tracker.utils import convert_to_object_id
-from slots_tracker.conf import Ids
+from server.base import Base
+from server.utils import convert_to_object_id
+from server.conf import Ids
 
 
 def test_convert_to_object_id_valid():

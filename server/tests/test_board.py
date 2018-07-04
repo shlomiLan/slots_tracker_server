@@ -3,8 +3,8 @@ import pytest
 from werkzeug.exceptions import NotFound, BadRequest
 from bson.json_util import loads
 
-from slots_tracker.board import Board
-from slots_tracker.conf import Ids
+from server.board import Board
+from server.conf import Ids
 
 
 # TODO: Chnage test to not use the real DB

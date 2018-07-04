@@ -1,7 +1,7 @@
 # 3rd party modules
 from mongoengine import *
 
-from slots_tracker.base import Base
+from server.base import Base
 
 
 class Board(Base):

@@ -4,8 +4,8 @@ import datetime
 # 3rd party modules
 from mongoengine import *
 
-from slots_tracker.base import Base
-from slots_tracker.board import Board
+from server.base import Base
+from server.board import Board
 
 
 # Find way to add data with migration script
