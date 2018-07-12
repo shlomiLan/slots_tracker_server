@@ -105,3 +105,41 @@ venv.bak/
 
 # Mac files
 *.DS_Store
+
+
+# Client app
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
+client/*~
+client/*.sw[mnpcod]
+client/*.log
+client/*.tmp
+client/*.tmp.*
+client/log.txt
+client/*.sublime-project
+client/*.sublime-workspace
+client/.vscode/
+client/npm-debug.log*
+
+client/.idea/
+client/.sourcemaps/
+client/.sass-cache/
+client/.tmp/
+client/.versions/
+client/coverage/
+client/dist/
+client/node_modules/
+client/tmp/
+client/temp/
+client/hooks/
+client/platforms/
+client/plugins/
+client/plugins/android.json
+client/plugins/ios.json
+client/www/
+client/$RECYCLE.BIN/
+
+.DS_Store
+client/Thumbs.db
+client/UserInterfaceState.xcuserstate
