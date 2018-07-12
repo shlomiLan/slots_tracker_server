@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController, Platform, NavParams, ViewController } from 'ionic-angular';
+import { NavController, ModalController, NavParams, ModalOptions } from 'ionic-angular';
 
 
 
@@ -32,11 +32,15 @@ export class ExpensesPage {
   }
 
   editOrCreateExpense(data = undefined, index = undefined) {
+    const myModalOptions: ModalOptions = {
+      enableBackdropDismiss: false
+    }
+
     if (!data){
       data = {amount: undefined, descreption: '', pay_method: '', timestamp: '', board: ''}
     }
 
-    let modal = this.modalCtrl.create('ModalPage', {data: data});
+    let modal = this.modalCtrl.create('ModalPage', {data: data}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
           if (index){
