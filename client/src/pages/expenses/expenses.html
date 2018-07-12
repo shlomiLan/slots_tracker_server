@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>List</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col col-2>Amount</ion-col>
+      <ion-col col-4>descreption</ion-col>
+      <ion-col col-2>pay_method</ion-col>
+      <ion-col col-2>timestamp</ion-col>
+      <ion-col col-2>board</ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let item of items; let i = index" (click)="editOrCreateExpense(item, i)">
+      <ion-col col-2>{{item.amount}}</ion-col>
+      <ion-col col-4>{{item.descreption}}</ion-col>
+      <ion-col col-2>{{item.pay_method}}</ion-col>
+      <ion-col col-2>{{item.timestamp}}</ion-col>
+      <ion-col col-2>{{item.board}}</ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <button ion-button type="button" (click)="editOrCreateExpense()">Create new expense</button>
+</ion-content>
