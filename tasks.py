@@ -1,9 +1,13 @@
+import os
+
 from invoke import task
 
 
 @task
 def run(c):
-    c.run("python server.py")
+    os.environ['FLASK_APP'] = 'server'
+    os.environ['FLASK_ENV'] = 'development'
+    c.run("flask run")
 
 
 @task
