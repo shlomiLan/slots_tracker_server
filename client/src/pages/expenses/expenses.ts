@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, ModalController, NavParams, ModalOptions } from 'ionic-angular';
-
+import { ApiServiceProvider } from '../../providers/api-service/api-service'
 
 
 @Component({
@@ -11,24 +11,13 @@ import { NavController, ModalController, NavParams, ModalOptions } from 'ionic-a
 export class ExpensesPage {
   selectedItem: any;
   icons: string[];
-  items: Array<{amount: number, descreption: string, pay_method: string, timestamp: string, board: string}>;
+  items: any; //Array<{amount: number, descreption: string, pay_method: string, timestamp: string, board: string}>;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public modalCtrl: ModalController) {
-    // If we navigated to this page, we will have an item available as a nav param
-    this.selectedItem = navParams.get('item');
+  constructor(public navCtrl: NavController, public navParams: NavParams, public modalCtrl: ModalController,
+              private api: ApiServiceProvider) {
 
-    this.items = [];
-
-    this.items = [
-      { amount: 100, descreption: 'Random text', pay_method: 'Visa', timestamp: '1/1/2000', board: 'Board 1'},
-      { amount:  50, descreption: 'Random text', pay_method: 'Visa', timestamp: '1.1.2000', board: 'Board 2'},
-      { amount: 300, descreption: 'Random text', pay_method: 'Visa', timestamp: '1.1.2000', board: 'Board 3'},
-      { amount: 600, descreption: 'Random text', pay_method: 'Visa', timestamp: '1.1.2000', board: 'Board 1'},
-      { amount:  10, descreption: 'Random text', pay_method: 'Visa', timestamp: '1.1.2000', board: 'Board 2'},
-      { amount: 100, descreption: 'Random text', pay_method: 'Visa', timestamp: '1.1.2000', board: 'Board 3'},
-    ];
-
-
+    this.getExpenses();
+    this.items = []
   }
 
   editOrCreateExpense(data = undefined, index = undefined) {
@@ -52,5 +41,9 @@ export class ExpensesPage {
       });
 
       modal.present();
+  }
+
+  getExpenses() {
+    this.api.getExpenses().subscribe(response => this.items = response);
   }
 }
