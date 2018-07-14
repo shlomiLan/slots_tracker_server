@@ -17,7 +17,7 @@
       <ion-col col-2>board</ion-col>
     </ion-row>
 
-    <ion-row *ngFor="let item of items; let i = index" (click)="editOrCreateExpense(item, i)">
+    <ion-row *ngFor="let item of items" (click)="editOrCreateExpense(item)">
       <ion-col col-2>{{item.amount}}</ion-col>
       <ion-col col-4>{{item.descreption}}</ion-col>
       <ion-col col-2>{{item.pay_method}}</ion-col>
@@ -27,4 +27,5 @@
   </ion-grid>
 
   <button ion-button type="button" (click)="editOrCreateExpense()">Create new expense</button>
+  <button ion-button type="button" (click)="getExpenses()">Update expense list</button>
 </ion-content>

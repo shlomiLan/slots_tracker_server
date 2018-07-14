@@ -11,32 +11,33 @@ import { ApiServiceProvider } from '../../providers/api-service/api-service'
 export class ExpensesPage {
   selectedItem: any;
   icons: string[];
-  items: any; //Array<{amount: number, descreption: string, pay_method: string, timestamp: string, board: string}>;
+  items: any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public modalCtrl: ModalController,
               private api: ApiServiceProvider) {
 
+    // Inittialize data
     this.getExpenses();
-    this.items = []
   }
 
-  editOrCreateExpense(data = undefined, index = undefined) {
-    const myModalOptions: ModalOptions = {
-      enableBackdropDismiss: false
+  // Logic for creating or updating expense
+  editOrCreateExpense(data = undefined) {
+    if (!data){
+      // TODO: Remove this section to return an empty structure
+      data = {amount: undefined, descreption: ''}
+      // pay_method: '', timestamp: '', board: ''}
     }
 
-    if (!data){
-      data = {amount: undefined, descreption: '', pay_method: '', timestamp: '', board: ''}
+    const myModalOptions: ModalOptions = {
+      enableBackdropDismiss: false
     }
 
     let modal = this.modalCtrl.create('ModalPage', {data: data}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
-          if (index){
-            this.items[index] = data;
-          }else{
-            this.items.push(data);
-          }
+          this.api.creatOrUpdateExpense(data).subscribe();
+          // TODO: find way to do automatically
+          // this.getExpenses();
         }
       });
 
