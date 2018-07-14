@@ -2,6 +2,8 @@ import os
 
 from invoke import task
 
+from server.expense import Expense
+
 
 @task
 def run(c):
@@ -18,3 +20,14 @@ def test(c):
 @task
 def test_and_cov(c):
     c.run("pytest -s --cov=slots_tracker --cov-report term-missing")
+
+
+@task
+def clean_db(c):
+    clean_expense_db(c)
+
+
+@task
+def clean_expense_db(c):
+    print('Removing all expense objects')
+    Expense.objects.delete()
