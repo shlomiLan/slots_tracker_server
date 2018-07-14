@@ -38,7 +38,7 @@ class ExpenseAPI(MethodView):
 
     def post(self):
         expense_data = json.loads(request.data)
-        return Expense(expense_data).save().to_json, 201
+        return Expense(**expense_data).save().to_json(), 201
 
     def delete(self, expense_id):
         # delete a single user
