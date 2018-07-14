@@ -19,9 +19,9 @@ class PayMethods(Document):
 class Expense(Document):
     amount = IntField()
     descreption = StringField(required=True, max_length=200)
-    pay_method = ReferenceField(PayMethods, required=True)
-    timestamp = DateTimeField(default=datetime.datetime.utcnow)
-    board = ReferenceField(Board, required=True)
+    # pay_method = ReferenceField(PayMethods, required=True)
+    # timestamp = DateTimeField(default=datetime.datetime.utcnow)
+    # board = ReferenceField(Board, required=True)
 
 
 class ExpenseAPI(MethodView):

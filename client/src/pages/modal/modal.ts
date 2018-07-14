@@ -33,20 +33,6 @@ import { IonicPage, NavParams, ViewController } from 'ionic-angular';
           <ion-label>Descreption:</ion-label>
           <ion-input formControlName="descreption" type="text"></ion-input>
         </ion-item>
-        <ion-item>
-          <ion-label>Pay method:</ion-label>
-          <ion-input formControlName="pay_method" type="text"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>Timestamp:</ion-label>
-          <ion-input formControlName="timestamp" type="text"></ion-input>
-          <!-- <ion-datetime displayFormat="DD MMM YYYY" pickerFormat="DD MMM YYYY"></ion-datetime> -->
-       </ion-item>
-
-        <ion-item>
-          <ion-label>Board:</ion-label>
-          <ion-input formControlName="board" type="text"></ion-input>
-        </ion-item>
         <button ion-button type="submit" [disabled]="!expense.valid">Submit</button>
       </form>
     </ion-content>
@@ -68,3 +54,18 @@ export class ModalPage {
     this.viewCtrl.dismiss();
   }
 }
+
+// <ion-item>
+//   <ion-label>Pay method:</ion-label>
+//   <ion-input formControlName="pay_method" type="text"></ion-input>
+// </ion-item>
+// <ion-item>
+//   <ion-label>Timestamp:</ion-label>
+//   <ion-input formControlName="timestamp" type="text"></ion-input>
+//   <!-- <ion-datetime displayFormat="DD MMM YYYY" pickerFormat="DD MMM YYYY"></ion-datetime> -->
+// </ion-item>
+//
+// <ion-item>
+//   <ion-label>Board:</ion-label>
+//   <ion-input formControlName="board" type="text"></ion-input>
+// </ion-item>
