@@ -45,5 +45,9 @@ class ExpenseAPI(MethodView):
         pass
 
     def put(self, expense_id):
-        # update a single user
-        pass
+        object_id = convert_to_object_id(expense_id)
+        expense_data = json.loads(request.data)
+        expense = Expense.objects.get(id=object_id)
+        expense.update(**expense_data)
+
+        return expense.reload().to_json()
