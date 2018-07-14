@@ -47,7 +47,8 @@ class ExpenseAPI(MethodView):
     def put(self, expense_id):
         object_id = convert_to_object_id(expense_id)
         expense_data = json.loads(request.data)
+        # Get and updaete the expense
         expense = Expense.objects.get(id=object_id)
         expense.update(**expense_data)
-
+        #  Reload the expense with the updated data
         return expense.reload().to_json()
