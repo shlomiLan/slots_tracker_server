@@ -2,19 +2,21 @@ import os
 
 from invoke import task
 
-from server.expense import Expense
+# from server.expense import Expense
 
 
 @task
 def run(c):
     os.environ['FLASK_APP'] = 'server'
     os.environ['FLASK_ENV'] = 'development'
+    os.environ['FLASK_TEST'] = 'false'
     c.run("flask run")
 
 
 @task
 def test(c):
-    c.run("pytest")
+    os.environ['FLASK_TEST'] = 'true'
+    c.run("pytest -s")
 
 
 @task
@@ -27,7 +29,7 @@ def clean_db(c):
     clean_expense_db(c)
 
 
-@task
-def clean_expense_db(c):
-    print('Removing all expense objects')
-    Expense.objects.delete()
+# @task
+# def clean_expense_db(c):
+#     print('Removing all expense objects')
+#     Expense.objects.delete()
