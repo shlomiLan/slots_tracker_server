@@ -10,7 +10,7 @@ CORS(app)
 
 print(os.environ.get('FLASK_TEST'))
 if (os.environ.get('FLASK_TEST') == 'true'):
-    app.config['MONGODB_SETTINGS'] = dict(db='slots_tracker1111')
+    app.config['MONGODB_SETTINGS'] = dict(db='slots_tracker_test')
 else:
     app.config['MONGODB_SETTINGS'] = dict(db='slots_tracker')
 
