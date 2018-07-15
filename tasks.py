@@ -2,8 +2,6 @@ import os
 
 from invoke import task
 
-# from server.expense import Expense
-
 
 @task
 def run(c):
@@ -29,7 +27,10 @@ def clean_db(c):
     clean_expense_db(c)
 
 
-# @task
-# def clean_expense_db(c):
-#     print('Removing all expense objects')
-#     Expense.objects.delete()
+@task
+def clean_expense_db(c):
+    # Leave here tp prevent circular import
+    from server.expense import Expense
+
+    print('Removing all expense objects')
+    Expense.objects.delete()
