@@ -19,7 +19,7 @@ def test(c):
 
 @task
 def test_and_cov(c):
-    c.run("pytest -s --cov=slots_tracker --cov-report term-missing")
+    c.run("pytest -s --cov=server --cov-report term-missing")
 
 
 @task
