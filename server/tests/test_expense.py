@@ -1,21 +1,11 @@
 # stsyem modules
-import datetime
+# import datetime
 
 import pytest
 from mongoengine.errors import FieldDoesNotExist
 
-from server import app as flask_app
-from server import db
-from server.expense import Expense, PayMethods
-from server.board import Board
-
-
-@pytest.fixture
-def client():
-    client = flask_app.test_client()
-    # Clean the DB
-    Expense.objects.delete()
-    yield client
+from server.expense import Expense
+# from server.board import Board
 
 
 def test_empty_db(client):
