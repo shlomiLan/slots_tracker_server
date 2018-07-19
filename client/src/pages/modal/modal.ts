@@ -64,8 +64,3 @@ export class ModalPage {
 //   <ion-input formControlName="timestamp" type="text"></ion-input>
 //   <!-- <ion-datetime displayFormat="DD MMM YYYY" pickerFormat="DD MMM YYYY"></ion-datetime> -->
 // </ion-item>
-//
-// <ion-item>
-//   <ion-label>Board:</ion-label>
-//   <ion-input formControlName="board" type="text"></ion-input>
-// </ion-item>

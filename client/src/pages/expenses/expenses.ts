@@ -25,7 +25,7 @@ export class ExpensesPage {
     if (!data){
       // TODO: Remove this section to return an empty structure
       data = {amount: undefined, descreption: ''}
-      // pay_method: '', timestamp: '', board: ''}
+      // pay_method: '', timestamp: ''}
     }
 
     const myModalOptions: ModalOptions = {

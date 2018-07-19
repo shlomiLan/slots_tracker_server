@@ -4,7 +4,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
 import { ExpensesPage } from '../pages/expenses/expenses';
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -14,7 +13,6 @@ import { ApiServiceProvider } from '../providers/api-service/api-service';
 @NgModule({
   declarations: [
     MyApp,
-    HomePage,
     ExpensesPage
   ],
   imports: [
@@ -25,7 +23,6 @@ import { ApiServiceProvider } from '../providers/api-service/api-service';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage,
     ExpensesPage
   ],
   providers: [
