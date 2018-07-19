@@ -5,6 +5,7 @@ import datetime
 # 3rd party modules
 from flask.views import MethodView
 from flask import request
+from mongoengine.errors import NotUniqueError
 
 from server import db
 
@@ -37,16 +38,28 @@ class BaseAPI(MethodView):
         instance = self.api_class.objects.get_or_404(id=object_id)
         instance.update(**data)
         #  Reload the expense with the updated data
-        return self.api_class.reload().to_json()
+        return instance.reload().to_json()
 
 
 # Find way to add data with migration script
 class PayMethods(db.Document):
-    name = db.StringField(required=True, max_length=200)
+    name = db.StringField(required=True, max_length=200, unique=True)
 
 
 class PayMethodsAPI(BaseAPI):
     api_class = PayMethods
+
+    def post(self):
+        try:
+            return super(PayMethodsAPI, self).post()
+        except NotUniqueError:
+            return 'Name value must be unique', 400
+
+    def put(self, id):
+        try:
+            return super(PayMethodsAPI, self).put(id)
+        except NotUniqueError:
+            return 'Name value must be unique', 400
 
 
 class Expense(db.Document):
