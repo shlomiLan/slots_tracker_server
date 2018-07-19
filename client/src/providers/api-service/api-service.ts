@@ -1,10 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/do'
-import 'rxjs/add/operator/map'
-import 'rxjs/add/operator/catch'
-import {Observable} from 'rxjs/Observable'
-import 'rxjs/add/observable/throw';
 
 
 @Injectable()
@@ -25,12 +20,13 @@ export class ApiServiceProvider {
   creatOrUpdateExpense(data){
     let id = this.get_id(data);
     this.clean_data(data);
+    let url = this.baseURL;
 
     if (id){
-      return this.http.put(this.baseURL + 'expenses/' + id, data);
-    }else{
-      return this.http.post(this.baseURL + 'expenses/', data);
+      url = url + id;
     }
+    
+    return this.http.post(this.baseURL + 'expenses/', data);
   }
 
   createOrUpdatePayMethod(data){
@@ -43,10 +39,6 @@ export class ApiServiceProvider {
     }
 
     return this.http.post(this.baseURL + 'pay_methods/', data);
-  }
-
-  private catchError(error: Response | any){
-    return Observable.throw(error.error || "Server error");
   }
 
   get_id(data){
