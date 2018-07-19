@@ -1,20 +1,37 @@
 <ion-content>
   <ion-grid>
     <ion-row>
-      <ion-col col-2>Amount</ion-col>
-      <ion-col col-4>descreption</ion-col>
-      <ion-col col-2>pay_method</ion-col>
-      <ion-col col-2>timestamp</ion-col>
-    </ion-row>
+      <ion-col col-8>Expenses
+        <ion-row>
+          <ion-col col-2>Amount</ion-col>
+          <ion-col col-4>descreption</ion-col>
+          <ion-col col-2>pay_method</ion-col>
+          <ion-col col-2>timestamp</ion-col>
+        </ion-row>
 
-    <ion-row *ngFor="let item of items" (click)="editOrCreateExpense(item)">
-      <ion-col col-2>{{item.amount}}</ion-col>
-      <ion-col col-4>{{item.descreption}}</ion-col>
-      <ion-col col-2>{{item.pay_method}}</ion-col>
-      <ion-col col-2>{{item.timestamp}}</ion-col>
+        <ion-row *ngFor="let expense of expenses" (click)="createOrUpdateExpense(expense)">
+          <ion-col col-2>{{expense.amount}}</ion-col>
+          <ion-col col-4>{{expense.descreption}}</ion-col>
+          <ion-col col-2>{{expense.pay_method}}</ion-col>
+          <ion-col col-2>{{expense.timestamp}}</ion-col>
+        </ion-row>
+
+        <button ion-button type="button" (click)="createOrUpdateExpense()">Create expense</button>
+        <button ion-button type="button" (click)="getExpenses()">Update list</button>
+      </ion-col>
+      <ion-col col-4>Paying methods
+        <ion-row>
+          <ion-col col-12>Name</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let method of methods" (click)="createOrUpdatePayMethod(method)">
+          <ion-col col-12>{{method.name}}</ion-col>
+        </ion-row>
+
+        <button ion-button type="button" (click)="createOrUpdatePayMethod()">Create paying method</button>
+        <button ion-button type="button" (click)="getPayMethods()">Update list</button>
+      </ion-col>
     </ion-row>
   </ion-grid>
 
-  <button ion-button type="button" (click)="editOrCreateExpense()">Create new expense</button>
-  <button ion-button type="button" (click)="getExpenses()">Update expense list</button>
 </ion-content>

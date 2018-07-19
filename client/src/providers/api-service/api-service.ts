@@ -19,6 +19,10 @@ export class ApiServiceProvider {
     return this.http.get(this.baseURL + 'expenses/')
   }
 
+  getPayMethods(){
+    return this.http.get(this.baseURL + 'pay_methods/')
+  }
+
   creatOrUpdateExpense(data){
     let id = this.get_id(data);
     this.clean_data(data);
@@ -27,6 +31,17 @@ export class ApiServiceProvider {
       return this.http.put(this.baseURL + 'expenses/' + id, data);
     }else{
       return this.http.post(this.baseURL + 'expenses/', data);
+    }
+  }
+
+  createOrUpdatePayMethod(data){
+    let id = this.get_id(data);
+    this.clean_data(data);
+
+    if (id){
+      return this.http.put(this.baseURL + 'pay_methods/' + id, data);
+    }else{
+      return this.http.post(this.baseURL + 'pay_methods/', data);
     }
   }
 
