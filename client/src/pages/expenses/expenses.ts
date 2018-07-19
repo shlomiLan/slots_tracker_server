@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, ModalController, NavParams, ModalOptions, ToastController } from 'ionic-angular';
 import { ApiServiceProvider } from '../../providers/api-service/api-service'
+import 'rxjs/add/operator/do'
 
 
 @Component({
@@ -35,9 +36,7 @@ export class ExpensesPage {
     let modal = this.modalCtrl.create('ExpenseModalPage', {data: data}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
-          this.api.creatOrUpdateExpense(data).subscribe();
-          // TODO: find way to do automatically
-          // this.getExpenses();
+          this.api.creatOrUpdateExpense(data).subscribe(res => {this.getExpenses()});
         }
       });
 
@@ -59,7 +58,7 @@ export class ExpensesPage {
     let modal = this.modalCtrl.create('PayMethodModalPage', {data: data}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
-          this.api.createOrUpdatePayMethod(data).subscribe(res => {}, err =>{
+          this.api.createOrUpdatePayMethod(data).subscribe(res => {this.getPayMethods()}, err =>{
               const toast = this.toastCtrl.create({
                 message: err.error,
                 duration: 3000,
@@ -67,8 +66,6 @@ export class ExpensesPage {
               });
               toast.present();
             });
-          // TODO: find way to do automatically
-          // this.getExpenses();
         }
       });
 
