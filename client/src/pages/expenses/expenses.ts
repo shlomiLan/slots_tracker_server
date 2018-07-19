@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController, NavParams, ModalOptions } from 'ionic-angular';
+import { NavController, ModalController, NavParams, ModalOptions, ToastController } from 'ionic-angular';
 import { ApiServiceProvider } from '../../providers/api-service/api-service'
 
 
@@ -13,7 +13,7 @@ export class ExpensesPage {
   methods: any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public modalCtrl: ModalController,
-              private api: ApiServiceProvider) {
+              private api: ApiServiceProvider, public toastCtrl: ToastController) {
 
     // Inittialize data
     this.getExpenses();
@@ -59,7 +59,14 @@ export class ExpensesPage {
     let modal = this.modalCtrl.create('PayMethodModalPage', {data: data}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
-          this.api.createOrUpdatePayMethod(data).subscribe();
+          this.api.createOrUpdatePayMethod(data).subscribe(res => {}, err =>{
+              const toast = this.toastCtrl.create({
+                message: err.error,
+                duration: 3000,
+                position: 'top'
+              });
+              toast.present();
+            });
           // TODO: find way to do automatically
           // this.getExpenses();
         }

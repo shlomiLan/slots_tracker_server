@@ -2,12 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/do'
 import 'rxjs/add/operator/map'
-/*
-  Generated class for the ApiServiceProvider provider.
+import 'rxjs/add/operator/catch'
+import {Observable} from 'rxjs/Observable'
+import 'rxjs/add/observable/throw';
 
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
+
 @Injectable()
 export class ApiServiceProvider {
   private baseURL = 'http://127.0.0.1:5000/';
@@ -37,12 +36,17 @@ export class ApiServiceProvider {
   createOrUpdatePayMethod(data){
     let id = this.get_id(data);
     this.clean_data(data);
+    let url = this.baseURL;
 
     if (id){
-      return this.http.put(this.baseURL + 'pay_methods/' + id, data);
-    }else{
-      return this.http.post(this.baseURL + 'pay_methods/', data);
+      url = url + id;
     }
+
+    return this.http.post(this.baseURL + 'pay_methods/', data);
+  }
+
+  private catchError(error: Response | any){
+    return Observable.throw(error.error || "Server error");
   }
 
   get_id(data){
