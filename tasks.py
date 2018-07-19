@@ -34,3 +34,15 @@ def clean_expense_db(c):
 
     print('Removing all expense objects')
     Expense.objects.delete()
+
+
+@task
+def init_db(c):
+    insert_base_payments()
+
+
+def insert_base_payments():
+    from server.expense import PayMethods
+
+    print('Create paying methods')
+    PayMethods.objects.insert([PayMethods(name='MasterCard'), PayMethods(name='Visa')])
