@@ -25,6 +25,7 @@ class BaseAPI(MethodView):
 
     def post(self):
         data = json.loads(request.data)
+        self.find_and_convert_ids(data)
         return self.api_class(**data).save().to_json(), 201
 
     def delete(self, id):
