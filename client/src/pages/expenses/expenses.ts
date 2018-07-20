@@ -25,7 +25,7 @@ export class ExpensesPage {
   createOrUpdateExpense(data = undefined) {
     if (!data){
       // TODO: Remove this section to return an empty structure
-      data = {amount: undefined, descreption: ''};
+      data = {amount: undefined, descreption: '', pay_method: ''};
       // pay_method: '', timestamp: ''}
     }
 
