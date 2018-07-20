@@ -33,7 +33,7 @@ export class ExpensesPage {
       enableBackdropDismiss: false
     }
 
-    let modal = this.modalCtrl.create('ExpenseModalPage', {data: data}, myModalOptions);
+    let modal = this.modalCtrl.create('ExpenseModalPage', {data: data, methods: this.methods}, myModalOptions);
       modal.onDidDismiss(data => {
         if (data){
           this.api.creatOrUpdateExpense(data).subscribe(res => {this.getExpenses()});

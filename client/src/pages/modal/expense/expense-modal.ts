@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { IonicPage, NavParams, ViewController } from 'ionic-angular';
 
 @IonicPage()
@@ -24,34 +24,46 @@ import { IonicPage, NavParams, ViewController } from 'ionic-angular';
           <ion-label>Descreption:</ion-label>
           <ion-input formControlName="descreption" type="text"></ion-input>
         </ion-item>
+        <ion-item>
+          <ion-label>Pay method:</ion-label>
+          <ion-select formControlName="pay_method" (ionChange)="payMethodChange($event);" interface="popover">
+            <ion-option *ngFor="let item of methods.controls" [value]="item.value._id.$oid">
+              {{item.value.name}}
+            </ion-option>
+          </ion-select>
+        </ion-item>
         <button ion-button type="submit" [disabled]="!expense.valid">Submit</button>
-      </form>
+    </form>
     </ion-content>
   `
 })
 
 export class ExpenseModalPage {
   private expense : FormGroup;
+  private methods : FormArray;
+
 
   constructor( private navParams: NavParams, private formBuilder: FormBuilder, private viewCtrl: ViewController ) {
     this.expense = this.formBuilder.group(this.navParams.get('data'));
+    this.methods = this.formBuilder.array(this.navParams.get('methods'));
+    // Modify the pay_method data for the select element
+    this.expense.controls['pay_method'].setValue(this.expense.value.pay_method.$oid);
   }
 
   saveData(){
+    this.expense.controls['pay_method'].setValue({"$oid": this.expense.value.pay_method});
     this.viewCtrl.dismiss(this.expense.value);
   }
 
   closeModal(){
     this.viewCtrl.dismiss();
   }
-}
 
-// <ion-item>
-//   <ion-label>Pay method:</ion-label>
-//   <ion-input formControlName="pay_method" type="text"></ion-input>
-// </ion-item>
-// <ion-item>
-//   <ion-label>Timestamp:</ion-label>
-//   <ion-input formControlName="timestamp" type="text"></ion-input>
-//   <!-- <ion-datetime displayFormat="DD MMM YYYY" pickerFormat="DD MMM YYYY"></ion-datetime> -->
-// </ion-item>
+  initMethods() : FormGroup {
+    return this.formBuilder.group({id: 1, name: 'Visa'});
+  }
+
+  payMethodChange(value){
+    this.expense.controls['pay_method'].setValue(value);
+  }
+}
