@@ -34,11 +34,20 @@ class BaseAPI(MethodView):
     def put(self, id):
         object_id = convert_to_object_id(id)
         data = json.loads(request.data)
+        self.find_and_convert_ids(data)
+
         # Get and updaete the expense
         instance = self.api_class.objects.get_or_404(id=object_id)
         instance.update(**data)
         #  Reload the expense with the updated data
         return instance.reload().to_json()
+
+    def find_and_convert_ids(self, data):
+        for k, v in data.items():
+            if isinstance(v, dict):
+                for k2, v2 in v.items():
+                    if k2 == '$oid':
+                        data[k] = convert_to_object_id(v2)
 
 
 # Find way to add data with migration script
