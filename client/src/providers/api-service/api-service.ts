@@ -20,25 +20,27 @@ export class ApiServiceProvider {
   creatOrUpdateExpense(data){
     let id = this.get_id(data);
     this.clean_data(data);
-    let url = this.baseURL;
+    let url = this.baseURL + 'expenses/';
 
     if (id){
       url = url + id;
+      return this.http.put(url, data);
     }
-    
-    return this.http.post(this.baseURL + 'expenses/', data);
+
+    return this.http.post(url, data);
   }
 
   createOrUpdatePayMethod(data){
     let id = this.get_id(data);
     this.clean_data(data);
-    let url = this.baseURL;
+    let url = this.baseURL + 'pay_methods/';
 
     if (id){
       url = url + id;
+      return this.http.put(url, data);
     }
 
-    return this.http.post(this.baseURL + 'pay_methods/', data);
+    return this.http.post(url, data);
   }
 
   get_id(data){
