@@ -5,10 +5,10 @@ import datetime
 # 3rd party modules
 from flask.views import MethodView
 from flask import request
+from mongoengine import *
 from mongoengine.errors import NotUniqueError
 
-from server import db
-
+from server.db import BaseDocument
 from server.board import Board
 from server.utils import convert_to_object_id
 
@@ -20,7 +20,6 @@ class BaseAPI(MethodView):
         else:
             object_id = convert_to_object_id(id)
             instance = self.api_class.objects.get_or_404(id=object_id)
-
             return instance.to_json()
 
     def post(self):
@@ -52,8 +51,8 @@ class BaseAPI(MethodView):
 
 
 # Find way to add data with migration script
-class PayMethods(db.Document):
-    name = db.StringField(required=True, max_length=200, unique=True)
+class PayMethods(BaseDocument):
+    name = StringField(required=True, max_length=200, unique=True)
 
 
 class PayMethodsAPI(BaseAPI):
@@ -72,10 +71,10 @@ class PayMethodsAPI(BaseAPI):
             return 'Name value must be unique', 400
 
 
-class Expense(db.Document):
-    amount = db.IntField()
-    descreption = db.StringField(required=True, max_length=200)
-    pay_method = db.ReferenceField(PayMethods, required=True)
+class Expense(BaseDocument):
+    amount = IntField()
+    descreption = StringField(required=True, max_length=200)
+    pay_method = ReferenceField(PayMethods, required=True)
     # timestamp = DateTimeField(default=datetime.datetime.utcnow)
     # board = ReferenceField(Board, required=True)
 
