@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
-from flask_mongoengine import MongoEngine
+from mongoengine import *
 
 
 app = Flask(__name__)
@@ -14,8 +14,6 @@ if (os.environ.get('FLASK_TEST') == 'true'):
 else:
     app.config['MONGODB_SETTINGS'] = dict(db='slots_tracker')
 
-print(app.config['MONGODB_SETTINGS'])
-
-db = MongoEngine(app)
+connect(app.config['MONGODB_SETTINGS'].get('db'))
 
 import server.views  # noqa
