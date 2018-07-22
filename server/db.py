@@ -1,6 +1,9 @@
+from bson import json_util
 from flask import abort
+from mongoengine import Document
 from mongoengine.queryset import DoesNotExist, QuerySet
-import mongoengine_goodjson as gj
+
+from server.utils import object_id_to_str
 
 
 class BaseQuerySet(QuerySet):
@@ -13,7 +16,7 @@ class BaseQuerySet(QuerySet):
         """
         try:
             return self.get(*args, **kwargs)
-        except (DoesNotExist):
+        except DoesNotExist:
             abort(404)
 
     def first_or_404(self):
@@ -24,6 +27,18 @@ class BaseQuerySet(QuerySet):
 
         return obj
 
+    def to_json(self, *args, **kwargs):
+        json_list = json_util.loads(super(BaseQuerySet, self).to_json())
+        temp = []
+        for json_obj in json_list:
+            temp.append(object_id_to_str(json_obj))
 
-class BaseDocument(gj.Document):
+        return json_util.dumps(temp)
+
+
+class BaseDocument(Document):
     meta = {'abstract': True, 'queryset_class': BaseQuerySet}
+
+    def to_json(self):
+        json_obj = json_util.loads(super(BaseDocument, self).to_json())
+        return json_util.dumps(object_id_to_str(json_obj))

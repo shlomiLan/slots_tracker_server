@@ -6,12 +6,20 @@ from bson.errors import InvalidId
 from server import app
 
 
-def convert_to_object_id(id):
+def convert_to_object_id(str_id):
     try:
-        # Does it a valid ID - call the original fuction with the class and the new id
-        return ObjectId(id)
+        # Does it a valid ID - call the original function with the class and the new id
+        return ObjectId(str_id)
     except InvalidId:
-        abort(400, '{} is not a valid object ID'.format(id))
+        abort(400, '{} is not a valid object ID'.format(str_id))
+
+
+def object_id_to_str(obj):
+    for k, v in obj.items():
+        if isinstance(v, ObjectId):
+            obj[k] = str(v)
+
+    return obj
 
 
 def register_api(view, endpoint, url, pk='id', pk_type='string'):
