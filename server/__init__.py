@@ -8,7 +8,6 @@ from flask_mongoengine import MongoEngine
 app = Flask(__name__)
 CORS(app)
 
-app.logger.info('Is flask test: {}'.format(os.environ.get('FLASK_TEST')))
 if os.environ.get('FLASK_TEST') == 'true':
     app.config['MONGODB_SETTINGS'] = dict(db='slots_tracker_test')
 else:
