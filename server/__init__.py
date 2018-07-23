@@ -13,8 +13,10 @@ if os.environ.get('FLASK_TEST') == 'true':
 else:
     app.config['MONGODB_SETTINGS'] = {
         'db': 'slots_tracker',
-        'host': 'http://ds145921.mlab.com:45921/slots_tracker',
-        'port': 45921
+        'host': 'mongodb://ds145921.mlab.com/slots_tracker',
+        'port': 45921,
+        'username': 'slots_tracker',
+        'password': 'Q77GdN2^S$0r'
     }
 
 db = MongoEngine(app)
