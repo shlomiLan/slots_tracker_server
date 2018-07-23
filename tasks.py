@@ -31,7 +31,7 @@ def clean_db(c):
 @task
 def clean_expenses(c):
     # Leave here tp prevent circular import
-    from server.expense import Expense
+    from slots_tracker_server.expense import Expense
 
     print('Removing all expense objects')
     Expense.objects.delete()
@@ -40,7 +40,7 @@ def clean_expenses(c):
 @task
 def clean_pay_methods(c):
     # Leave here tp prevent circular import
-    from server.expense import PayMethods
+    from slots_tracker_server.expense import PayMethods
 
     print('Removing all pay methods objects')
     PayMethods.objects.delete()
@@ -54,7 +54,7 @@ def init_db(c):
 
 def insert_base_payments():
     # Leave here tp prevent circular import
-    from server.expense import PayMethods
+    from slots_tracker_server.expense import PayMethods
 
     print('Create paying methods')
     PayMethods(name='MasterCard').save()
@@ -63,8 +63,8 @@ def insert_base_payments():
 
 def insert_base_expense():
     # Leave here tp prevent circular import
-    from server.expense import Expense
-    from server.expense import PayMethods
+    from slots_tracker_server.expense import Expense
+    from slots_tracker_server.expense import PayMethods
 
     print('Create expenses')
     Expense(amount=100, descreption="BBB", pay_method=PayMethods.objects.first()).save()
