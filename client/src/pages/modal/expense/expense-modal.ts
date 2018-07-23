@@ -26,8 +26,8 @@ import { IonicPage, NavParams, ViewController } from 'ionic-angular';
         </ion-item>
         <ion-item>
           <ion-label>Pay method:</ion-label>
-          <ion-select formControlName="pay_method" (ionChange)="payMethodChange($event);" interface="popover">
-            <ion-option *ngFor="let item of methods.controls" [value]="item.value._id.$oid">
+          <ion-select [formControlName]="pay_method" (ionChange)="payMethodChange($event);" interface="popover">
+            <ion-option *ngFor="let item of methods.controls" [value]="item.value._id">
               {{item.value.name}}
             </ion-option>
           </ion-select>
@@ -47,20 +47,16 @@ export class ExpenseModalPage {
     this.expense = this.formBuilder.group(this.navParams.get('data'));
     this.methods = this.formBuilder.array(this.navParams.get('methods'));
     // Modify the pay_method data for the select element
-    this.expense.controls['pay_method'].setValue(this.expense.value.pay_method.$oid);
+    this.expense.controls['pay_method'].setValue(this.expense.value.pay_method._id);
   }
 
   saveData(){
-    this.expense.controls['pay_method'].setValue({"$oid": this.expense.value.pay_method});
+    this.expense.controls['pay_method'].setValue({"_id": this.expense.value.pay_method});
     this.viewCtrl.dismiss(this.expense.value);
   }
 
   closeModal(){
     this.viewCtrl.dismiss();
-  }
-
-  initMethods() : FormGroup {
-    return this.formBuilder.group({id: 1, name: 'Visa'});
   }
 
   payMethodChange(value){

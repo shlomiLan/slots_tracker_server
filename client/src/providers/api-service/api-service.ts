@@ -45,7 +45,7 @@ export class ApiServiceProvider {
 
   get_id(data){
     if (this.data_has_id(data)){
-      return data._id.$oid
+      return data._id
     }
 
     return undefined;
@@ -54,9 +54,7 @@ export class ApiServiceProvider {
   data_has_id(data){
     if (data){
       if (data._id){
-        if (data._id.$oid){
-          return true;
-        }
+        return true;
       }
     }
 

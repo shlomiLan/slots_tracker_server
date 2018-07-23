@@ -10,13 +10,13 @@
       <ion-row *ngFor="let expense of expenses" (click)="createOrUpdateExpense(expense)">
         <ion-col col-2>{{expense.amount}}</ion-col>
         <ion-col col-4>{{expense.descreption}}</ion-col>
-        <ion-col col-3>{{expense.pay_method}}</ion-col>
+        <ion-col col-3>{{expense.pay_method.name}}</ion-col>
         <ion-col col-3>{{expense.timestamp}}</ion-col>
       </ion-row>
 
       <button ion-button type="button" (click)="createOrUpdateExpense()">Create expense</button>
       <button ion-button type="button" (click)="getExpenses()">Update list</button>
-      
+
       <ion-row>
         <ion-col col-12>Name</ion-col>
       </ion-row>
