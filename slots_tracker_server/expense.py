@@ -71,7 +71,7 @@ class PayMethodsAPI(BaseAPI):
 
 class Expense(BaseDocument):
     amount = IntField()
-    descreption = StringField(required=True, max_length=200)
+    description = StringField(required=True, max_length=200)
     pay_method = ReferenceField(PayMethods, required=True)
     # timestamp = DateTimeField(default=datetime.datetime.utcnow)
     # board = ReferenceField(Board, required=True)

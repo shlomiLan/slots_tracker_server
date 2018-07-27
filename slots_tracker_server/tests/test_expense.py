@@ -5,6 +5,8 @@ import pytest
 from mongoengine.errors import FieldDoesNotExist
 
 from slots_tracker_server.expense import Expense, PayMethods
+
+
 # from server.board import Board
 
 
@@ -15,7 +17,7 @@ def test_empty_db(client):
 
 
 def test_create_expense():
-    response = Expense(amount=200, descreption='Random stuff', pay_method=PayMethods.objects().first()).save()
+    response = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first()).save()
     # pay_method=PayMethods.objects()[0], timestamp=datetime.datetime.utcnow, board=Board.objects()[0])
 
     # We got a new object
@@ -25,4 +27,4 @@ def test_create_expense():
 def test_field_does_not_exist():
     # We got a error code
     with pytest.raises(FieldDoesNotExist):
-        Expense(amounta=200, descreption='Random stuff', pay_method=PayMethods.objects().first()).save()
+        Expense(amounta=200, description='Random stuff', pay_method=PayMethods.objects().first()).save()

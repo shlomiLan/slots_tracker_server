@@ -84,7 +84,7 @@ def insert_base_expense(_):
     from slots_tracker_server.expense import PayMethods
 
     print('Create expenses')
-    Expense(amount=100, descreption="BBB", pay_method=PayMethods.objects.first()).save()
+    Expense(amount=100, description="BBB", pay_method=PayMethods.objects.first()).save()
 
 
 # Heroku
