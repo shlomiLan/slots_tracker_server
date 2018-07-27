@@ -1,13 +1,10 @@
-import datetime
-
-from flask.views import MethodView
+from bson import json_util
 from flask import request
+from flask.views import MethodView
 from mongoengine import *
 from mongoengine.errors import NotUniqueError
-from bson import json_util
 
 from slots_tracker_server.db import BaseDocument
-from slots_tracker_server.board import Board
 from slots_tracker_server.utils import convert_to_object_id
 
 
@@ -92,7 +89,7 @@ class ExpenseAPI(BaseAPI):
             pay_method_data = PayMethods.objects.get(id=item.get('pay_method')).to_json()
             item['pay_method'] = json_util.loads(pay_method_data)
 
-        return json_util.dumps(data[0] if len(data) == 1 else data)
+        return json_util.dumps(data[0] if obj_id else data)
 
     def post(self, data=None):
         data = self.pay_method_json_to_object(data)
