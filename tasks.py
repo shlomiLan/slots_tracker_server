@@ -26,7 +26,7 @@ def run(c):
 def test(c):
     # os.environ['FLASK_TEST'] = 'true'
     print(os.environ['APP_SETTINGS'])
-    # os.environ['APP_SETTINGS'] = 'config.TestingConfig'
+    os.environ['APP_SETTINGS'] = 'config.TestingConfig'
     print(os.environ['APP_SETTINGS'])
     c.run("pytest -s")
 
@@ -85,3 +85,9 @@ def insert_base_expense(_):
 
     print('Create expenses')
     Expense(amount=100, descreption="BBB", pay_method=PayMethods.objects.first()).save()
+
+
+# Heroku
+@task(init_app)
+def heroku_run(c):
+    c.run('heroku local')

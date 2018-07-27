@@ -1,1 +1,1 @@
-web: gunicorn server:app
+web: gunicorn slots_tracker_server:app
