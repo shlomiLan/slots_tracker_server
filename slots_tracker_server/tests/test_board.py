@@ -16,7 +16,6 @@
 # from server import app
 
 
-# # TODO: Chnage test to not use the real DB
 # def test_create_board():
 #     response = Board(name='New board')
 #     # We got a success code
@@ -31,7 +30,7 @@
 #     # assert new_board_id_as_str == Ids.VALID_BOARD_ID.value
 #
 #
-# def test_read_one_invaild_id():
+# def test_read_one_invalid_id():
 #     # We got a error code
 #     with pytest.raises(BadRequest):
 #         Board.read_one(id=Ids.INVALID_BOARD_ID.value)
