@@ -9,6 +9,8 @@ from slots_tracker_server.utils import convert_to_object_id
 
 
 class BaseAPI(MethodView):
+    api_class = None
+
     def get(self, obj_id):
         if obj_id is None:
             return self.api_class.objects.to_json()
@@ -29,7 +31,7 @@ class BaseAPI(MethodView):
         object_id = convert_to_object_id(obj_id)
         self.find_and_convert_ids(data)
 
-        # Get and updaete the expense
+        # Get and updated the expense
         instance = self.api_class.objects.get_or_404(id=object_id)
         instance.update(**data)
         #  Reload the expense with the updated data
