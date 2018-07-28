@@ -75,7 +75,7 @@ class Expense(BaseDocument):
     amount = IntField()
     description = StringField(required=True, max_length=200)
     pay_method = ReferenceField(PayMethods, required=True)
-    # timestamp = DateTimeField(default=datetime.datetime.utcnow)
+    timestamp = DateTimeField(required=True)
     # board = ReferenceField(Board, required=True)
 
 

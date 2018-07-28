@@ -1,5 +1,4 @@
-# stsyem modules
-# import datetime
+import datetime
 
 import pytest
 from mongoengine.errors import FieldDoesNotExist
@@ -17,8 +16,8 @@ def test_empty_db(client):
 
 
 def test_create_expense():
-    response = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first()).save()
-    # pay_method=PayMethods.objects()[0], timestamp=datetime.datetime.utcnow, board=Board.objects()[0])
+    response = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+                       timestamp=datetime.datetime.utcnow).save()
 
     # We got a new object
     assert response is not None

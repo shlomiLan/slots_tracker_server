@@ -3,7 +3,7 @@ from flask import abort
 from mongoengine import Document
 from mongoengine.queryset import DoesNotExist, QuerySet
 
-from slots_tracker_server.utils import object_id_to_str
+from slots_tracker_server.utils import object_id_to_str, convert_date
 
 
 class BaseQuerySet(QuerySet):
@@ -31,7 +31,8 @@ class BaseQuerySet(QuerySet):
         json_list = json_util.loads(super(BaseQuerySet, self).to_json())
         temp = []
         for json_obj in json_list:
-            temp.append(object_id_to_str(json_obj))
+            json_obj = object_id_to_str(json_obj)
+            temp.append(convert_date(json_obj))
 
         return json_util.dumps(temp)
 
@@ -41,4 +42,5 @@ class BaseDocument(Document):
 
     def to_json(self):
         json_obj = json_util.loads(super(BaseDocument, self).to_json())
-        return json_util.dumps(object_id_to_str(json_obj))
+        json_obj = object_id_to_str(json_obj)
+        return json_util.dumps(convert_date(json_obj))

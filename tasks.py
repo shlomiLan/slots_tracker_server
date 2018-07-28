@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from invoke import task
@@ -17,7 +18,7 @@ def init_app(c):
 
 @task(init_app)
 def run(c):
-    # os.environ['FLASK_ENV'] = 'development'
+    os.environ['FLASK_ENV'] = 'development'
     # os.environ['FLASK_TEST'] = 'false'
     c.run("flask run")
 
@@ -84,7 +85,8 @@ def insert_base_expense(_):
     from slots_tracker_server.expense import PayMethods
 
     print('Create expenses')
-    Expense(amount=100, description="BBB", pay_method=PayMethods.objects.first()).save()
+    Expense(amount=100, description="BBB", pay_method=PayMethods.objects.first(),
+            timestamp=datetime.datetime.utcnow).save()
 
 
 # Heroku

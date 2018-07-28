@@ -1,7 +1,9 @@
 # 3rd party modules
-from flask import abort
-from bson.objectid import ObjectId
+import datetime
+
 from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from flask import abort
 
 from slots_tracker_server import app
 
@@ -18,6 +20,14 @@ def object_id_to_str(obj):
     for k, v in obj.items():
         if isinstance(v, ObjectId):
             obj[k] = str(v)
+
+    return obj
+
+
+def convert_date(obj):
+    for k, v in obj.items():
+        if isinstance(v, datetime.datetime):
+            obj[k] = str(v.date())
 
     return obj
 
