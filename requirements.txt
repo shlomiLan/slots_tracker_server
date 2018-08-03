@@ -8,4 +8,4 @@ flask-mongoengine==0.9.5
 
 # testing
 pytest-cov==2.5.1
-pytest==3.7.0
+pytest==3.7.1
