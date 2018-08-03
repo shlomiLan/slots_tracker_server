@@ -3,24 +3,29 @@ import os
 
 from invoke import task
 
+from config import BASEDIR
 
-@task
-def active_venv(c):
-    c.run('source venv/bin/activate')
+active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
+
+
+def run(c, command, with_venv=True):
+    if with_venv:
+        c.run('{} && {}'.format(active_venv, command))
+    else:
+        c.run('{}'.format(command))
 
 
 @task
 def init_app(c):
     os.environ['APP_SETTINGS'] = 'config.DevelopmentConfig'
     os.environ['FLASK_APP'] = 'slots_tracker_server'
-    active_venv(c)
+    os.environ['FLASK_ENV'] = 'development'
+    # os.environ['FLASK_TEST'] = 'false'
 
 
 @task(init_app)
-def run(c):
-    os.environ['FLASK_ENV'] = 'development'
-    # os.environ['FLASK_TEST'] = 'false'
-    c.run("flask run")
+def run_app(c):
+    run(c, 'flask run')
 
 
 @task(init_app)
@@ -29,13 +34,13 @@ def test(c):
     print(os.environ['APP_SETTINGS'])
     os.environ['APP_SETTINGS'] = 'config.TestingConfig'
     print(os.environ['APP_SETTINGS'])
-    c.run("pytest -s")
+    run(c, 'pytest -s')
 
 
 @task(init_app)
 def test_and_cov(c):
     os.environ['APP_SETTINGS'] = 'config.TestingConfig'
-    c.run("pytest -s --cov=server --cov-report term-missing")
+    run(c, 'pytest -s --cov=server --cov-report term-missing')
 
 
 @task(init_app)
@@ -92,4 +97,14 @@ def insert_base_expense(_):
 # Heroku
 @task(init_app)
 def heroku_run(c):
-    c.run('heroku local')
+    run(c, 'heroku local', False)
+
+
+# run scripts
+@task()
+def run_command(c, command):
+    # with c.prefix('source {}/venv/bin/activate'.format(BASEDIR)):
+    os.environ['APP_SETTINGS'] = 'config.DevelopmentConfig'
+    os.environ['FLASK_ENV'] = 'development'
+    os.environ['FLASK_APP'] = 'slots_tracker_server'
+    run(c, 'cd {} && flask {}'.format(BASEDIR, command))
