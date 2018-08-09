@@ -21,7 +21,7 @@ def init_connection():
 
 def get_worksheet():
     gc = init_connection()
-    return gc.open_by_key(app.config.GSHEET_ID).sheet1
+    return gc.open_by_key(app.config.get('GSHEET_ID')).sheet1
 
 
 def write_expense(expense):
@@ -32,7 +32,7 @@ def write_expense(expense):
         start_column=start_column, new_index=new_index, end_column=end_column))
 
     for i, header in enumerate(headers):
-        cell_list[i].value = expense.get(header)
+        cell_list[i].value = expense.get(header.value)
 
     wks.update_cells(cell_list)
 
@@ -42,4 +42,4 @@ def find_last_row(wks):
 
 
 def get_headers(wks):
-    return [x.value for x in (wks.range('{}1:{}1'.format(start_column, end_column)))]
+    return wks.range('{}1:{}1'.format(start_column, end_column))
