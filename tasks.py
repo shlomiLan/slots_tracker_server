@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 
 from invoke import task
@@ -6,6 +7,7 @@ from invoke import task
 from config import BASEDIR
 
 active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
+heroku_app_name = 'slots-tracker'
 
 
 def run(c, command, with_venv=True):
@@ -15,12 +17,14 @@ def run(c, command, with_venv=True):
         c.run('{}'.format(command))
 
 
-@task
-def init_app(c):
-    os.environ['APP_SETTINGS'] = 'config.DevelopmentConfig'
-    os.environ['FLASK_APP'] = 'slots_tracker_server'
-    os.environ['FLASK_ENV'] = 'development'
-    # os.environ['FLASK_TEST'] = 'false'
+@task()
+def init_app(c, in_heroku=False):
+    set_env_var(c, 'APP_SETTINGS', 'config.DevelopmentConfig', in_heroku)
+    set_env_var(c, 'FLASK_APP', 'slots_tracker_server', in_heroku)
+    set_env_var(c, 'FLASK_ENV', 'development', in_heroku)
+    credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
+    with open(credentials_path, "r") as read_file:
+        set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), in_heroku)
 
 
 @task(init_app)
@@ -30,16 +34,13 @@ def run_app(c):
 
 @task(init_app)
 def test(c):
-    # os.environ['FLASK_TEST'] = 'true'
-    print(os.environ['APP_SETTINGS'])
-    os.environ['APP_SETTINGS'] = 'config.TestingConfig'
-    print(os.environ['APP_SETTINGS'])
+    set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig')
     run(c, 'pytest -s')
 
 
 @task(init_app)
 def test_and_cov(c):
-    os.environ['APP_SETTINGS'] = 'config.TestingConfig'
+    set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig')
     run(c, 'pytest -s --cov=server --cov-report term-missing')
 
 
@@ -101,10 +102,16 @@ def heroku_run(c):
 
 
 # run scripts
-@task()
+@task(init_app)
 def run_command(c, command):
-    # with c.prefix('source {}/venv/bin/activate'.format(BASEDIR)):
-    os.environ['APP_SETTINGS'] = 'config.DevelopmentConfig'
-    os.environ['FLASK_ENV'] = 'development'
-    os.environ['FLASK_APP'] = 'slots_tracker_server'
     run(c, 'cd {} && flask {}'.format(BASEDIR, command))
+
+
+# helper
+def set_env_var(c, name, value, in_heroku=False):
+    if isinstance(value, dict):
+        value = json.dumps(value)
+    if in_heroku:
+        run(c, "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name), False)
+    else:
+        os.environ[name] = value
