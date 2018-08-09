@@ -9,3 +9,10 @@ flask-mongoengine==0.9.5
 # testing
 pytest-cov==2.5.1
 pytest==3.6.2
+
+# Google spreadsheet
+gspread==3.0.1
+oauth2client==4.1.2
+
+# CLI
+click==6.7

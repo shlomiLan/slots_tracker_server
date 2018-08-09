@@ -144,3 +144,4 @@ client/$RECYCLE.BIN/
 .DS_Store
 client/Thumbs.db
 client/UserInterfaceState.xcuserstate
+resources/

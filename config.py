@@ -8,6 +8,7 @@ class Config(object):
     TESTING = False
     SECRET_KEY = 'this-really-needs-to-be-changed'
     MONGODB_SETTINGS = dict(db='slots_tracker')
+    GSHEET_ID = '1iMG12iT6m_wAyxJoxhXg0zPc8PCRa39J4zMSPKLoulM'
 
 
 class ProductionConfig(Config):
