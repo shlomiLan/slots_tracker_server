@@ -36,7 +36,8 @@ def write_expense(expense):
         start_column=start_column, new_index=new_index, end_column=end_column))
 
     for i, header in enumerate(headers):
-        cell_list[i].value = expense.get(header.value)
+        # Leave as expense[header.value], so if field not found we get an error
+        cell_list[i].value = expense[header.value]
 
     wks.update_cells(cell_list)
 
