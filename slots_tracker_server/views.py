@@ -5,8 +5,8 @@ from slots_tracker_server.utils import register_api
 
 @app.route('/')
 def home_page():
-    return 'Index Page3'
+    return 'API index page'
 
 
-register_api(ExpenseAPI,    'expense_api',     '/expenses/',    pk='obj_id')  # noqa
+register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')
 register_api(PayMethodsAPI, 'pay_methods_api', '/pay_methods/', pk='obj_id')

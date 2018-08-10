@@ -19,14 +19,6 @@ class BaseQuerySet(QuerySet):
         except DoesNotExist:
             abort(404)
 
-    def first_or_404(self):
-        """Same as get_or_404, but uses .first, not .get."""
-        obj = self.first()
-        if obj is None:
-            abort(404)
-
-        return obj
-
     def to_json(self, *args, **kwargs):
         json_list = json_util.loads(super(BaseQuerySet, self).to_json())
         temp = []
