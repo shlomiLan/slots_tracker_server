@@ -1,6 +1,3 @@
-from unittest import mock
-
-import pytest
 from bson import json_util
 from gspread import Worksheet
 from gspread.client import Client
@@ -13,10 +10,10 @@ def test_init_connection():
     assert isinstance(init_connection(), Client)
 
 
-def test_init_connection_no_credentials():
-    with mock.patch.dict('os.environ', {'GSHEET_CREDENTIALS': ''}):
-        with pytest.raises(KeyError):
-            init_connection()
+# def test_init_connection_no_credentials():
+#     with mock.patch.dict('os.environ', {'GSHEET_CREDENTIALS': ''}):
+#         with pytest.raises(KeyError):
+#             init_connection()
 
 
 def test_get_worksheet():
