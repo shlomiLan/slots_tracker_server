@@ -12,19 +12,20 @@ heroku_app_name = 'slots-tracker'
 
 def run(c, command, with_venv=True):
     if with_venv:
-        c.run('{} && {}'.format(active_venv, command))
-    else:
-        c.run('{}'.format(command))
+        command = '{} && {}'.format(active_venv, command)
+
+    print('Running: {}'.format(command))
+    c.run(command)
 
 
 @task()
-def init_app(c, in_heroku=False):
-    set_env_var(c, 'APP_SETTINGS', 'config.DevelopmentConfig', in_heroku)
-    set_env_var(c, 'FLASK_APP', 'slots_tracker_server', in_heroku)
-    set_env_var(c, 'FLASK_ENV', 'development', in_heroku)
+def init_app(c, env=None):
+    set_env_var(c, 'APP_SETTINGS', 'config.DevelopmentConfig', env)
+    set_env_var(c, 'FLASK_APP', 'slots_tracker_server', env)
+    set_env_var(c, 'FLASK_ENV', 'development', env)
     credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
     with open(credentials_path, "r") as read_file:
-        set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), in_heroku)
+        set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), env)
 
 
 @task(init_app)
@@ -109,10 +110,19 @@ def run_command(c, command):
 
 
 # helper
-def set_env_var(c, name, value, in_heroku=False):
+def set_env_var(c, name, value, env=None):
+    # env codes: h - Heroku, t - Travis-CI
     if isinstance(value, dict):
         value = json.dumps(value)
-    if in_heroku:
+    if env == 'h':
         run(c, "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name), False)
+    elif env == 't':
+        run(c, "travis encrypt {}='{}' --add".format(name, value), False)
     else:
         os.environ[name] = value
+
+
+# Travis-CI
+@task(init_app)
+def build_travis_yaml(c, env='t'):
+    pass
