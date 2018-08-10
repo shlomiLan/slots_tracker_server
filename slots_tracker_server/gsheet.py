@@ -11,7 +11,11 @@ end_column = 'F'
 
 
 def init_connection():
-    credentials_data = json.loads(os.environ['GSHEET_CREDENTIALS'])
+    credentials_data = os.environ.get('GSHEET_CREDENTIALS')
+    if not credentials_data:
+        raise KeyError('No credentials data, missing environment variable')
+
+    credentials_data = json.loads(credentials_data)
     # Fix the 'private_key' escaping
     credentials_data['private_key'] = credentials_data.get('private_key').encode().decode('unicode-escape')
     scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -35,6 +39,11 @@ def write_expense(expense):
         cell_list[i].value = expense.get(header.value)
 
     wks.update_cells(cell_list)
+
+
+def clean_expense_for_write(expense_as_json, expense):
+    expense_as_json['pay_method'] = expense.pay_method.name
+    expense_as_json['category'] = 'XXX'
 
 
 def find_last_row(wks):

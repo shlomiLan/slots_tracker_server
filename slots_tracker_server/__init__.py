@@ -14,5 +14,4 @@ db = MongoEngine(app)
 
 import slots_tracker_server.views  # noqa
 
-app.cli.add_command(commands.write_expense_to_gsheet)
 app.cli.add_command(commands.update_gsheet_header)

@@ -41,7 +41,7 @@ def test(c):
 @task(init_app)
 def test_and_cov(c):
     set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig')
-    run(c, 'pytest -s --cov=server --cov-report term-missing')
+    run(c, 'pytest -s --cov=slots_tracker_server --cov-report term-missing')
 
 
 @task(init_app)
