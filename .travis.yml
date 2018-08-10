@@ -2,7 +2,7 @@ before_install: [openssl aes-256-cbc -K $encrypted_33d6361e9e6d_key -iv $encrypt
     -in ./resources/credentials.json.enc
     -out ./resources/credentials.json -d]
 env:
-  global: {APP_SETTINGS: config.DevelopmentConfig, FLASK_APP: slots_tracker_server,
+  global: {APP_SETTINGS: config.StagingConfig, FLASK_APP: slots_tracker_server,
     FLASK_ENV: development}
 language: python
 python: ['3.6']
