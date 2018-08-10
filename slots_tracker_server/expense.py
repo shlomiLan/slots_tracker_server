@@ -1,10 +1,10 @@
+import mongoengine_goodjson as gj
 from bson import json_util
 from flask import request
 from flask.views import MethodView
-from mongoengine import *
 from mongoengine.errors import NotUniqueError
 
-from slots_tracker_server.db import BaseDocument
+from slots_tracker_server import db
 from slots_tracker_server.utils import convert_to_object_id
 
 
@@ -47,8 +47,8 @@ class BaseAPI(MethodView):
 
 
 # Find way to add data with migration script
-class PayMethods(BaseDocument):
-    name = StringField(required=True, max_length=200, unique=True)
+class PayMethods(db.Document, gj.Document):
+    name = db.StringField(required=True, max_length=200, unique=True)
 
 
 class PayMethodsAPI(BaseAPI):
@@ -71,11 +71,11 @@ class PayMethodsAPI(BaseAPI):
             return 'Name value must be unique', 400
 
 
-class Expense(BaseDocument):
-    amount = IntField()
-    description = StringField(required=True, max_length=200)
-    pay_method = ReferenceField(PayMethods, required=True)
-    timestamp = DateTimeField(required=True)
+class Expense(db.Document, gj.Document):
+    amount = db.IntField()
+    description = db.StringField(required=True, max_length=200)
+    pay_method = db.ReferenceField(PayMethods, required=True)
+    timestamp = db.DateTimeField(required=True)
     # board = ReferenceField(Board, required=True)
 
 
