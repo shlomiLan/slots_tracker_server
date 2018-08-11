@@ -36,7 +36,7 @@ def run_app(c):
 @task(init_app)
 def test(c, cov=False, file=None):
     # cov - if to use coverage, file - if to run specific file
-    set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig')
+    set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig', '')
     command = 'pytest -s'
     if cov:
         command = '{} --cov=slots_tracker_server --cov-report term-missing'.format(command)
@@ -110,19 +110,13 @@ def run_command(c, command):
 
 
 # helper
-def set_env_var(c, name, value, env=None):
+def set_env_var(c, name, value, env):
     # env codes: h - Heroku, t - Travis-CI
     if isinstance(value, dict):
         value = json.dumps(value)
     if env == 'h':
         run(c, "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name), False)
     elif env == 't':
-        run(c, "travis encrypt {}='{}' --add".format(name, value), False)
+        run(c, "travis env set {} '{}'".format(name, value), False)
     else:
         os.environ[name] = value
-
-
-# Travis-CI
-@task(init_app)
-def build_travis_yaml(c, env='t'):
-    pass
