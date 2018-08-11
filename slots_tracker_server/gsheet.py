@@ -12,6 +12,7 @@ end_column = 'F'
 
 def init_connection():
     credentials_data = os.environ.get('GSHEET_CREDENTIALS')
+    print(os.environ.get('GSHEET_CREDENTIALS'))
     if not credentials_data:
         raise KeyError('No credentials data, missing environment variable')
 
