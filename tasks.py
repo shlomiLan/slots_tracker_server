@@ -2,10 +2,10 @@ import datetime
 import json
 import os
 
+import yaml
 from invoke import task
 
-from config import BASEDIR
-
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
 active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
 heroku_app_name = 'slots-tracker'
 
@@ -20,12 +20,14 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None):
-    set_env_var(c, 'APP_SETTINGS', 'config.DevelopmentConfig', env)
-    set_env_var(c, 'FLASK_APP', 'slots_tracker_server', env)
-    set_env_var(c, 'FLASK_ENV', 'development', env)
-    credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
-    with open(credentials_path, "r") as read_file:
-        set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), env)
+    # Load the basic configs
+    env_vars = load_yaml_from_file('{}/resources/config.yml'.format(BASEDIR))
+
+    if env:
+        env_vars.update(load_yaml_from_file('{}/resources/config_stage.yml'.format(BASEDIR)))
+
+    for name, data in env_vars.items():
+        set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
 
 
 @task(init_app)
@@ -110,13 +112,27 @@ def run_command(c, command):
 
 
 # helper
-def set_env_var(c, name, value, env):
+def set_env_var(c, name, value, env, is_protected=True):
     # env codes: h - Heroku, t - Travis-CI
     if isinstance(value, dict):
         value = json.dumps(value)
-    if env == 'h':
-        run(c, "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name), False)
-    elif env == 't':
-        run(c, "travis env set {} '{}'".format(name, value), False)
+
+    if env in ['h', 't']:
+        command = ''
+        if env == 'h':
+            command = "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name)
+        elif env == 't':
+            command = "travis env set {} '{}'".format(name, value)
+            if not is_protected:
+                command = '{} --public'.format(command)
+
+        if command:
+            run(c, command, False)
+
     else:
         os.environ[name] = value
+
+
+def load_yaml_from_file(file_path):
+    with open(file_path, 'r') as stream:
+        return yaml.safe_load(stream)

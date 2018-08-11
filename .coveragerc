@@ -1,0 +1,4 @@
+[run]
+omit =
+    # omit commands.py
+    slots_tracker_server/commands.py

@@ -1,7 +1,9 @@
+import json
+import os
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-from config import BASEDIR
 from slots_tracker_server import app
 
 start_column = 'A'
@@ -9,20 +11,15 @@ end_column = 'F'
 
 
 def init_connection():
-    # credentials_data = os.environ.get('GSHEET_CREDENTIALS')
-    # if not credentials_data:
-    #     raise KeyError('No credentials data, missing environment variable')
-    #
-    # credentials_data = json.loads(credentials_data)
-    # # Fix the 'private_key' escaping
-    # credentials_data['private_key'] = credentials_data.get('private_key').encode().decode('unicode-escape')
-    # scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    # credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_data, scopes)
-    # return gspread.authorize(credentials)
+    credentials_data = os.environ.get('GSHEET_CREDENTIALS')
+    if not credentials_data:
+        raise KeyError('No credentials data, missing environment variable')
 
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+    credentials_data = json.loads(credentials_data)
+    # Fix the 'private_key' escaping
+    credentials_data['private_key'] = credentials_data.get('private_key').encode().decode('unicode-escape')
+    scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_data, scopes)
     return gspread.authorize(credentials)
 
 
