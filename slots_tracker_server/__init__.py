@@ -8,10 +8,6 @@ from slots_tracker_server import commands
 
 app = Flask(__name__)
 CORS(app)
-print('------------')
-print('APP_SETTINGS')
-print(os.environ['APP_SETTINGS'])
-print('------------')
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = MongoEngine(app)
