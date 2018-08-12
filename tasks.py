@@ -4,8 +4,7 @@ import os
 
 from invoke import task
 
-from config import BASEDIR
-
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
 active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
 heroku_app_name = 'slots-tracker'
 
