@@ -1,3 +1,6 @@
 language: python
 python: ['3.6']
-script: pytest -s
+script:
+  - coverage run tests.py
+after_success:
+  - codecov
