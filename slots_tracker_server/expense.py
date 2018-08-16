@@ -1,3 +1,5 @@
+import abc
+
 import mongoengine_goodjson as gj
 from bson import json_util
 from flask import request
@@ -9,7 +11,12 @@ from slots_tracker_server.utils import convert_to_object_id
 
 
 class BaseAPI(MethodView):
-    api_class = None
+    __metaclass__ = abc.ABCMeta
+
+    @property
+    @abc.abstractmethod
+    def api_class(self):
+        return db.Document
 
     def get(self, obj_id):
         if obj_id is None:

@@ -9,7 +9,7 @@ def update_gsheet_header():
     headers = get_headers(wks)
     new_headers = ['_id', 'description', 'category', 'timestamp', 'amount', 'pay_method']
 
-    for i, header in enumerate(headers):
+    for i, _ in enumerate(headers):
         headers[i].value = new_headers[i]
 
     wks.update_cells(headers)
