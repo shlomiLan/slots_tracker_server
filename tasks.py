@@ -135,4 +135,4 @@ def set_env_var(c, name, value, env, is_protected=True):
 
 def load_yaml_from_file(file_path):
     with open(file_path, 'r') as stream:
-        return yaml.load(stream)
+        return yaml.safe_load(stream)
