@@ -19,9 +19,22 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None):
-    set_env_var(c, 'APP_SETTINGS', 'config.DevelopmentConfig', env)
+    db_port = '27017'
+    db_host = 'localhost'
+    app_settings = 'config.DevelopmentConfig'
+    if env:
+        db_port = '45921'
+        db_host = 'mongodb://ds145921.mlab.com/slots_tracker'
+        app_settings = 'config.StagingConfig'
+    else:
+        set_env_var(c, 'FLASK_ENV', 'development', env)
+
+    set_env_var(c, 'DB_HOST', db_host, env)
+    set_env_var(c, 'DB_PORT', db_port, env)
+    set_env_var(c, 'DB_PASS', 'Q77GdN2^S$0r', env)
+    set_env_var(c, 'DB_USERNAME', 'slots_tracker', env)
+    set_env_var(c, 'APP_SETTINGS', app_settings, env)
     set_env_var(c, 'FLASK_APP', 'slots_tracker_server', env)
-    set_env_var(c, 'FLASK_ENV', 'development', env)
     credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
     with open(credentials_path, "r") as read_file:
         set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), env)
