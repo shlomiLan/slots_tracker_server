@@ -19,11 +19,11 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None):
-    db_port = '27017'
+    db_port = 27017
     db_host = 'localhost'
     app_settings = 'config.DevelopmentConfig'
     if env:
-        db_port = '45921'
+        db_port = 45921
         db_host = 'mongodb://ds145921.mlab.com/slots_tracker'
         app_settings = 'config.StagingConfig'
     else:
