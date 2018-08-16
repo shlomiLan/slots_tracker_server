@@ -16,7 +16,7 @@ class BaseAPI(MethodView):
     @property
     @abc.abstractmethod
     def api_class(self):
-        return db.Document
+        raise NotImplementedError
 
     def get(self, obj_id):
         if obj_id is None:
