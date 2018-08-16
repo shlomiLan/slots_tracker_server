@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 
+import yaml
 from invoke import task
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
@@ -19,25 +20,14 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None):
-    db_port = 27017
-    db_host = 'localhost'
-    app_settings = 'config.DevelopmentConfig'
-    if env:
-        db_port = 45921
-        db_host = 'mongodb://ds145921.mlab.com/slots_tracker'
-        app_settings = 'config.StagingConfig'
-    else:
-        set_env_var(c, 'FLASK_ENV', 'development', env)
+    # Load the basic configs
+    env_vars = load_yaml_from_file('{}/resources/config.yml'.format(BASEDIR))
 
-    set_env_var(c, 'DB_HOST', db_host, env)
-    set_env_var(c, 'DB_PORT', db_port, env)
-    set_env_var(c, 'DB_PASS', 'Q77GdN2^S$0r', env)
-    set_env_var(c, 'DB_USERNAME', 'slots_tracker', env)
-    set_env_var(c, 'APP_SETTINGS', app_settings, env)
-    set_env_var(c, 'FLASK_APP', 'slots_tracker_server', env)
-    credentials_path = '{}/resources/credentials.json'.format(BASEDIR)
-    with open(credentials_path, "r") as read_file:
-        set_env_var(c, 'GSHEET_CREDENTIALS', json.load(read_file), env)
+    if env:
+        env_vars.update(load_yaml_from_file('{}/resources/config_stage.yml'.format(BASEDIR)))
+
+    for name, data in env_vars.items():
+        set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
 
 
 @task(init_app)
@@ -122,13 +112,27 @@ def run_command(c, command):
 
 
 # helper
-def set_env_var(c, name, value, env):
+def set_env_var(c, name, value, env, is_protected=True):
     # env codes: h - Heroku, t - Travis-CI
     if isinstance(value, dict):
         value = json.dumps(value)
-    if env == 'h':
-        run(c, "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name), False)
-    elif env == 't':
-        run(c, "travis env set {} '{}'".format(name, value), False)
+
+    if env in ['h', 't']:
+        command = ''
+        if env == 'h':
+            command = "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name)
+        elif env == 't':
+            command = "travis env set {} '{}'".format(name, value)
+            if not is_protected:
+                command = '{} --public'.format(command)
+
+        if command:
+            run(c, command, False)
+
     else:
         os.environ[name] = value
+
+
+def load_yaml_from_file(file_path):
+    with open(file_path, 'r') as stream:
+        return yaml.load(stream)

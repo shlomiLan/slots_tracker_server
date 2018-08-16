@@ -2,6 +2,7 @@ bson==0.5.6
 Flask==1.0.2
 flask-cors==3.0.6
 gunicorn==19.9.0
+PyYAML==3.13
 
 # DB
 mongoengine==0.15.3
