@@ -12,6 +12,7 @@ Werkzeug==0.14.1
 # testing
 pytest-cov==2.5.1
 pytest==3.7.1
+codecov==2.0.15
 
 # Google spreadsheet
 gspread==3.0.1
