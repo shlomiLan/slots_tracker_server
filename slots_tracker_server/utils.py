@@ -9,6 +9,8 @@ from slots_tracker_server import app
 
 
 def convert_to_object_id(str_id):
+    if not str_id:
+        abort(400, 'object ID can not be None')
     try:
         # Does it a valid ID - call the original function with the class and the new id
         return ObjectId(str_id)

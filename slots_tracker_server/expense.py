@@ -1,7 +1,7 @@
 import abc
 
 import mongoengine_goodjson as gj
-from bson import json_util
+from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
 from mongoengine.errors import NotUniqueError
@@ -31,8 +31,8 @@ class BaseAPI(MethodView):
         return self.api_class(**data).save().to_json(), 201
 
     def delete(self, obj_id):
-        # delete a single user
-        pass
+        # TODO: add field in DB and mark object as deleted but don't really delete it
+        return '', 200
 
     def put(self, obj_id, data):
         object_id = convert_to_object_id(obj_id)
@@ -113,7 +113,9 @@ class ExpenseAPI(BaseAPI):
         if not data:
             data = json_util.loads(request.data)
 
-        if 'pay_method' in data:
-            data['pay_method'] = convert_to_object_id(data.get('pay_method').get('_id'))
+        pay_method = data.get('pay_method')
+        if pay_method and not isinstance(pay_method, ObjectId):
+            pay_method_id = pay_method.get('_id') if isinstance(pay_method, dict) else pay_method
+            data['pay_method'] = convert_to_object_id(pay_method_id)
 
         return data
