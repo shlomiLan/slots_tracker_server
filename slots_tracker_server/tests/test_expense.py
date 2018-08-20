@@ -1,15 +1,19 @@
+import datetime
 import json
 
 import pytest
 from mongoengine.errors import FieldDoesNotExist
 
 from slots_tracker_server.expense import Expense, PayMethods
+from slots_tracker_server.utils import object_id_to_str, date_to_str
 
 
 def test_field_does_not_exist():
     with pytest.raises(FieldDoesNotExist):
         Expense(amounta=200, description='Random stuff', pay_method=PayMethods.objects().first()).save()
 
+
+# TODO: add test for missing field
 
 def test_get_expenses(client):
     rv = client.get('/expenses/')
@@ -26,3 +30,35 @@ def test_get_expense_404(client):
     invalid_id = '5b6d42132c8884b302632182'
     rv = client.get('/expenses/{}'.format(invalid_id))
     assert rv.status_code == 404
+
+
+def test_post_expenses(client):
+    pay_method = PayMethods.objects().first()
+    date = datetime.datetime.utcnow()
+    data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date}
+    expected_data = {'amount': 200, 'description': 'Random stuff', 'pay_method': object_id_to_str(pay_method.id),
+                     'timestamp': date_to_str(date)}  # noqa
+
+    rv = client.post('/expenses/', json=data)
+    result = json.loads(rv.get_data(as_text=True))
+    # Remove the Expense ID
+    del result['_id']
+
+    assert rv.status_code == 201
+    assert result == expected_data
+
+
+def test_delete_expense(client):
+    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+                      timestamp=datetime.datetime.utcnow()).save()
+    rv = client.delete('/expenses/{}'.format(expense.id))
+    assert rv.status_code == 200
+
+
+def test_update_expense(client):
+    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+                      timestamp=datetime.datetime.utcnow()).save()
+    expense_json = json.loads(client.get('/expenses/{}'.format(expense.id)).get_data(as_text=True))
+    expense_json['amount'] = 100
+    rv = client.put('/expenses/{}'.format(expense.id), json=expense.to_json())
+    assert rv.status_code == 200

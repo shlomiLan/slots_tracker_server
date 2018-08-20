@@ -1,24 +1,38 @@
-import mongoengine_goodjson as gj
 from bson import json_util
-from flask_mongoengine import BaseQuerySet
+from flask import abort
+from mongoengine import Document
+from mongoengine.queryset import DoesNotExist, QuerySet
 
-from slots_tracker_server import db
-from slots_tracker_server.utils import convert_date
+from slots_tracker_server.utils import find_and_convert_object_id, find_and_convert_date
 
 
-class QuerySet(BaseQuerySet):
+class BaseQuerySet(QuerySet):
+    """Mongoengine's queryset extended with handy extras."""
+
+    def get_or_404(self, *args, **kwargs):
+        """
+        Get a document and raise a 404 Not Found error if it doesn't
+        exist.
+        """
+        try:
+            return self.get(*args, **kwargs)
+        except DoesNotExist:
+            abort(404)
+
     def to_json(self, *args, **kwargs):
-        json_list = json_util.loads(super(QuerySet, self).to_json())
+        json_list = json_util.loads(super(BaseQuerySet, self).to_json())
         temp = []
         for json_obj in json_list:
-            temp.append(convert_date(json_obj))
+            json_obj = find_and_convert_object_id(json_obj)
+            temp.append(find_and_convert_date(json_obj))
 
-        return json_util.dumps(temp)
+        return temp
 
 
-class BaseDocument(db.Document, gj.Document):
-    meta = {'abstract': True, 'queryset_class': QuerySet}
+class BaseDocument(Document):
+    meta = {'abstract': True, 'queryset_class': BaseQuerySet}
 
     def to_json(self):
         json_obj = json_util.loads(super(BaseDocument, self).to_json())
-        return json_util.dumps(convert_date(json_obj))
+        json_obj = find_and_convert_object_id(json_obj)
+        return find_and_convert_date(json_obj)

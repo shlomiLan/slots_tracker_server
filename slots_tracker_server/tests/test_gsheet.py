@@ -1,4 +1,6 @@
-from bson import json_util
+from unittest import mock
+
+import pytest
 from gspread import Worksheet
 from gspread.client import Client
 
@@ -10,10 +12,10 @@ def test_init_connection():
     assert isinstance(init_connection(), Client)
 
 
-# def test_init_connection_no_credentials():
-#     with mock.patch.dict('os.environ', {'GSHEET_CREDENTIALS': ''}):
-#         with pytest.raises(KeyError):
-#             init_connection()
+def test_init_connection_no_credentials():
+    with mock.patch.dict('os.environ', {'GSHEET_CREDENTIALS': ''}):
+        with pytest.raises(KeyError):
+            init_connection()
 
 
 def test_get_worksheet():
@@ -37,7 +39,7 @@ def test_write_expense():
     from slots_tracker_server.gsheet import write_expense
     from slots_tracker_server.expense import Expense
     expense = Expense.objects[0]
-    expense_as_json = json_util.loads(expense.to_json())
+    expense_as_json = expense.to_json()
     clean_expense_for_write(expense_as_json, expense)
     write_expense(expense_as_json)
 

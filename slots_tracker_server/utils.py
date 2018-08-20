@@ -18,18 +18,26 @@ def convert_to_object_id(str_id):
         abort(400, '{} is not a valid object ID'.format(str_id))
 
 
-def object_id_to_str(obj):
+def object_id_to_str(object_id):
+    return str(object_id)
+
+
+def find_and_convert_object_id(obj):
     for k, v in obj.items():
         if isinstance(v, ObjectId):
-            obj[k] = str(v)
+            obj[k] = object_id_to_str(v)
 
     return obj
 
 
-def convert_date(obj):
+def date_to_str(date):
+    return str(date.date())
+
+
+def find_and_convert_date(obj):
     for k, v in obj.items():
         if isinstance(v, datetime.datetime):
-            obj[k] = str(v.date())
+            obj[k] = date_to_str(v)
 
     return obj
 
