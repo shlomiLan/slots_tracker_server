@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from slots_tracker_server.models import Expense, PayMethods
+from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import object_id_to_str, date_to_str
 
 
@@ -21,7 +21,7 @@ def test_get_expense(client):
 
 def test_get_deleted_expense(client):
     expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow(), active=False).save()
+                      timestamp=datetime.datetime.utcnow(), active=False, category=Categories.objects().first()).save()
     rv = client.get('/expenses/{}'.format(expense.id))
     assert rv.status_code == 404
 
@@ -34,10 +34,12 @@ def test_get_expense_404(client):
 
 def test_post_expenses(client):
     pay_method = PayMethods.objects().first()
+    category = Categories.objects().first()
     date = datetime.datetime.utcnow()
-    data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date}
+    data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date,
+            'category': category.to_json()}  # noqa
     expected_data = {'amount': 200, 'description': 'Random stuff', 'pay_method': object_id_to_str(pay_method.id),
-                     'timestamp': date_to_str(date), 'active': True}
+                     'timestamp': date_to_str(date), 'active': True, 'category': object_id_to_str(category.id)}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
@@ -50,14 +52,14 @@ def test_post_expenses(client):
 
 def test_delete_expense(client):
     expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow()).save()
+                      timestamp=datetime.datetime.utcnow(), category=Categories.objects().first()).save()
     rv = client.delete('/expenses/{}'.format(expense.id))
     assert rv.status_code == 200
 
 
 def test_update_expense(client):
     expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow()).save()
+                      timestamp=datetime.datetime.utcnow(), category=Categories.objects().first()).save()
     expense.amount = 100
     rv = client.put('/expenses/{}'.format(expense.id), json=expense.to_json())
     assert rv.status_code == 200

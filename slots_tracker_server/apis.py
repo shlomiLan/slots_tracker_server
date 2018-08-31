@@ -26,6 +26,7 @@ class BaseAPI(MethodView):
             return instance.to_json()
 
     def post(self, obj_data):
+        # TODO: Check that all reference fields are not inactive before creating a new object
         return json_util.dumps(self.api_class(**obj_data).save().to_json()), 201
 
     def delete(self, obj_id):
@@ -92,17 +93,19 @@ class ExpenseAPI(BaseAPI):
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
-        self.pay_method_json_to_object(obj_data)
+        self.convert_reference_field_data_to_object_id(obj_data)
         return super(ExpenseAPI, self).post(obj_data)
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
-        self.pay_method_json_to_object(obj_data)
+        self.convert_reference_field_data_to_object_id(obj_data)
         return super(ExpenseAPI, self).put(obj_id, obj_data)
 
     @staticmethod
-    def pay_method_json_to_object(obj_data):
-        pay_method = obj_data.get('pay_method')
-        if pay_method and not isinstance(pay_method, ObjectId):
-            pay_method_id = pay_method.get('_id') if isinstance(pay_method, dict) else pay_method
-            obj_data['pay_method'] = convert_to_object_id(pay_method_id)
+    def convert_reference_field_data_to_object_id(obj_data):
+        fields = ['pay_method', 'category']
+        for field in fields:
+            field_data = obj_data.get(field)
+            if field_data and not isinstance(field_data, ObjectId):
+                field_data_id = field_data.get('_id') if isinstance(field_data, dict) else field_data
+                obj_data[field] = convert_to_object_id(field_data_id)
