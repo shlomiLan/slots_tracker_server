@@ -1,4 +1,3 @@
-# 3rd party modules
 import datetime
 
 from bson.errors import InvalidId

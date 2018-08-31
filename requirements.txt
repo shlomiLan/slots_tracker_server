@@ -6,7 +6,6 @@ PyYAML==3.13
 
 # DB
 mongoengine==0.15.3
-flask-mongoengine==0.9.5
 Werkzeug==0.14.1
 
 # testing
