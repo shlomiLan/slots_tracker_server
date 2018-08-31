@@ -8,8 +8,7 @@ class PayMethods(BaseDocument):
 
 
 class Expense(BaseDocument):
-    amount = IntField()
+    amount = IntField(required=True)
     description = StringField(required=True, max_length=200)
     pay_method = ReferenceField(PayMethods, required=True)
     timestamp = DateTimeField(required=True)
-    # board = ReferenceField(Board, required=True)
