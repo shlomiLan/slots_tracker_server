@@ -9,7 +9,8 @@ from slots_tracker_server import commands
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(os.environ['APP_SETTINGS'])
-connect(app.config.get('MONGODB_SETTINGS').get('db'))
+connect(**app.config.get('MONGODB_SETTINGS'))
+
 
 import slots_tracker_server.views  # noqa
 
