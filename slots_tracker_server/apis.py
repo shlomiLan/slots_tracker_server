@@ -3,10 +3,9 @@ import abc
 from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
-from mongoengine import *
 from mongoengine.errors import NotUniqueError
 
-from slots_tracker_server.db import BaseDocument
+from slots_tracker_server.models import Expense, PayMethods
 from slots_tracker_server.utils import convert_to_object_id
 
 
@@ -45,10 +44,6 @@ class BaseAPI(MethodView):
         return json_util.dumps(instance.reload().to_json())
 
 
-class PayMethods(BaseDocument):
-    name = StringField(required=True, max_length=200, unique=True)
-
-
 class PayMethodsAPI(BaseAPI):
     api_class = PayMethods
 
@@ -65,14 +60,6 @@ class PayMethodsAPI(BaseAPI):
             return super(PayMethodsAPI, self).put(obj_id, obj_data)
         except NotUniqueError:
             return 'Name value must be unique', 400
-
-
-class Expense(BaseDocument):
-    amount = IntField()
-    description = StringField(required=True, max_length=200)
-    pay_method = ReferenceField(PayMethods, required=True)
-    timestamp = DateTimeField(required=True)
-    # board = ReferenceField(Board, required=True)
 
 
 class ExpenseAPI(BaseAPI):

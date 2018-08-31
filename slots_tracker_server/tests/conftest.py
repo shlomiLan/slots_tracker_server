@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from slots_tracker_server import app as flask_app
-from slots_tracker_server.expense import Expense, PayMethods
+from slots_tracker_server.models import Expense, PayMethods
 
 
 @pytest.fixture(scope="session", autouse=True)

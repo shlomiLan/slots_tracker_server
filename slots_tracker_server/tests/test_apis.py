@@ -1,19 +1,9 @@
 import datetime
 import json
 
-import pytest
-from mongoengine.errors import FieldDoesNotExist
-
-from slots_tracker_server.expense import Expense, PayMethods
+from slots_tracker_server.models import Expense, PayMethods
 from slots_tracker_server.utils import object_id_to_str, date_to_str
 
-
-def test_field_does_not_exist():
-    with pytest.raises(FieldDoesNotExist):
-        Expense(amounta=200, description='Random stuff', pay_method=PayMethods.objects().first()).save()
-
-
-# TODO: add test for missing field
 
 def test_get_expenses(client):
     rv = client.get('/expenses/')
@@ -37,7 +27,7 @@ def test_post_expenses(client):
     date = datetime.datetime.utcnow()
     data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date}
     expected_data = {'amount': 200, 'description': 'Random stuff', 'pay_method': object_id_to_str(pay_method.id),
-                     'timestamp': date_to_str(date)}  # noqa
+                     'timestamp': date_to_str(date)}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))

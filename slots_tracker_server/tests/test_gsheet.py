@@ -37,7 +37,7 @@ def test_write_expense():
     last_row = find_last_row(wks)
     # Leave here to prevent circular import
     from slots_tracker_server.gsheet import write_expense
-    from slots_tracker_server.expense import Expense
+    from slots_tracker_server.models import Expense
     expense = Expense.objects[0]
     expense_as_json = expense.to_json()
     clean_expense_for_write(expense_as_json, expense)

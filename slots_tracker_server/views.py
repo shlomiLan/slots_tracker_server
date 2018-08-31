@@ -1,5 +1,5 @@
 from slots_tracker_server import app
-from slots_tracker_server.expense import ExpenseAPI, PayMethodsAPI
+from slots_tracker_server.apis import ExpenseAPI, PayMethodsAPI
 from slots_tracker_server.utils import register_api
 
 
