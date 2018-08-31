@@ -14,10 +14,14 @@ def client():
     PayMethods.objects.delete()
 
     # create fake PayMethods
-    PayMethods('Visa').save()
+    pay_method = PayMethods(name='Visa').save()
     # Create fake Expense
-    Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
-            timestamp=datetime.datetime.utcnow).save()
+    now_date = datetime.datetime.utcnow
+    expense_data = dict(amount=200, description='Random stuff', pay_method=pay_method.id, timestamp=now_date)
+    Expense(**expense_data).save()
+    # Create deleted item to tests the are not returned
+    expense_data['active'] = False
+    Expense(**expense_data).save()
 
     yield flask_client
 

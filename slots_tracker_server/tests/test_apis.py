@@ -8,13 +8,22 @@ from slots_tracker_server.utils import object_id_to_str, date_to_str
 # Expense
 def test_get_expenses(client):
     rv = client.get('/expenses/')
-    assert isinstance(json.loads(rv.get_data(as_text=True)), list)
+    r_data = json.loads(rv.get_data(as_text=True))
+    assert isinstance(r_data, list)
+    assert all(x.get('active') for x in r_data)
 
 
 def test_get_expense(client):
     expense = Expense.objects[0]
     rv = client.get('/expenses/{}'.format(expense.id))
     assert isinstance(json.loads(rv.get_data(as_text=True)), dict)
+
+
+def test_get_deleted_expense(client):
+    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+                      timestamp=datetime.datetime.utcnow(), active=False).save()
+    rv = client.get('/expenses/{}'.format(expense.id))
+    assert rv.status_code == 404
 
 
 def test_get_expense_404(client):
@@ -28,7 +37,7 @@ def test_post_expenses(client):
     date = datetime.datetime.utcnow()
     data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date}
     expected_data = {'amount': 200, 'description': 'Random stuff', 'pay_method': object_id_to_str(pay_method.id),
-                     'timestamp': date_to_str(date)}
+                     'timestamp': date_to_str(date), 'active': True}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
@@ -55,9 +64,28 @@ def test_update_expense(client):
 
 
 # Pay method
+def test_get_pay_methods(client):
+    rv = client.get('/pay_methods/')
+    r_data = json.loads(rv.get_data(as_text=True))
+    assert isinstance(r_data, list)
+    assert all(x.get('active') for x in r_data)
+
+
+def test_get_pay_method(client):
+    pay_method = PayMethods.objects[0]
+    rv = client.get('/pay_methods/{}'.format(pay_method.id))
+    assert isinstance(json.loads(rv.get_data(as_text=True)), dict)
+
+
+def test_get_deleted_pay_method(client):
+    pay_method = PayMethods(name='Very random text', active=False).save()
+    rv = client.get('/pay_methods/{}'.format(pay_method.id))
+    assert rv.status_code == 404
+
+
 def test_post_pay_method(client):
     data = {'name': 'New visa'}
-    expected_data = {'name': 'New visa'}
+    expected_data = {'name': 'New visa', 'active': True}
 
     rv = client.post('/pay_methods/', json=data)
     result = json.loads(rv.get_data(as_text=True))
@@ -94,3 +122,10 @@ def test_update_duplicate_pay_method(client):
     pay_method.name = name1
     rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
     assert rv.status_code == 400
+
+
+def test_delete_pay_method(client):
+    pay_method = PayMethods('New pay method').save()
+    rv = client.delete('/pay_methods/{}'.format(pay_method.id))
+    assert rv.status_code == 200
+    assert pay_method.reload().active is False

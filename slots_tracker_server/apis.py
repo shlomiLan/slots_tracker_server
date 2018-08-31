@@ -19,7 +19,7 @@ class BaseAPI(MethodView):
 
     def get(self, obj_id):
         if obj_id is None:
-            return self.api_class.objects.to_json()
+            return self.api_class.objects(active=True).to_json()
         else:
             object_id = convert_to_object_id(obj_id)
             instance = self.api_class.objects.get_or_404(id=object_id)
@@ -29,7 +29,9 @@ class BaseAPI(MethodView):
         return json_util.dumps(self.api_class(**obj_data).save().to_json()), 201
 
     def delete(self, obj_id):
-        # TODO: add field in DB and mark object as deleted but don't really delete it
+        instance = self.api_class.objects.get_or_404(id=obj_id)
+        instance.active = False
+        instance.save()
         return '', 200
 
     def put(self, obj_id, obj_data):
@@ -51,6 +53,13 @@ class BaseAPI(MethodView):
 
 class PayMethodsAPI(BaseAPI):
     api_class = PayMethods
+
+    def get(self, obj_id):
+        obj_data = super(PayMethodsAPI, self).get(obj_id)
+        if isinstance(obj_data, dict):
+            obj_data = [obj_data]
+
+        return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()

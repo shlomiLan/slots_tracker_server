@@ -15,6 +15,8 @@ class BaseQuerySet(QuerySet):
         exist.
         """
         try:
+            if 'active' not in kwargs:
+                kwargs['active'] = True
             return self.get(*args, **kwargs)
         except DoesNotExist:
             abort(404)
