@@ -5,6 +5,7 @@ from slots_tracker_server.models import Expense, PayMethods
 from slots_tracker_server.utils import object_id_to_str, date_to_str
 
 
+# Expense
 def test_get_expenses(client):
     rv = client.get('/expenses/')
     assert isinstance(json.loads(rv.get_data(as_text=True)), list)
@@ -48,7 +49,48 @@ def test_delete_expense(client):
 def test_update_expense(client):
     expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
                       timestamp=datetime.datetime.utcnow()).save()
-    expense_json = json.loads(client.get('/expenses/{}'.format(expense.id)).get_data(as_text=True))
-    expense_json['amount'] = 100
+    expense.amount = 100
     rv = client.put('/expenses/{}'.format(expense.id), json=expense.to_json())
     assert rv.status_code == 200
+
+
+# Pay method
+def test_post_pay_method(client):
+    data = {'name': 'New visa'}
+    expected_data = {'name': 'New visa'}
+
+    rv = client.post('/pay_methods/', json=data)
+    result = json.loads(rv.get_data(as_text=True))
+    # Remove the Expense ID
+    del result['_id']
+
+    assert rv.status_code == 201
+    assert result == expected_data
+
+
+def test_post_duplicate_pay_method(client):
+    data = {'name': 'New visa'}
+    _ = client.post('/pay_methods/', json=data)
+    # Create another pay method with the same name
+    rv = client.post('/pay_methods/', json=data)
+    assert rv.status_code == 400
+
+
+def test_update_pay_method(client):
+    pay_method = PayMethods('Random pay method').save()
+    pay_method.name = '{}11111'.format(pay_method.name)
+
+    rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
+    assert rv.status_code == 200
+
+
+def test_update_duplicate_pay_method(client):
+    name1 = 'Random random pay method'
+    _ = PayMethods(name1).save()
+
+    name2 = 'Random random random pay method'
+    pay_method = PayMethods(name2).save()
+
+    pay_method.name = name1
+    rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
+    assert rv.status_code == 400

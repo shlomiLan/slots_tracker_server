@@ -43,20 +43,25 @@ class BaseAPI(MethodView):
         #  Reload the expense with the updated object
         return json_util.dumps(instance.reload().to_json())
 
+    @staticmethod
+    def get_obj_data():
+        return json_util.loads(request.data)
+        # return obj_data
+
 
 class PayMethodsAPI(BaseAPI):
     api_class = PayMethods
 
     def post(self, obj_data=None):
+        obj_data = self.get_obj_data()
         try:
-            obj_data = self.get_obj_data(obj_data)
             return super(PayMethodsAPI, self).post(obj_data)
         except NotUniqueError:
             return 'Name value must be unique', 400
 
     def put(self, obj_id, obj_data=None):
+        obj_data = self.get_obj_data()
         try:
-            obj_data = self.get_obj_data(obj_data)
             return super(PayMethodsAPI, self).put(obj_id, obj_data)
         except NotUniqueError:
             return 'Name value must be unique', 400
@@ -77,12 +82,12 @@ class ExpenseAPI(BaseAPI):
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
     def post(self, obj_data=None):
-        obj_data = self.get_obj_data(obj_data)
+        obj_data = self.get_obj_data()
         self.pay_method_json_to_object(obj_data)
         return super(ExpenseAPI, self).post(obj_data)
 
     def put(self, obj_id, obj_data=None):
-        obj_data = self.get_obj_data(obj_data)
+        obj_data = self.get_obj_data()
         self.pay_method_json_to_object(obj_data)
         return super(ExpenseAPI, self).put(obj_id, obj_data)
 
@@ -92,9 +97,3 @@ class ExpenseAPI(BaseAPI):
         if pay_method and not isinstance(pay_method, ObjectId):
             pay_method_id = pay_method.get('_id') if isinstance(pay_method, dict) else pay_method
             obj_data['pay_method'] = convert_to_object_id(pay_method_id)
-
-    @staticmethod
-    def get_obj_data(obj_data):
-        if not obj_data:
-            return json_util.loads(request.data)
-        return obj_data
