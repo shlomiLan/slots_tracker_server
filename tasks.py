@@ -1,4 +1,3 @@
-import datetime
 import json
 import os
 
@@ -38,7 +37,8 @@ def run_app(c):
 @task(init_app)
 def test(c, cov=False, file=None):
     # cov - if to use coverage, file - if to run specific file
-    set_env_var(c, 'APP_SETTINGS', 'config.TestingConfig', '')
+    # TODO: change to load config from file
+    set_env_var(c, 'APP_SETTINGS', 'slots_tracker_server.config.TestingConfig', '')
     command = 'pytest -s'
     if cov:
         command = '{} --cov=slots_tracker_server --cov-report term-missing'.format(command)
