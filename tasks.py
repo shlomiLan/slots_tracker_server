@@ -2,7 +2,7 @@ import json
 import os
 
 import yaml
-from invoke import task
+from invoke import task, call
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
@@ -18,12 +18,12 @@ def run(c, command, with_venv=True):
 
 
 @task()
-def init_app(c, env=None):
+def init_app(c, env=None, settings=None):
     # Load the basic configs
-    env_vars = load_yaml_from_file('{}/resources/config.yml'.format(BASEDIR))
+    env_vars = load_yaml_from_file('{}/resources/settings.yml'.format(BASEDIR))
 
-    if env:
-        env_vars.update(load_yaml_from_file('{}/resources/config_stage.yml'.format(BASEDIR)))
+    if settings:
+        env_vars.update(load_yaml_from_file('{}/resources/settings_{}.yml'.format(BASEDIR, settings)))
 
     for name, data in env_vars.items():
         set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
@@ -34,11 +34,10 @@ def run_app(c):
     run(c, 'flask run')
 
 
-@task(init_app)
+@task(call(init_app, settings='test'))
 def test(c, cov=False, file=None):
     # cov - if to use coverage, file - if to run specific file
-    # TODO: change to load config from file
-    set_env_var(c, 'APP_SETTINGS', 'slots_tracker_server.config.TestingConfig', '')
+
     command = 'pytest -s'
     if cov:
         command = '{} --cov=slots_tracker_server --cov-report term-missing'.format(command)
@@ -52,6 +51,7 @@ def test(c, cov=False, file=None):
 def clean_db(c):
     clean_expenses(c)
     clean_pay_methods(c)
+    clean_categories(c)
 
 
 @task(init_app)
@@ -73,30 +73,31 @@ def clean_pay_methods(_):
 
 
 @task(init_app)
-def init_db(_):
-    insert_base_payments(_)
-    insert_base_expense(_)
+def clean_categories(_):
+    # Leave here tp prevent circular import
+    from slots_tracker_server.models import Categories
+
+    print('Removing all pay methods objects')
+    Categories.objects.delete()
 
 
-@task(init_app)
-def insert_base_payments(_):
+@task()
+def init_db(c, env=None, settings=None):
+    init_app(c, env, settings)
+    clean_db(c)
+    initial_data = load_yaml_from_file('{}/resources/init_db.yml'.format(BASEDIR))
     # Leave here tp prevent circular import
     from slots_tracker_server.models import PayMethods
+    from slots_tracker_server.models import Categories
+    insert_db_data(PayMethods, initial_data.get('pay_methods'))
+    insert_db_data(Categories, initial_data.get('categories'))
 
-    print('Create paying methods')
-    PayMethods(name='MasterCard').save()
-    PayMethods(name='Visa').save()
 
+def insert_db_data(cls, db_data):
+    print('Creating {}'.format(cls.__name__))
 
-@task(init_app)
-def insert_base_expense(_):
-    # Leave here tp prevent circular import
-    from slots_tracker_server.models import Expense
-    from slots_tracker_server.models import PayMethods
-
-    print('Create expenses')
-    Expense(amount=100, description="BBB", pay_method=PayMethods.objects.first(),
-            timestamp=datetime.datetime.utcnow).save()
+    for item in db_data:
+        cls(name=item).save()
 
 
 # Heroku
