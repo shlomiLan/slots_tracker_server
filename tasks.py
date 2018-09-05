@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 
@@ -6,6 +7,7 @@ from invoke import task, call
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
+BACKUPS = f'{BASEDIR}/backups'
 heroku_app_name = 'slots-tracker'
 
 
@@ -34,6 +36,14 @@ def run_app(c):
     run(c, 'flask run')
 
 
+@task()
+def clean_db(c, settings=None):
+    init_app(c, settings=settings)
+    clean_expenses(c)
+    clean_pay_methods(c)
+    clean_categories(c)
+
+
 @task(call(init_app, settings='test'))
 def test(c, cov=False, file=None):
     # cov - if to use coverage, file - if to run specific file
@@ -45,13 +55,6 @@ def test(c, cov=False, file=None):
         command = '{} {}'.format(command, file)
 
     run(c, command)
-
-
-@task(init_app)
-def clean_db(c):
-    clean_expenses(c)
-    clean_pay_methods(c)
-    clean_categories(c)
 
 
 @task(init_app)
@@ -105,6 +108,24 @@ def update_requirements(c):
     run(c, 'pip install -r development.txt')
 
 
+# DB
+@task()
+def backup_db(c, settings=None):
+    init_app(c, settings=settings)
+    host, port, db_name, username, password = get_db_info()
+    today_str = str(datetime.datetime.now().date()).replace('-', '_')
+    dest_path = f'{BACKUPS}/{today_str}'
+    run(c, f'mongodump -h {host}:{port} -d {db_name} -u {username} -p {password} -o {dest_path}', False)
+
+
+@task()
+def restore_db(c, date, settings=None):
+    init_app(c, settings=settings)
+    host, port, db_name, username, password = get_db_info()
+    source_path = f'{BACKUPS}/{date}/{db_name}'
+    run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path}', False)
+
+
 # Heroku
 @task(init_app)
 def heroku_run(c):
@@ -136,7 +157,13 @@ def set_env_var(c, name, value, env, is_protected=True):
             run(c, command, False)
 
     else:
+        print(f'Set local var: {name}')
         os.environ[name] = value
+
+
+def get_db_info():
+    return os.environ['DB_HOST'], os.environ['DB_PORT'], os.environ['DB_NAME'], os.environ['DB_USERNAME'], \
+           os.environ['DB_PASS']
 
 
 def load_yaml_from_file(file_path):
