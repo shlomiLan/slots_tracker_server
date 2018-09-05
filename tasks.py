@@ -100,6 +100,11 @@ def insert_db_data(cls, db_data):
         cls(name=item).save()
 
 
+@task()
+def update_requirements(c):
+    run(c, 'pip install -r development.txt')
+
+
 # Heroku
 @task(init_app)
 def heroku_run(c):
