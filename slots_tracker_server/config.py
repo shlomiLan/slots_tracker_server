@@ -10,7 +10,7 @@ class Config(object):
 
 
 class ProductionConfig(Config):
-    MONGODB_SETTINGS = dict(host=os.environ['DB_HOST'], port=int(os.environ['DB_PORT']),
+    MONGODB_SETTINGS = dict(host=os.environ['DB_HOST'], port=int(os.environ['DB_PORT']), name=os.environ['DB_NAME'],
                             username=os.environ['DB_USERNAME'], password=os.environ['DB_PASS'])
 
 
