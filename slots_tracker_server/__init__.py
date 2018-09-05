@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
-from mongoengine import *
+from mongoengine import connect
 
 from slots_tracker_server import commands
 

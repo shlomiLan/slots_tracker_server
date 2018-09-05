@@ -1,10 +1,11 @@
 import os
+from typing import Dict, Any
 
 
 class Config(object):
     DEBUG = False
     TESTING = False
-    MONGODB_SETTINGS = dict(db='slots_tracker')
+    MONGODB_SETTINGS: Dict[str, Any] = dict(db='slots_tracker')
     GSHEET_ID = '1iMG12iT6m_wAyxJoxhXg0zPc8PCRa39J4zMSPKLoulM'
 
 

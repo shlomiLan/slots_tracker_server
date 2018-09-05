@@ -1,22 +1,22 @@
-from mongoengine import *
+import mongoengine as db
 
 from slots_tracker_server.db import BaseDocument
 
 
 class PayMethods(BaseDocument):
-    name = StringField(required=True, max_length=200, unique=True)
-    active = BooleanField(default=True)
+    name = db.StringField(required=True, max_length=200, unique=True)
+    active = db.BooleanField(default=True)
 
 
 class Categories(BaseDocument):
-    name = StringField(required=True, max_length=200, unique=True)
-    active = BooleanField(default=True)
+    name = db.StringField(required=True, max_length=200, unique=True)
+    active = db.BooleanField(default=True)
 
 
 class Expense(BaseDocument):
-    amount = IntField(required=True)
-    description = StringField(required=True, max_length=200)
-    pay_method = ReferenceField(PayMethods, required=True)
-    timestamp = DateTimeField(required=True)
-    active = BooleanField(default=True)
-    category = ReferenceField(Categories, required=True)
+    amount = db.IntField(required=True)
+    description = db.StringField(required=True, max_length=200)
+    pay_method = db.ReferenceField(PayMethods, required=True)
+    timestamp = db.DateTimeField(required=True)
+    active = db.BooleanField(default=True)
+    category = db.ReferenceField(Categories, required=True)
