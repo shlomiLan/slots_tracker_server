@@ -1,6 +1,9 @@
 import datetime
 import json
 
+import hypothesis.strategies as st
+from hypothesis import given
+
 from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import object_id_to_str, date_to_str
 
@@ -32,14 +35,15 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-def test_post_expenses(client):
+@given(amount=st.integers(min_value=-1000000000, max_value=1000000000), description=st.text(),
+       timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans())
+def test_post_expenses(client, amount, description, timestamp, active):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
-    date = datetime.datetime.utcnow()
-    data = {'amount': 200, 'description': 'Random stuff', 'pay_method': pay_method.to_json(), 'timestamp': date,
-            'category': category.to_json()}  # noqa
-    expected_data = {'amount': 200, 'description': 'Random stuff', 'pay_method': object_id_to_str(pay_method.id),
-                     'timestamp': date_to_str(date), 'active': True, 'category': object_id_to_str(category.id)}
+    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+            'category': category.to_json(), 'active': active}
+    expected_data = {'amount': amount, 'description': description, 'pay_method': object_id_to_str(pay_method.id),
+                     'timestamp': date_to_str(timestamp), 'active': active, 'category': object_id_to_str(category.id)}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
