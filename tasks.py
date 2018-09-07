@@ -6,14 +6,14 @@ import yaml
 from invoke import task, call
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
-active_venv = 'source {}/venv/bin/activate'.format(BASEDIR)
-BACKUPS = f'{BASEDIR}/backups'
+
+BACKUPS = os.path.join(BASEDIR, 'backups')
 heroku_app_name = 'slots-tracker'
 
 
 def run(c, command, with_venv=True):
     if with_venv:
-        command = '{} && {}'.format(active_venv, command)
+        command = '{} && {}'.format(get_venv_action(), command)
 
     print('Running: {}'.format(command))
     c.run(command)
@@ -22,10 +22,10 @@ def run(c, command, with_venv=True):
 @task()
 def init_app(c, env=None, settings=None):
     # Load the basic configs
-    env_vars = load_yaml_from_file('{}/resources/settings.yml'.format(BASEDIR))
+    env_vars = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'settings.yml'))
 
     if settings:
-        env_vars.update(load_yaml_from_file('{}/resources/settings_{}.yml'.format(BASEDIR, settings)))
+        env_vars.update(load_yaml_from_file(os.path.join(BASEDIR, 'resources', f'settings_{settings}.yml')))
 
     for name, data in env_vars.items():
         set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
@@ -88,7 +88,7 @@ def clean_categories(_):
 def init_db(c, env=None, settings=None):
     init_app(c, env, settings)
     clean_db(c)
-    initial_data = load_yaml_from_file('{}/resources/init_db.yml'.format(BASEDIR))
+    initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
     # Leave here tp prevent circular import
     from slots_tracker_server.models import PayMethods
     from slots_tracker_server.models import Categories
@@ -110,20 +110,25 @@ def update_requirements(c):
 
 # DB
 @task()
-def backup_db(c, settings=None):
+def backup_db(c, settings='prod', force_restore=False):
     init_app(c, settings=settings)
     host, port, db_name, username, password = get_db_info()
     today_str = str(datetime.datetime.now().date()).replace('-', '_')
-    dest_path = f'{BACKUPS}/{today_str}'
+    dest_path = os.path.join(BACKUPS, today_str)
     run(c, f'mongodump -h {host}:{port} -d {db_name} -u {username} -p {password} -o {dest_path}', False)
+
+    day = datetime.datetime.now().day
+    # If first backup of the month or force
+    if day <= 7 or force_restore:
+        restore_db(c, today_str)
 
 
 @task()
-def restore_db(c, date, settings=None):
+def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
     init_app(c, settings=settings)
     host, port, db_name, username, password = get_db_info()
-    source_path = f'{BACKUPS}/{date}/{db_name}'
-    run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path}', False)
+    source_path = os.path.join(BACKUPS, date, backup_db_name)
+    run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
 
 
 # Heroku
@@ -169,3 +174,14 @@ def get_db_info():
 def load_yaml_from_file(file_path):
     with open(file_path, 'r') as stream:
         return yaml.safe_load(stream)
+
+
+def is_unix():
+    return os.name == 'posix'
+
+
+def get_venv_action():
+    if is_unix():
+        return f'source {BASEDIR}/venv/bin/activate'
+    else:
+        return f'{BASEDIR}\\venv\\Scripts\\activate'
