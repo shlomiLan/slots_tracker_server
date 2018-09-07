@@ -121,6 +121,7 @@ def backup_db(c, settings='prod', force_restore=False):
     # If first backup of the month or force
     if day <= 7 or force_restore:
         restore_db(c, today_str)
+        email(subject='DB restore test', content=f'The {today_str} daily backup was restored to stage successfully.')
 
 
 @task()
@@ -147,7 +148,7 @@ def run_command(c, command):
 @task(init_app)
 def email(_):
     from slots_tracker_server.email import send_email
-    send_email('First email', 'Hey, \n this is a test email from the app:-)')
+    send_email(subject='First email', content='Hey, \nthis is a test email from the app:-)')
 
 
 # helper
