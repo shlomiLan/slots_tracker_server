@@ -5,7 +5,7 @@ from flask import request
 from flask.views import MethodView
 from mongoengine.errors import NotUniqueError
 
-from slots_tracker_server.models import Expense, PayMethods
+from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import convert_to_object_id
 
 
@@ -52,11 +52,16 @@ class BaseAPI(MethodView):
         # return obj_data
 
 
-class PayMethodsAPI(BaseAPI):
-    api_class = PayMethods
+class BasicObjectAPI(BaseAPI):
+    __metaclass__ = abc.ABCMeta
+
+    @property
+    @abc.abstractmethod
+    def api_class(self):
+        raise NotImplementedError
 
     def get(self, obj_id):
-        obj_data = super(PayMethodsAPI, self).get(obj_id)
+        obj_data = super(BasicObjectAPI, self).get(obj_id)
         if isinstance(obj_data, dict):
             obj_data = [obj_data]
 
@@ -65,16 +70,24 @@ class PayMethodsAPI(BaseAPI):
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
         try:
-            return super(PayMethodsAPI, self).post(obj_data)
+            return super(BasicObjectAPI, self).post(obj_data)
         except NotUniqueError:
             return 'Name value must be unique', 400
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
         try:
-            return super(PayMethodsAPI, self).put(obj_id, obj_data)
+            return super(BasicObjectAPI, self).put(obj_id, obj_data)
         except NotUniqueError:
             return 'Name value must be unique', 400
+
+
+class PayMethodsAPI(BasicObjectAPI):
+    api_class = PayMethods
+
+
+class CategoriesAPI(BasicObjectAPI):
+    api_class = Categories
 
 
 class ExpenseAPI(BaseAPI):
