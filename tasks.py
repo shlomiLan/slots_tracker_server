@@ -143,6 +143,13 @@ def run_command(c, command):
     run(c, 'cd {} && flask {}'.format(BASEDIR, command))
 
 
+# email
+@task(init_app)
+def email(_):
+    from slots_tracker_server.email import send_email
+    send_email('First email', 'Hey, \n this is a test email from the app:-)')
+
+
 # helper
 def set_env_var(c, name, value, env, is_protected=True):
     # env codes: h - Heroku, t - Travis-CI
