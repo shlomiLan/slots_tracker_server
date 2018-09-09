@@ -36,8 +36,9 @@ class BaseAPI(MethodView):
         return '', 200
 
     def put(self, obj_id, obj_data):
-        # Remove the object ID from obj_data
-        del obj_data['_id']
+        if obj_data.get('_id'):
+            # Remove the object ID from obj_data
+            del obj_data['_id']
         object_id = convert_to_object_id(obj_id)
 
         # Get and updated the expense
