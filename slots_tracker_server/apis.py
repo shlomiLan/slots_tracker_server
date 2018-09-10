@@ -100,8 +100,12 @@ class ExpenseAPI(BaseAPI):
             obj_data = [obj_data]
 
         for item in obj_data:
+            # TODO: Make this more robust
             pay_method_data = PayMethods.objects.get(id=item.get('pay_method')).to_json()
             item['pay_method'] = pay_method_data
+
+            category_data = Categories.objects.get(id=item.get('category')).to_json()
+            item['category'] = category_data
 
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
