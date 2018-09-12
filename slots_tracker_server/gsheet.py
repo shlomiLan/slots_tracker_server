@@ -48,8 +48,16 @@ def clean_expense_for_write(expense_as_json, expense):
 
 
 def find_last_row(wks):
-    return len(wks.col_values(1))
+    return len(wks.col_values(2))
 
 
 def get_headers(wks):
     return wks.range('{}1:{}1'.format(start_column, end_column))
+
+
+def get_all_data(wks):
+    return wks.get_all_values()
+
+
+def end_column_as_number():
+    return ord(end_column.lower()) - 96
