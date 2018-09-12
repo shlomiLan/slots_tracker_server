@@ -44,7 +44,7 @@ def write_expense(expense):
 
 def clean_expense_for_write(expense_as_json, expense):
     expense_as_json['pay_method'] = expense.pay_method.name
-    expense_as_json['category'] = 'XXX'
+    expense_as_json['category'] = expense.category.name
 
 
 def find_last_row(wks):
