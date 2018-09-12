@@ -7,7 +7,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from slots_tracker_server import app
 
 start_column = 'A'
-end_column = 'F'
+end_column = 'G'
 
 
 def init_connection():
@@ -45,6 +45,7 @@ def write_expense(expense):
 def clean_expense_for_write(expense_as_json, expense):
     expense_as_json['pay_method'] = expense.pay_method.name
     expense_as_json['category'] = expense.category.name
+    expense_as_json['one_time'] = 'One time' if expense.one_time else 'Regular'
 
 
 def find_last_row(wks):

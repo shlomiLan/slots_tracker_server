@@ -164,8 +164,8 @@ def update_cell_with_retry(wks, row, col, value):
             wks.update_cell(row, col, value)
         except APIError as e:
             # Try again only if error code is 429
-
             if e.response.status_code == 429:
+                print('Going to sleep and retrying')
                 time.sleep(10)
                 retries -= 1
             else:
@@ -256,3 +256,4 @@ def reference_objects_str_to_id(expense_data):
 def clean_expense(expense_data):
     del expense_data['_id']
     expense_data['amount'] = expense_data.get('amount').replace(',', '')
+    expense_data['one_time'] = expense_data['one_time'] == 'one_time'
