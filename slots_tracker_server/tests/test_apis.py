@@ -5,7 +5,7 @@ import hypothesis.strategies as st
 from hypothesis import given
 
 from slots_tracker_server.models import Expense, PayMethods, Categories
-from slots_tracker_server.utils import object_id_to_str, date_to_str
+from slots_tracker_server.utils import object_id_to_str, date_to_str, clean_api_object
 
 
 # Expense
@@ -47,8 +47,8 @@ def test_post_expenses(client, amount, description, timestamp, active):
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
-    # Remove the Expense ID
-    del result['_id']
+    # Clean the Expense
+    clean_api_object(result)
 
     assert rv.status_code == 201
     assert result == expected_data
@@ -95,8 +95,8 @@ def test_post_pay_method(client):
 
     rv = client.post('/pay_methods/', json=data)
     result = json.loads(rv.get_data(as_text=True))
-    # Remove the Expense ID
-    del result['_id']
+    # Clean the Expense
+    clean_api_object(result)
 
     assert rv.status_code == 201
     assert result == expected_data

@@ -6,7 +6,7 @@ from flask.views import MethodView
 from mongoengine.errors import NotUniqueError
 
 from slots_tracker_server.models import Expense, PayMethods, Categories
-from slots_tracker_server.utils import convert_to_object_id
+from slots_tracker_server.utils import convert_to_object_id, clean_api_object
 
 
 class BaseAPI(MethodView):
@@ -36,9 +36,7 @@ class BaseAPI(MethodView):
         return '', 200
 
     def put(self, obj_id, obj_data):
-        if obj_data.get('_id'):
-            # Remove the object ID from obj_data
-            del obj_data['_id']
+        clean_api_object(obj_data)
         object_id = convert_to_object_id(obj_id)
 
         # Get and updated the expense

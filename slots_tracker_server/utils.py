@@ -46,3 +46,9 @@ def register_api(view, endpoint, url, pk='id', pk_type='string'):
     app.add_url_rule(url, defaults={pk: None}, view_func=view_func, methods=['GET', ])
     app.add_url_rule(url, view_func=view_func, methods=['POST', ])
     app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func, methods=['GET', 'PUT', 'DELETE'])
+
+
+def clean_api_object(obj_data):
+    if obj_data.get('_id'):
+        # Remove the object ID from obj_data
+        del obj_data['_id']
