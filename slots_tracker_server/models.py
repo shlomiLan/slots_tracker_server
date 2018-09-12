@@ -14,7 +14,7 @@ class Categories(BaseDocument):
 
 
 class Expense(BaseDocument):
-    amount = db.IntField(required=True)
+    amount = db.FloatField(required=True)
     description = db.StringField(required=True, max_length=200)
     pay_method = db.ReferenceField(PayMethods, required=True)
     timestamp = db.DateTimeField(required=True)
