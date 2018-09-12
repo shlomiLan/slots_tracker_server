@@ -36,14 +36,17 @@ def test_get_expense_404(client):
 
 
 @given(amount=st.integers(min_value=-1000000000, max_value=1000000000), description=st.text(),
-       timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans())
-def test_post_expenses(client, amount, description, timestamp, active):
+       timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
+       one_time=st.booleans())
+def test_post_expenses(client, amount, description, timestamp, active, one_time):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
+
     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
-            'category': category.to_json(), 'active': active}
+            'category': category.to_json(), 'active': active, 'one_time': one_time}
     expected_data = {'amount': amount, 'description': description, 'pay_method': object_id_to_str(pay_method.id),
-                     'timestamp': date_to_str(timestamp), 'active': active, 'category': object_id_to_str(category.id)}
+                     'timestamp': date_to_str(timestamp), 'active': active, 'category': object_id_to_str(category.id),
+                     'one_time': one_time}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))

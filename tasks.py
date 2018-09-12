@@ -92,8 +92,7 @@ def init_db(c, env=None, settings=None):
     clean_db(c)
     initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
     # Leave here tp prevent circular import
-    from slots_tracker_server.models import PayMethods
-    from slots_tracker_server.models import Categories
+    from slots_tracker_server.models import PayMethods, Categories
     insert_db_data(PayMethods, initial_data.get('pay_methods'))
     insert_db_data(Categories, initial_data.get('categories'))
 

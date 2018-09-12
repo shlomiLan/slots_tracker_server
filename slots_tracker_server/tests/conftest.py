@@ -14,15 +14,13 @@ def client():
     PayMethods.objects.delete()
     Categories.objects.delete()
 
-    # create fake PayMethods
+    # create fake documents
     pay_method = PayMethods(name='Visa').save()
-
     category = Categories('Cat 1').save()
 
-    # Create fake Expense
     now_date = datetime.datetime.utcnow
     expense_data = dict(amount=200, description='Random stuff', pay_method=pay_method.id, timestamp=now_date,
-                        category=category.id)  # noqa
+                        category=category.id)
     Expense(**expense_data).save()
     # Create deleted item to tests the are not returned
     expense_data['active'] = False

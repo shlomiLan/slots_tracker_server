@@ -20,3 +20,4 @@ class Expense(BaseDocument):
     timestamp = db.DateTimeField(required=True)
     active = db.BooleanField(default=True)
     category = db.ReferenceField(Categories, required=True)
+    one_time = db.BooleanField(default=False)
