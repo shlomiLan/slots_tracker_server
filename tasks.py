@@ -135,6 +135,7 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
 
 @task(init_app)
 def sync_db_from_gsheet(_):
+    gsheet_write_counter = 0
     import slots_tracker_server.gsheet as gsheet
     wks = gsheet.get_worksheet()
     headers = gsheet.get_headers(wks)
@@ -154,22 +155,31 @@ def sync_db_from_gsheet(_):
             from slots_tracker_server.models import Expense
             expense = Expense(**expense_dict).save()
             # Update the id column
-            update_cell_with_retry(wks, i, 1, str(expense.id))
+            gsheet_write_counter = update_cell_with_retry(wks, i, 1, str(expense.id), gsheet_write_counter)
 
 
-def update_cell_with_retry(wks, row, col, value):
+def update_cell_with_retry(wks, row, col, value, gsheet_write_counter):
     retries = 3
     while retries:
+        if gsheet_write_counter > 90:
+            time.sleep(100)
+            gsheet_write_counter = 0
+
         try:
+            gsheet_write_counter += 1
             wks.update_cell(row, col, value)
+            # No need to try again
+            retries = 0
         except APIError as e:
             # Try again only if error code is 429
             if e.response.status_code == 429:
-                print('Going to sleep and retrying')
-                time.sleep(10)
+                print(f'Going to sleep, attempt NO. {3 - retries + 1}')
+                time.sleep(100)
                 retries -= 1
             else:
                 raise e
+
+    return gsheet_write_counter
 
 
 # Heroku
