@@ -4,8 +4,6 @@ import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-from slots_tracker_server import app
-
 start_column = 'A'
 end_column = 'G'
 
@@ -25,7 +23,7 @@ def init_connection():
 
 def get_worksheet():
     gc = init_connection()
-    return gc.open_by_key(app.config.get('GSHEET_ID')).sheet1
+    return gc.open_by_key(os.environ.get('GSHEET_ID')).worksheet('All data')
 
 
 def write_expense(expense):

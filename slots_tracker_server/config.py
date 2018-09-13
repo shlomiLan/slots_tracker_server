@@ -6,7 +6,6 @@ class Config(object):
     DEBUG = False
     TESTING = False
     MONGODB_SETTINGS: Dict[str, Any] = dict(db='slots_tracker')
-    GSHEET_ID = '1iMG12iT6m_wAyxJoxhXg0zPc8PCRa39J4zMSPKLoulM'
 
 
 class ProductionConfig(Config):
