@@ -1,10 +1,8 @@
 import datetime
 import json
 import os
-import time
 
 import yaml
-from gspread.exceptions import APIError
 from invoke import task, call
 from mongoengine import DoesNotExist
 
@@ -141,7 +139,6 @@ def sync_db_from_gsheet(c, settings=None, reset_db=True):
     if reset_db:
         init_db(c, settings)
 
-    gsheet_write_counter = 0
     import slots_tracker_server.gsheet as gsheet
     wks = gsheet.get_worksheet()
     headers = gsheet.get_headers(wks)
@@ -153,6 +150,7 @@ def sync_db_from_gsheet(c, settings=None, reset_db=True):
         expense_data = row[:gsheet.end_column_as_number()]
         # Only write to DB rows without id
         if not expense_data[0]:
+            print(f'Processing row number: {i}')
             expense_dict = transform_expense_to_dict(expense_data, headers)
             translate(expense_dict)
             reference_objects_str_to_id(expense_dict)
@@ -161,31 +159,7 @@ def sync_db_from_gsheet(c, settings=None, reset_db=True):
             from slots_tracker_server.models import Expense
             expense = Expense(**expense_dict).save()
             # Update the id column
-            gsheet_write_counter = update_cell_with_retry(wks, i, 1, str(expense.id), gsheet_write_counter)
-
-
-def update_cell_with_retry(wks, row, col, value, gsheet_write_counter):
-    retries = 3
-    while retries:
-        if gsheet_write_counter > 90:
-            time.sleep(100)
-            gsheet_write_counter = 0
-
-        try:
-            gsheet_write_counter += 1
-            wks.update_cell(row, col, value)
-            # No need to try again
-            retries = 0
-        except APIError as e:
-            # Try again only if error code is 429
-            if e.response.status_code == 429:
-                print(f'Going to sleep, attempt NO. {3 - retries + 1}')
-                time.sleep(100)
-                retries -= 1
-            else:
-                raise e
-
-    return gsheet_write_counter
+            gsheet.update_with_retry(wks, row=i, col=1, value=str(expense.id))
 
 
 # Heroku
@@ -276,3 +250,5 @@ def clean_expense(expense_data):
     del expense_data['_id']
     expense_data['amount'] = expense_data.get('amount').replace(',', '')
     expense_data['one_time'] = expense_data['one_time'] == 'one_time'
+    day, month, year = expense_data['timestamp'].split('/')
+    expense_data['timestamp'] = f'20{year}-{month}-{day}'
