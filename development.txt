@@ -1,7 +1,7 @@
 # install all base requirements
 -r requirements.txt
 
-invoke==1.1.1
+invoke==1.2.0
 PyYAML==3.13
 flask-shell-ipython==0.3.1
 
