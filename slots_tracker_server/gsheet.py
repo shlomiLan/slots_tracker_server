@@ -1,11 +1,14 @@
 import json
 import os
+import time
 
 import gspread
+from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 
 start_column = 'A'
 end_column = 'G'
+gsheet_write_counter = 0
 
 
 def init_connection():
@@ -38,7 +41,7 @@ def write_expense(expense):
         expense_as_json = clean_expense_for_write(expense)
         cell_list[i].value = expense_as_json[header.value]
 
-    wks.update_cells(cell_list)
+    update_with_retry(wks, cell_list=cell_list)
 
 
 def clean_expense_for_write(expense):
@@ -64,3 +67,34 @@ def get_all_data(wks):
 
 def end_column_as_number():
     return ord(end_column.lower()) - 96
+
+
+def update_with_retry(wks, row=None, col=None, value=None, cell_list=None):
+    global gsheet_write_counter
+    retries = 3
+
+    while retries:
+        if gsheet_write_counter > 90:
+            time.sleep(100)
+            gsheet_write_counter = 0
+
+        try:
+            gsheet_write_counter += 1
+            if cell_list:
+                wks.update_cells(cell_list)
+            elif row is not None and col is not None and value is not None:
+                wks.update_cell(row, col, value)
+            else:
+                raise ValueError(f'No match was found in the receiving parameters: row: {row}, col: {col}, '
+                                 f'value: {value}, cell_list: {cell_list}')
+
+            # No need to try again
+            retries = 0
+        except APIError as e:
+            # Try again only if error code is 429
+            if e.response.status_code == 429:
+                print(f'Going to sleep, attempt NO. {3 - retries + 1}')
+                time.sleep(100)
+                retries -= 1
+            else:
+                raise e

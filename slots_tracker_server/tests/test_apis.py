@@ -1,5 +1,6 @@
 import datetime
 import json
+from unittest import mock
 
 import hypothesis.strategies as st
 from hypothesis import given
@@ -35,10 +36,11 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-@given(amount=st.integers(min_value=-1000000000, max_value=1000000000), description=st.text(),
+@mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
+@given(amount=st.integers(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
-def test_post_expenses(client, amount, description, timestamp, active, one_time):
+def test_post_expenses(_, client, amount, description, timestamp, active, one_time):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 

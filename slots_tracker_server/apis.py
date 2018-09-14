@@ -6,6 +6,7 @@ from flask.views import MethodView
 from mongoengine import DateTimeField, BooleanField
 from mongoengine.errors import NotUniqueError
 
+from slots_tracker_server.gsheet import write_expense
 from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import convert_to_object_id, clean_api_object
 
@@ -31,7 +32,7 @@ class BaseAPI(MethodView):
 
     def post(self, obj_data):
         # TODO: Check that all reference fields are not inactive before creating a new object
-        return json_util.dumps(self.api_class(**obj_data).save().to_json()), 201
+        return self.api_class(**obj_data).save()
 
     def delete(self, obj_id):
         instance = self.api_class.objects.get_or_404(id=obj_id)
@@ -73,7 +74,7 @@ class BasicObjectAPI(BaseAPI):
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
         try:
-            return super(BasicObjectAPI, self).post(obj_data)
+            return json_util.dumps(super(BasicObjectAPI, self).post(obj_data).to_json()), 201
         except NotUniqueError:
             return 'Name value must be unique', 400
 
@@ -114,7 +115,9 @@ class ExpenseAPI(BaseAPI):
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
         self.convert_reference_field_data_to_object_id(obj_data)
-        return super(ExpenseAPI, self).post(obj_data)
+        new_expense = super(ExpenseAPI, self).post(obj_data)
+        write_expense(new_expense)
+        return json_util.dumps(new_expense.to_json()), 201
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
