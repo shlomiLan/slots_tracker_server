@@ -6,6 +6,7 @@ import time
 import yaml
 from gspread.exceptions import APIError
 from invoke import task, call
+from mongoengine import DoesNotExist
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -259,8 +260,11 @@ def transform_expense_to_dict(expense_data, headers):
 
 def reference_objects_str_to_id(expense_data):
     from slots_tracker_server.models import PayMethods, Categories
-    expense_data['pay_method'] = PayMethods.objects.get(name=expense_data.get('pay_method'))
-    expense_data['category'] = Categories.objects.get(name=expense_data.get('category'))
+    try:
+        expense_data['pay_method'] = PayMethods.objects.get(name=expense_data.get('pay_method'))
+        expense_data['category'] = Categories.objects.get(name=expense_data.get('category'))
+    except DoesNotExist as e:
+        print(f'Error in pay method or category: {expense_data.get("pay_method")} and {expense_data.get("category")}')
 
 
 def clean_expense(expense_data):
