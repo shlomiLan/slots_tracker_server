@@ -4,8 +4,7 @@ import pytest
 from gspread import Worksheet
 from gspread.client import Client
 
-from slots_tracker_server.gsheet import init_connection, get_worksheet, find_last_row, get_headers, \
-    clean_expense_for_write
+from slots_tracker_server.gsheet import init_connection, get_worksheet, find_last_row, get_headers
 
 
 def test_init_connection():
@@ -39,9 +38,7 @@ def test_write_expense():
     from slots_tracker_server.gsheet import write_expense
     from slots_tracker_server.models import Expense
     expense = Expense.objects[0]
-    expense_as_json = expense.to_json()
-    clean_expense_for_write(expense_as_json, expense)
-    write_expense(expense_as_json)
+    write_expense(expense)
 
     # Test that we have a new line in the spreadsheet
     new_last_row = find_last_row(wks)
