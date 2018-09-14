@@ -24,14 +24,16 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None, settings=None):
-    # Load the basic configs
-    env_vars = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'settings.yml'))
+    # Prevent execute this function more than once
+    if not os.environ.get('APP_SETTINGS'):
+        # Load the basic configs
+        env_vars = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'settings.yml'))
 
-    if settings:
-        env_vars.update(load_yaml_from_file(os.path.join(BASEDIR, 'resources', f'settings_{settings}.yml')))
+        if settings:
+            env_vars.update(load_yaml_from_file(os.path.join(BASEDIR, 'resources', f'settings_{settings}.yml')))
 
-    for name, data in env_vars.items():
-        set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
+        for name, data in env_vars.items():
+            set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
 
 
 @task(init_app)
@@ -90,7 +92,7 @@ def clean_categories(_):
 @task()
 def init_db(c, env=None, settings=None):
     init_app(c, env, settings)
-    clean_db(c)
+    clean_db(c, settings)
     initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
     # Leave here tp prevent circular import
     from slots_tracker_server.models import PayMethods, Categories
@@ -135,7 +137,10 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
 
 
 @task(init_app)
-def sync_db_from_gsheet(_):
+def sync_db_from_gsheet(c, settings=None, reset_db=True):
+    if reset_db:
+        init_db(c, settings)
+
     gsheet_write_counter = 0
     import slots_tracker_server.gsheet as gsheet
     wks = gsheet.get_worksheet()
@@ -263,7 +268,7 @@ def reference_objects_str_to_id(expense_data):
     try:
         expense_data['pay_method'] = PayMethods.objects.get(name=expense_data.get('pay_method'))
         expense_data['category'] = Categories.objects.get(name=expense_data.get('category'))
-    except DoesNotExist as e:
+    except DoesNotExist:
         print(f'Error in pay method or category: {expense_data.get("pay_method")} and {expense_data.get("category")}')
 
 
