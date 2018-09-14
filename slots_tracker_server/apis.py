@@ -3,6 +3,7 @@ import abc
 from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
+from mongoengine import DateTimeField, BooleanField
 from mongoengine.errors import NotUniqueError
 
 from slots_tracker_server.models import Expense, PayMethods, Categories
@@ -19,6 +20,9 @@ class BaseAPI(MethodView):
 
     def get(self, obj_id):
         if obj_id is None:
+            if hasattr(self.api_class, 'timestamp') and type(self.api_class.timestamp) == DateTimeField and \
+                    hasattr(self.api_class, 'one_time') and type(self.api_class.one_time) == BooleanField:
+                return self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
             return self.api_class.objects(active=True).to_json()
         else:
             object_id = convert_to_object_id(obj_id)
