@@ -8,8 +8,9 @@ from slots_tracker_server import commands
 
 app = Flask(__name__)
 CORS(app)
-app.config.from_object(os.environ['APP_SETTINGS'])
-connect(**app.config.get('MONGODB_SETTINGS'))
+connect(
+    dict(host=os.environ.get('DB_HOST'), port=int(str(os.environ.get('DB_PORT'))),
+         username=os.environ.get('DB_USERNAME'), password=os.environ.get('DB_PASS'), name=os.environ.get('DB_NAME')))
 
 
 import slots_tracker_server.views  # noqa
