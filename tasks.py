@@ -9,7 +9,6 @@ from mongoengine import DoesNotExist
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 BACKUPS = os.path.join(BASEDIR, 'backups')
-heroku_app_name = 'slots-tracker'
 
 
 def run(c, command, with_venv=True):
@@ -22,6 +21,7 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None, settings=None):
+    print(f'settings is: {settings}')
     # Prevent execute this function more than once
     if not os.environ.get('APP_SETTINGS'):
         # Load the basic configs
@@ -30,8 +30,9 @@ def init_app(c, env=None, settings=None):
         if settings:
             env_vars.update(load_yaml_from_file(os.path.join(BASEDIR, 'resources', f'settings_{settings}.yml')))
 
+        heroku_app_name = env_vars.pop('HEROKU_APP_NAME').get('value')
         for name, data in env_vars.items():
-            set_env_var(c, name, data.get('value'), env, data.get('is_protected', False))
+            set_env_var(c, name, data.get('value'), env, data.get('is_protected', False), heroku_app_name)
 
 
 @task(init_app)
@@ -134,10 +135,11 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
     run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
 
 
-@task(init_app)
+@task()
 def sync_db_from_gsheet(c, settings=None, reset_db=True):
+    init_app(c, settings=settings)
     if reset_db:
-        init_db(c, settings)
+        init_db(c, settings=settings)
 
     import slots_tracker_server.gsheet as gsheet
     wks = gsheet.get_worksheet()
@@ -182,7 +184,7 @@ def email(_, subject='First email', content='Hey, \nthis is a test email from th
 
 
 # helper
-def set_env_var(c, name, value, env, is_protected=True):
+def set_env_var(c, name, value, env, is_protected=True, heroku_app_name=None):
     # env codes: h - Heroku, t - Travis-CI
     if isinstance(value, dict):
         value = json.dumps(value)
@@ -200,7 +202,7 @@ def set_env_var(c, name, value, env, is_protected=True):
             run(c, command, False)
 
     else:
-        print(f'Set local var: {name}')
+        print(f'Set local var: {name}={value}')
         os.environ[name] = value
 
 
@@ -230,7 +232,8 @@ def translate(expense_data):
 
     for k, v in expense_data.items():
         if trans_data.get(k):
-            expense_data[k] = trans_data[k][v]
+            if trans_data[k].get(v):
+                expense_data[k] = trans_data[k][v]
 
 
 def transform_expense_to_dict(expense_data, headers):
@@ -250,5 +253,6 @@ def clean_expense(expense_data):
     del expense_data['_id']
     expense_data['amount'] = expense_data.get('amount').replace(',', '')
     expense_data['one_time'] = expense_data['one_time'] == 'one_time'
-    day, month, year = expense_data['timestamp'].split('/')
-    expense_data['timestamp'] = f'20{year}-{month}-{day}'
+    if '/' in expense_data['timestamp']:
+        day, month, year = expense_data['timestamp'].split('/')
+        expense_data['timestamp'] = f'20{year}-{month}-{day}'

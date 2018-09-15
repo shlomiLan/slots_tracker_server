@@ -49,6 +49,11 @@ def clean_expense_for_write(expense):
     temp['pay_method'] = expense.pay_method.name
     temp['category'] = expense.category.name
     temp['one_time'] = 'One time' if expense.one_time else 'Regular'
+    if '-' in temp['timestamp']:
+        year, month, day = temp['timestamp'].split('-')
+        day = 29
+        month = 12
+        temp['timestamp'] = f'{month}/{day}/{year}'
 
     return temp
 
