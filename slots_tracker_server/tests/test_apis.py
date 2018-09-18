@@ -17,6 +17,14 @@ def test_get_expenses(client):
     assert all(x.get('active') for x in r_data)
 
 
+def test_get_expenses_with_limit(client):
+    limit = 1
+    rv = client.get(f'/expenses/?limit={limit}')
+    r_data = json.loads(rv.get_data(as_text=True))
+    assert isinstance(r_data, list)
+    assert len(r_data) == limit
+
+
 def test_get_expense(client):
     expense = Expense.objects[0]
     rv = client.get('/expenses/{}'.format(expense.id))

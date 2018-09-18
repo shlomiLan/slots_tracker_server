@@ -110,7 +110,8 @@ class ExpenseAPI(BaseAPI):
             category_data = Categories.objects.get(id=item.get('category')).to_json()
             item['category'] = category_data
 
-        return json_util.dumps(obj_data[0] if obj_id else obj_data)
+        limit = int(request.args.get('limit')) if request.args.get('limit') else len(obj_data)
+        return json_util.dumps(obj_data[0] if obj_id else obj_data[:limit])
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
