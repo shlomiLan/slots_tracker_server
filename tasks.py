@@ -21,7 +21,6 @@ def run(c, command, with_venv=True):
 
 @task()
 def init_app(c, env=None, settings=None):
-    print(f'settings is: {settings}')
     # Prevent execute this function more than once
     if not os.environ.get('APP_SETTINGS'):
         # Load the basic configs
@@ -51,6 +50,8 @@ def clean_db(c, settings=None):
 @task(call(init_app, settings='test'))
 def test(c, cov=False, file=None):
     # cov - if to use coverage, file - if to run specific file
+    os.environ['TESTING'] = 'true'
+    os.environ['DB_NAME'] = 'slots_tracker_test'
 
     command = 'pytest -s'
     if cov:

@@ -10,8 +10,4 @@ def send_email(subject, content):
     to_email = Email(name='Slots tracker', email='slots.tracker@gmail.com')
     content = Content("text/plain", content)
     mail = Mail(from_email, subject, to_email, content)
-    try:
-        sg.client.mail.send.post(request_body=mail.get())
-    except Exception as e:
-        # TODO: Log error message
-        print(e)
+    return sg.client.mail.send.post(request_body=mail.get())
