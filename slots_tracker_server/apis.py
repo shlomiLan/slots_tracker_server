@@ -24,6 +24,10 @@ class BaseAPI(MethodView):
             if hasattr(self.api_class, 'timestamp') and type(self.api_class.timestamp) == DateTimeField and \
                     hasattr(self.api_class, 'one_time') and type(self.api_class.one_time) == BooleanField:
                 return self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
+
+            if hasattr(self.api_class, 'name'):
+                return self.api_class.objects(active=True).order_by('name').to_json()
+
             return self.api_class.objects(active=True).to_json()
         else:
             object_id = convert_to_object_id(obj_id)
