@@ -52,7 +52,9 @@ class BaseAPI(MethodView):
         instance = self.api_class.objects.get_or_404(id=object_id)
         instance.update(**obj_data)
         #  Reload the expense with the updated object
-        return json_util.dumps(instance.reload().to_json())
+        new_expense_as_json = instance.reload().to_json()
+        self.convert_object_id_json(new_expense_as_json)
+        return json_util.dumps(new_expense_as_json)
 
     @staticmethod
     def get_obj_data():
@@ -106,13 +108,9 @@ class ExpenseAPI(BaseAPI):
         if isinstance(obj_data, dict):
             obj_data = [obj_data]
 
-        for item in obj_data:
-            # TODO: Make this more robust
-            pay_method_data = PayMethods.objects.get(id=item.get('pay_method')).to_json()
-            item['pay_method'] = pay_method_data
-
-            category_data = Categories.objects.get(id=item.get('category')).to_json()
-            item['category'] = category_data
+        for name, document_type in self.api_class.get_all_reference_fields():
+            for item in obj_data:
+                item[name] = document_type.objects.get(id=item.get(name)).to_json()
 
         limit = int(request.args.get('limit')) if request.args.get('limit') else len(obj_data)
         return json_util.dumps(obj_data[0] if obj_id else obj_data[:limit])
@@ -121,19 +119,26 @@ class ExpenseAPI(BaseAPI):
         obj_data = self.get_obj_data()
         self.convert_reference_field_data_to_object_id(obj_data)
         new_expense = super(ExpenseAPI, self).post(obj_data)
+        new_expense_as_json = new_expense.to_json()
+        self.convert_object_id_json(new_expense_as_json)
+
         write_expense(new_expense)
-        return json_util.dumps(new_expense.to_json()), 201
+        return json_util.dumps(new_expense_as_json), 201
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
         self.convert_reference_field_data_to_object_id(obj_data)
         return super(ExpenseAPI, self).put(obj_id, obj_data)
 
-    @staticmethod
-    def convert_reference_field_data_to_object_id(obj_data):
-        fields = ['pay_method', 'category']
-        for field in fields:
-            field_data = obj_data.get(field)
+    def convert_reference_field_data_to_object_id(self, obj_data):
+        for name, _ in self.api_class.get_all_reference_fields():
+            field_data = obj_data.get(name)
             if field_data and not isinstance(field_data, ObjectId):
                 field_data_id = field_data.get('_id') if isinstance(field_data, dict) else field_data
-                obj_data[field] = convert_to_object_id(field_data_id)
+                obj_data[name] = convert_to_object_id(field_data_id)
+
+    def convert_object_id_json(self, obj_data):
+        for name, document_type in self.api_class.get_all_reference_fields():
+            field_id = obj_data.get(name)
+            field_data_as_json = document_type.objects.get(id=field_id).to_json()
+            obj_data[name] = field_data_as_json
