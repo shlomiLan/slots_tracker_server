@@ -21,18 +21,3 @@ class Expense(BaseDocument):
     active = db.BooleanField(default=True)
     category = db.ReferenceField(Categories, required=True)
     one_time = db.BooleanField(default=False)
-
-    @classmethod
-    def fields(cls):
-        return cls._fields
-
-    @classmethod
-    def get_all_reference_fields(cls):
-        temp = []
-        fields = cls.fields()
-        for name, field in fields.items():
-            field_class = type(field)
-            if field_class == db.ReferenceField:
-                temp.append((name, field.document_type))
-
-        return temp

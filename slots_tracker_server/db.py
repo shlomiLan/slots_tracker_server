@@ -1,6 +1,6 @@
 from bson import json_util
 from flask import abort
-from mongoengine import Document
+from mongoengine import Document, ReferenceField
 from mongoengine.queryset import DoesNotExist, QuerySet
 
 from slots_tracker_server.utils import find_and_convert_object_id, find_and_convert_date
@@ -25,16 +25,35 @@ class BaseQuerySet(QuerySet):
         json_list = json_util.loads(super(BaseQuerySet, self).to_json())
         temp = []
         for json_obj in json_list:
-            json_obj = find_and_convert_object_id(json_obj)
-            temp.append(find_and_convert_date(json_obj))
+            find_and_convert_object_id(json_obj)
+            find_and_convert_date(json_obj)
+            temp.append(json_obj)
 
         return temp
 
 
 class BaseDocument(Document):
+    _fields = None
     meta = {'abstract': True, 'queryset_class': BaseQuerySet}
 
     def to_json(self):
         json_obj = json_util.loads(super(BaseDocument, self).to_json())
-        json_obj = find_and_convert_object_id(json_obj)
-        return find_and_convert_date(json_obj)
+        find_and_convert_object_id(json_obj)
+        find_and_convert_date(json_obj)
+
+        return json_obj
+
+    @classmethod
+    def fields(cls):
+        return cls._fields
+
+    @classmethod
+    def get_all_reference_fields(cls):
+        temp = []
+        fields = cls.fields()
+        for name, field in fields.items():
+            field_class = type(field)
+            if field_class == ReferenceField:
+                temp.append((name, field.document_type))
+
+        return temp

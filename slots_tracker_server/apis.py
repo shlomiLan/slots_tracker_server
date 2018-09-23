@@ -59,7 +59,12 @@ class BaseAPI(MethodView):
     @staticmethod
     def get_obj_data():
         return json_util.loads(request.data)
-        # return obj_data
+
+    def convert_object_id_json(self, obj_data):
+        for name, document_type in self.api_class.get_all_reference_fields():
+            field_id = obj_data.get(name)
+            field_data_as_json = document_type.objects.get(id=field_id).to_json()
+            obj_data[name] = field_data_as_json
 
 
 class BasicObjectAPI(BaseAPI):
@@ -136,9 +141,3 @@ class ExpenseAPI(BaseAPI):
             if field_data and not isinstance(field_data, ObjectId):
                 field_data_id = field_data.get('_id') if isinstance(field_data, dict) else field_data
                 obj_data[name] = convert_to_object_id(field_data_id)
-
-    def convert_object_id_json(self, obj_data):
-        for name, document_type in self.api_class.get_all_reference_fields():
-            field_id = obj_data.get(name)
-            field_data_as_json = document_type.objects.get(id=field_id).to_json()
-            obj_data[name] = field_data_as_json

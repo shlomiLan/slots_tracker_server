@@ -26,8 +26,6 @@ def find_and_convert_object_id(obj):
         if isinstance(v, ObjectId):
             obj[k] = object_id_to_str(v)
 
-    return obj
-
 
 def date_to_str(date):
     return str(date.date())
@@ -37,8 +35,6 @@ def find_and_convert_date(obj):
     for k, v in obj.items():
         if isinstance(v, datetime.datetime):
             obj[k] = date_to_str(v)
-
-    return obj
 
 
 def register_api(view, endpoint, url, pk='id', pk_type='string'):

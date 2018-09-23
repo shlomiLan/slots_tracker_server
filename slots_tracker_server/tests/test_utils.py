@@ -23,7 +23,8 @@ def test_object_id_to_str():
     data = dict(_id=ObjectId("5b5c8a2b2c88848042426dff"), pay_method=ObjectId("5b5c8a2b2c88848042426dfd"))
     expected_data = dict(_id='5b5c8a2b2c88848042426dff', pay_method='5b5c8a2b2c88848042426dfd')
 
-    assert expected_data == find_and_convert_object_id(data)
+    find_and_convert_object_id(data)
+    assert expected_data == data
 
 
 def test_object_id_to_str_none():
@@ -34,4 +35,5 @@ def test_object_id_to_str_none():
 def test_convert_date():
     data = dict(time=datetime.datetime(2018, 8, 10, 9, 20, 57, 983368))
     expected_data = dict(time='2018-08-10')
-    assert expected_data == find_and_convert_date(data)
+    find_and_convert_date(data)
+    assert expected_data == data
