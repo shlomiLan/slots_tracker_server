@@ -33,15 +33,13 @@ def write_expense(expense):
     wks = get_worksheet()
     headers = get_headers(wks)
     new_index = find_last_row(wks) + 1
-    cell_list = wks.range('{start_column}{new_index}:{end_column}{new_index}'.format(
-        start_column=start_column, new_index=new_index, end_column=end_column))
+    value_list = []
 
+    expense_as_json = clean_expense_for_write(expense)
     for i, header in enumerate(headers):
-        # Leave as expense[header.value], so if field not found we get an error
-        expense_as_json = clean_expense_for_write(expense)
-        cell_list[i].value = expense_as_json[header.value]
+        value_list.append(expense_as_json[header.value])
 
-    update_with_retry(wks, cell_list=cell_list)
+    update_with_retry(wks, index=new_index, value_list=value_list)
 
 
 def clean_expense_for_write(expense):
@@ -72,7 +70,7 @@ def end_column_as_number():
     return ord(end_column.lower()) - 96
 
 
-def update_with_retry(wks, row=None, col=None, value=None, cell_list=None):
+def update_with_retry(wks, row=None, col=None, value=None, index=None, value_list=None):
     global gsheet_write_counter
     retries = 3
 
@@ -83,13 +81,13 @@ def update_with_retry(wks, row=None, col=None, value=None, cell_list=None):
 
         try:
             gsheet_write_counter += 1
-            if cell_list:
-                wks.update_cells(cell_list)
+            if value_list and index:
+                wks.insert_row(value_list, index=index, value_input_option='USER_ENTERED')
             elif row is not None and col is not None and value is not None:
                 wks.update_cell(row, col, value)
             else:
                 raise ValueError(f'No match was found in the receiving parameters: row: {row}, col: {col}, '
-                                 f'value: {value}, cell_list: {cell_list}')
+                                 f'value: {value}, index: {index}, value_list: {value_list}')
 
             # No need to try again
             retries = 0
