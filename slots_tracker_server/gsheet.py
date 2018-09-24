@@ -45,7 +45,7 @@ def write_expense(expense):
     update_with_retry(wks, index=new_index, value_list=value_list)
 
 
-def update_expense(expense, dry_run=False):
+def update_expense(expense):
     wks = get_worksheet()
     headers = get_headers(wks)
     cell = wks.find(object_id_to_str(expense.id))
@@ -59,19 +59,15 @@ def update_expense(expense, dry_run=False):
         existing_value = expense_gsheet_data[i].value
 
         if new_expense_value != existing_value:
-            to_update = False
             if header.value == 'timestamp':
-                if not compare_dates(new_expense_value, existing_value):
-                    to_update = True
+                if compare_dates(new_expense_value, existing_value):
+                    continue
+            elif header.value == 'amount':
+                if compare_floats(new_expense_value, existing_value):
+                    continue
 
-            if header.value == 'amount':
-                if not compare_floats(new_expense_value, existing_value):
-                    to_update = True
-
-            if to_update:
-                updates += 1
-                if not dry_run:
-                    update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
+            updates += 1
+            update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
 
     return updates
 

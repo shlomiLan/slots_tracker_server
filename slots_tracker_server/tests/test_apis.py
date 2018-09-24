@@ -75,11 +75,23 @@ def test_delete_expense(client):
 
 
 def test_update_expense(client):
-    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow(), category=Categories.objects().first()).save()
-    expense.amount = 100
-    rv = client.put('/expenses/{}'.format(expense.id), json=expense.to_json())
+    pay_method = PayMethods.objects().first()
+    category = Categories.objects().first()
+
+    amount, description, timestamp, active, one_time = 10, 'AAA', datetime.datetime.now(), True, False
+    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+            'category': category.to_json(), 'active': active, 'one_time': one_time}
+
+    rv = client.post('/expenses/', json=data)
+    result = json.loads(rv.get_data(as_text=True))
+    id = result.get('_id')
+    result['amount'] = 100
+    clean_api_object(result)
+
+    rv = client.put('/expenses/{}'.format(id), json=result)
+    result = json.loads(rv.get_data(as_text=True))
     assert rv.status_code == 200
+    assert result.get('amount') == 100
 
 
 # Pay method

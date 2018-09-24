@@ -6,7 +6,7 @@ from flask.views import MethodView
 from mongoengine import DateTimeField, BooleanField
 from mongoengine.errors import NotUniqueError
 
-from slots_tracker_server.gsheet import write_expense
+from slots_tracker_server.gsheet import write_expense, update_expense
 from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import convert_to_object_id, clean_api_object
 
@@ -48,19 +48,16 @@ class BaseAPI(MethodView):
         clean_api_object(obj_data)
         object_id = convert_to_object_id(obj_id)
 
-        # Get and updated the expense
+        # Get and updated the object
         instance = self.api_class.objects.get_or_404(id=object_id)
         instance.update(**obj_data)
-        #  Reload the expense with the updated object
-        new_expense_as_json = instance.reload().to_json()
-        self.convert_object_id_json(new_expense_as_json)
-        return json_util.dumps(new_expense_as_json)
+        return instance.reload()
 
     @staticmethod
     def get_obj_data():
         return json_util.loads(request.data)
 
-    def convert_object_id_json(self, obj_data):
+    def objects_id_to_json(self, obj_data):
         for name, document_type in self.api_class.get_all_reference_fields():
             field_id = obj_data.get(name)
             field_data_as_json = document_type.objects.get(id=field_id).to_json()
@@ -92,7 +89,9 @@ class BasicObjectAPI(BaseAPI):
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
         try:
-            return super(BasicObjectAPI, self).put(obj_id, obj_data)
+            new_expense_as_json = super(BasicObjectAPI, self).put(obj_id, obj_data).to_json()
+            self.objects_id_to_json(new_expense_as_json)
+            return json_util.dumps(new_expense_as_json)
         except NotUniqueError:
             return 'Name value must be unique', 400
 
@@ -122,20 +121,26 @@ class ExpenseAPI(BaseAPI):
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
-        self.convert_reference_field_data_to_object_id(obj_data)
+        self.reference_field_to_object_id(obj_data)
         new_expense = super(ExpenseAPI, self).post(obj_data)
         new_expense_as_json = new_expense.to_json()
-        self.convert_object_id_json(new_expense_as_json)
+        self.objects_id_to_json(new_expense_as_json)
 
         write_expense(new_expense)
         return json_util.dumps(new_expense_as_json), 201
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
-        self.convert_reference_field_data_to_object_id(obj_data)
-        return super(ExpenseAPI, self).put(obj_id, obj_data)
+        self.reference_field_to_object_id(obj_data)
 
-    def convert_reference_field_data_to_object_id(self, obj_data):
+        new_expense = super(ExpenseAPI, self).put(obj_id, obj_data)
+        new_expense_as_json = new_expense.to_json()
+        self.objects_id_to_json(new_expense_as_json)
+
+        update_expense(new_expense)
+        return json_util.dumps(new_expense_as_json)
+
+    def reference_field_to_object_id(self, obj_data):
         for name, _ in self.api_class.get_all_reference_fields():
             field_data = obj_data.get(name)
             if field_data and not isinstance(field_data, ObjectId):
