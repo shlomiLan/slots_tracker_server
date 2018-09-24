@@ -5,6 +5,7 @@ from gspread import Worksheet
 from gspread.client import Client
 
 import slots_tracker_server.gsheet as gsheet
+from slots_tracker_server.utils import clean_api_object
 
 
 def test_init_connection():
@@ -40,10 +41,9 @@ def test_write_expense():
     wks = gsheet.get_worksheet()
     last_row = gsheet.find_last_row(wks)
     # Leave here to prevent circular import
-    from slots_tracker_server.gsheet import write_expense
     from slots_tracker_server.models import Expense
     expense = Expense.objects[0]
-    write_expense(expense)
+    gsheet.write_expense(expense)
 
     # Test that we have a new line in the spreadsheet
     new_last_row = gsheet.find_last_row(wks)
@@ -58,3 +58,15 @@ def test_update_with_retry_invalid_params():
     wks = gsheet.get_worksheet()
     with pytest.raises(ValueError):
         gsheet.update_with_retry(wks, row=1, value=10)
+
+
+def test_update_expense():
+    from slots_tracker_server.models import Expense
+    expense_data = Expense.objects[0].to_json()
+    clean_api_object(expense_data)
+    new_expense = Expense(**expense_data).save()
+    gsheet.write_expense(new_expense)
+    new_expense.amount = 9999
+    num_of_updates = gsheet.update_expense(new_expense)
+
+    assert num_of_updates == 1

@@ -6,8 +6,11 @@ import gspread
 from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 
-start_column = 'A'
-end_column = 'G'
+from slots_tracker_server.utils import object_id_to_str
+
+START_COLUMN = 'A'
+END_COLUMN = 'G'
+DATE_INDEX = 3
 gsheet_write_counter = 0
 
 
@@ -42,6 +45,37 @@ def write_expense(expense):
     update_with_retry(wks, index=new_index, value_list=value_list)
 
 
+def update_expense(expense, dry_run=False):
+    wks = get_worksheet()
+    headers = get_headers(wks)
+    cell = wks.find(object_id_to_str(expense.id))
+    expense_row = cell.row
+    expense_gsheet_data = get_expense_by_row(wks, expense_row)
+
+    expense_as_json = clean_expense_for_write(expense)
+    updates = 0
+    for i, header in enumerate(headers):
+        new_expense_value = str(expense_as_json[header.value])
+        existing_value = expense_gsheet_data[i].value
+
+        if new_expense_value != existing_value:
+            to_update = False
+            if header.value == 'timestamp':
+                if not compare_dates(new_expense_value, existing_value):
+                    to_update = True
+
+            if header.value == 'amount':
+                if not compare_floats(new_expense_value, existing_value):
+                    to_update = True
+
+            if to_update:
+                updates += 1
+                if not dry_run:
+                    update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
+
+    return updates
+
+
 def clean_expense_for_write(expense):
     temp = expense.to_json()
     temp['pay_method'] = expense.pay_method.name
@@ -59,7 +93,11 @@ def find_last_row(wks):
 
 
 def get_headers(wks):
-    return wks.range('{}1:{}1'.format(start_column, end_column))
+    return wks.range(f'{START_COLUMN}1:{END_COLUMN}1')
+
+
+def get_expense_by_row(wks, row):
+    return wks.range(f'{START_COLUMN}{row}:{END_COLUMN}{row}')
 
 
 def get_all_data(wks):
@@ -67,7 +105,7 @@ def get_all_data(wks):
 
 
 def end_column_as_number():
-    return ord(end_column.lower()) - 96
+    return ord(END_COLUMN.lower()) - 96
 
 
 def update_with_retry(wks, row=None, col=None, value=None, index=None, value_list=None):
@@ -99,3 +137,18 @@ def update_with_retry(wks, row=None, col=None, value=None, index=None, value_lis
                 retries -= 1
             else:
                 raise e
+
+
+def compare_dates(expense_date, gsheet_date):
+    month1, day1, year1 = expense_date.split('/')
+    day2, month2, year2 = gsheet_date.split('/')
+
+    year2 = f'20{year2}'
+    return int(year1) == int(year2) and int(month1) == int(month2) and int(day1) == int(day2)
+
+
+def compare_floats(expense_number, gsheet_number):
+    try:
+        return float(expense_number) == float(gsheet_number.replace(',', ''))
+    except ValueError:
+        return True
