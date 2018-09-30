@@ -41,7 +41,7 @@ class Charts:
         self.get_datasets()
 
         chart_data = self.datasets.get('not_one_time')
-        # TODO: Filter all data to not display futare data
+        # TODO: Filter all data to not display future data
         # TODO: Add chart to display data from the start of the month
         if chart_data is not None:
             # Chart 1 - Regular (not one time) expenses
