@@ -3,7 +3,7 @@ from flask import abort
 from mongoengine import Document, ReferenceField
 from mongoengine.queryset import DoesNotExist, QuerySet
 
-from slots_tracker_server.utils import find_and_convert_object_id, find_and_convert_date
+from slots_tracker_server.utils import find_and_convert_object_id, find_and_convert_date, object_id_to_str
 
 
 class BaseQuerySet(QuerySet):
@@ -57,3 +57,11 @@ class BaseDocument(Document):
                 temp.append((name, field.document_type))
 
         return temp
+
+    @classmethod
+    def get_summary(cls):
+        summary = dict()
+        for item in cls.objects:
+            summary[object_id_to_str(item.id)] = item.name
+
+        return summary

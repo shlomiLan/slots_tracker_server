@@ -278,3 +278,18 @@ def clean_expense(expense_data):
     if '/' in expense_data['timestamp']:
         day, month, year = expense_data['timestamp'].split('/')
         expense_data['timestamp'] = f'20{year}-{month}-{day}'
+
+
+# jupyter notebook
+@task(init_app)
+def run_notebook(c):
+    run(c, 'jupyter notebook')
+
+
+# Charts
+@task(init_app)
+def calc_chart_data_task(c):
+    from slots_tracker_server.charts import Charts
+    charts = Charts().clac_charts()
+    print(charts)
+    return charts

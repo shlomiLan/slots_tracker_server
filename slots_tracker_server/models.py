@@ -21,3 +21,7 @@ class Expense(BaseDocument):
     active = db.BooleanField(default=True)
     category = db.ReferenceField(Categories, required=True)
     one_time = db.BooleanField(default=False)
+
+    @classmethod
+    def get_summary(cls):
+        pass
