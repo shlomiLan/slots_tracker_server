@@ -1,10 +1,11 @@
 import datetime
 
+import pandas as pd
 import pytest
 from bson import ObjectId
 from werkzeug.exceptions import BadRequest
 
-from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date
+from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date, get_10th
 
 VALID_ID = '5b5c8a2b2c88848042426dff'
 INVALID_ID = '5b5c8a2b2c88848042426dffa'
@@ -37,3 +38,45 @@ def test_convert_date():
     expected_data = dict(time='2018-08-10')
     find_and_convert_date(data)
     assert expected_data == data
+
+
+def test_get_10th():
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 11, 10))
+    assert previous_10th == pd.datetime(2018, 10, 10)
+    assert current_10th == pd.datetime(2018, 11, 10)
+    assert next_10th == pd.datetime(2018, 12, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 12, 10))
+    assert previous_10th == pd.datetime(2018, 11, 10)
+    assert current_10th == pd.datetime(2018, 12, 10)
+    assert next_10th == pd.datetime(2019, 1, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 1, 10))
+    assert previous_10th == pd.datetime(2017, 12, 10)
+    assert current_10th == pd.datetime(2018, 1, 10)
+    assert next_10th == pd.datetime(2018, 2, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 2, 21))
+    assert previous_10th == pd.datetime(2017, 12, 10)
+    assert current_10th == pd.datetime(2018, 1, 10)
+    assert next_10th == pd.datetime(2018, 2, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 11, 21))
+    assert previous_10th == pd.datetime(2018, 10, 10)
+    assert current_10th == pd.datetime(2018, 11, 10)
+    assert next_10th == pd.datetime(2018, 12, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 9, 1))
+    assert previous_10th == pd.datetime(2018, 8, 10)
+    assert current_10th == pd.datetime(2018, 9, 10)
+    assert next_10th == pd.datetime(2018, 10, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 12, 1))
+    assert previous_10th == pd.datetime(2018, 11, 10)
+    assert current_10th == pd.datetime(2018, 12, 10)
+    assert next_10th == pd.datetime(2019, 1, 10)
+
+    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 1, 1))
+    assert previous_10th == pd.datetime(2017, 12, 10)
+    assert current_10th == pd.datetime(2018, 1, 10)
+    assert next_10th == pd.datetime(2018, 2, 10)
