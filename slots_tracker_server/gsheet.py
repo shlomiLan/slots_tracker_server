@@ -67,7 +67,9 @@ def update_expense(expense):
                     continue
 
             updates += 1
-            print(f'Updating row: {row}, col: {col}, with value: {value}')
+            print(f'new_expense_value: {new_expense_value}')
+            print(f'existing_value: {existing_value}')
+            print(f'Updating row: {expense_row}, col: {i + 1}, with value: {new_expense_value}')
             update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
 
     return updates
