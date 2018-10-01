@@ -65,8 +65,10 @@ def test_update_expense():
     expense_data = Expense.objects[0].to_json()
     clean_api_object(expense_data)
     new_expense = Expense(**expense_data).save()
+    print(new_expense)
     gsheet.write_expense(new_expense)
     new_expense.amount = 9999
+    print(new_expense)
     num_of_updates = gsheet.update_expense(new_expense)
 
     assert num_of_updates == 1
