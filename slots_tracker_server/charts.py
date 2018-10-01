@@ -98,7 +98,7 @@ class Charts:
         condition = (self.expense_data.timestamp > self.start_cycle1) & \
                     (self.expense_data.timestamp < self.end_cycle1)
 
-        total = self.expense_data[condition].sum().round().amount
+        total = self.expense_data[condition].amount.sum().round()
         title = f'All expenses since the last 10th ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
@@ -106,7 +106,7 @@ class Charts:
         condition = (self.expense_data.timestamp > self.start_cycle1) & \
                     (self.expense_data.timestamp < self.end_cycle2)
 
-        total = self.expense_data[condition].sum().amount.round()
+        total = self.expense_data[condition].amount.sum().round()
         title = f'All expenses since the last 10th ({print_date(self.end_cycle2)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
