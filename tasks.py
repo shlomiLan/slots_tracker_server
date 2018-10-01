@@ -53,7 +53,7 @@ def test(c, cov=False, file=None):
     os.environ['TESTING'] = 'true'
     os.environ['DB_NAME'] = 'slots_tracker_test'
 
-    command = 'pytest -s'
+    command = 'pytest -s --disable-pytest-warnings'
     if cov:
         command = '{} --cov=slots_tracker_server --cov-report term-missing'.format(command)
     if file:

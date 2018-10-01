@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Union
 
 import pandas as pd
 
@@ -64,18 +64,18 @@ class Charts:
         # Chart 4 - Regular (not one time) expenses
         temp = chart_data.groupby('category').sum().round().amount.sort_values(ascending=False)
         title = 'Regular (not one time) expenses'
-        self.charts.insert(3, self.to_chart_data(temp, title=title))
+        self.charts.insert(3, self.to_chart_data(series=temp, title=title))
 
         # Chart 3 - Regular expenses by card
         temp = chart_data.groupby('pay_method').sum().round().amount.sort_values(ascending=False)
         title = 'Regular expenses by card'
-        self.charts.append(self.to_chart_data(temp, title=title))
+        self.charts.append(self.to_chart_data(series=temp, title=title))
 
         # Chart 5 - Regular expenses by month
         temp = chart_data.groupby(pd.Grouper(key='timestamp', freq='1M')).sum().round().amount
         temp.index = temp.index.strftime('%B %Y')
         title = 'Regular expenses by month'
-        self.charts.insert(4, self.to_chart_data(temp, title=title, c_type='line'))
+        self.charts.insert(4, self.to_chart_data(series=temp, title=title, c_type='line'))
 
     def oen_time_charts(self):
         chart_data = self.datasets.get('one_time')
@@ -83,48 +83,54 @@ class Charts:
         # Chart 6 - One time expenses
         temp = chart_data.groupby('description').sum().round().amount.sort_values(ascending=False)
         title = 'One time expenses'
-        self.charts.insert(5, self.to_chart_data(temp, title=title))
+        self.charts.insert(5, self.to_chart_data(series=temp, title=title))
 
     def time_charts(self):
+
         # Chart 7 - All expenses by month
         chart_data = self.expense_data.groupby(pd.Grouper(key='timestamp', freq='1M')).sum().round().amount
         chart_data.index = chart_data.index.strftime('%B %Y')
         title = 'All expenses by month'
-        self.charts.insert(6, self.to_chart_data(chart_data, title=title, c_type='line'))
+        self.charts.insert(6, self.to_chart_data(series=chart_data, title=title, c_type='line'))
 
-        # Chart 1 - All expenses since the last 10th
+        table = []
+        # Chart 1 (table) - All expenses since the last 10th
         condition = (self.expense_data.timestamp > self.current_10th) & \
                     (self.expense_data.timestamp < self.next_10th)
 
-        chart_data = self.expense_data[condition].groupby(pd.Grouper(key='timestamp', freq='W')).sum().round().amount
-
-        chart_data.index = print_date(chart_data.index)
+        total = self.expense_data[condition].sum().round().amount
         title = f'All expenses since the last 10th ({print_date(self.next_10th)} - {print_date(self.current_10th)})'
-        self.charts.insert(0, self.to_chart_data(chart_data, title=title, c_type='line'))
+        table.append([title, total])
 
-        # Chart 2 - All expenses in previous month (10th to 10th)
+        # All expenses in previous month (10th to 10th)
         condition = (self.expense_data.timestamp > self.previous_10th) & \
                     (self.expense_data.timestamp < self.current_10th)
 
-        chart_data = self.expense_data[condition].groupby(pd.Grouper(key='timestamp', freq='W')).sum().round().amount
-        chart_data.index = chart_data.index.strftime('%d/%m/%Y')
+        total = self.expense_data[condition].sum().amount.round()
         title = f'All expenses since the last 10th ({print_date(self.current_10th)} - {print_date(self.previous_10th)})'
-        self.charts.insert(1, self.to_chart_data(chart_data, title=title, c_type='line'))
+        table.append([title, total])
+
+        self.charts.insert(0, self.to_chart_data(table=table, title=title, c_type='table'))
 
     @staticmethod
-    def to_chart_data(series: pd.Series, title: str, c_type: str = 'horizontalBar'):
+    def to_chart_data(title: str, series: pd.Series = None, c_type: str = 'horizontalBar',
+                      table: List[List[Union[str, float]]] = None):
+
         if c_type in ['horizontalBar', 'line']:
-            labels: List[str] = series.index.tolist()
-            c_data: List[Dict[str, Any]] = [dict(data=series.values.tolist(), label='')]
-            options: Dict[str, Any] = \
-                dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title, display=True),
-                     plugins=dict(datalabels=dict(anchor='end', align='end')), legend=dict(display=False))
+            if series is not None:
+                labels: List[str] = series.index.tolist()
+                c_data: List[Dict[str, Any]] = [dict(data=series.values.tolist(), label='')]
+                options: Dict[str, Any] = \
+                    dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title, display=True),
+                         plugins=dict(datalabels=dict(anchor='end', align='end')), legend=dict(display=False))
 
-            if c_type == 'line':
-                for d in c_data:
-                    d['fill'] = False
-                options.update(dict(elements=dict(line=dict(tension=0))))
+                if c_type == 'line':
+                    for d in c_data:
+                        d['fill'] = False
+                    options.update(dict(elements=dict(line=dict(tension=0))))
 
-            return dict(type=c_type, labels=labels, data=c_data, options=options)
+                return dict(type=c_type, labels=labels, data=c_data, options=options)
+        elif c_type == 'table':
+            return dict(type=c_type, data=table)
         else:
             raise ValueError('Unsupported chart type')
