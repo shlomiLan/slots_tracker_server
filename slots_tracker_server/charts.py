@@ -4,7 +4,7 @@ from typing import Dict, Any, List, Union
 import pandas as pd
 
 from slots_tracker_server.models import Expense, Categories, PayMethods
-from slots_tracker_server.utils import get_10th
+from slots_tracker_server.utils import get_bill_cycles
 
 
 def print_date(date):
@@ -27,7 +27,7 @@ class Charts:
         self.today = pd.datetime.today()
         self.charts = []
         self.ref_fields_summary()
-        self.previous_10th, self.current_10th, self.next_10th = get_10th(self.today)
+        self.previous_10th, self.current_10th, self.next_10th = get_bill_cycles(self.today)
 
     def ref_fields_summary(self):
         methods_summary = PayMethods.get_summary()

@@ -52,33 +52,39 @@ def clean_api_object(obj_data):
         del obj_data['_id']
 
 
-def get_10th(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.datetime]:
-    # Examples: 10-12-2018, 01-12-2018
-    if today.day <= 10 and today.month == 12:
-        previous_month, previous_year = today.month - 1, today.year
-        current_month, current_year = today.month, today.year
+def get_bill_cycles(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.datetime, pd.datetime]:
+    # Case 4: 1-1-18
+    if today.month == 1 and today.day < 10:
+        previous_month, previous_year = 11, today.year - 1
+        middle_month, middle_year = 12, today.year - 1
+        next_month, next_year = 1, today.year
+    # Case 5 and Case 2: 10-1-18, 1-2-18
+    elif (today.month == 2 and today.day < 10) or (today.month == 1 and today.day >= 10):
+        previous_month, previous_year = 12, today.year - 1
+        middle_month, middle_year = 1, today.year
+        next_month, next_year = 2, today.year
+
+    # Case 6: 10-12-18
+    elif today.month == 12 and today.day >= 10:
+        previous_month, previous_year = 11, today.year
+        middle_month, middle_year = 12, today.year
         next_month, next_year = 1, today.year + 1
-
-    # Examples: 10-01-2018, 1-1-2018
-    elif today.day <= 10 and today.month == 1:
-        previous_month, previous_year = 12, today.year - 1
-        current_month, current_year = 1, today.year
-        next_month, next_year = today.month + 1, today.year
-
-    # Examples: 21-02-2018
-    elif today.day > 10 and today.month == 2:
-        previous_month, previous_year = 12, today.year - 1
-        current_month, current_year = 1, today.year
-        next_month, next_year = today.month, today.year
-
-    # Examples: 10-11-2018, 21-11-2018, 01-09-2018
     else:
-        previous_month, previous_year = today.month - 1, today.year
-        current_month, current_year = today.month, today.year
-        next_month, next_year = today.month + 1, today.year
+        # Case 3: 1-9-18, 1-12-18
+        if today.day < 10:
+            previous_month, previous_year = today.month - 2, today.year
+            middle_month, middle_year = today.month - 1, today.year
+            next_month, next_year = today.month, today.year
 
-    next_10th = pd.datetime(next_year, next_month, 10)
-    current_10th = pd.datetime(current_year, current_month, 10)
-    previous_10th = pd.datetime(previous_year, previous_month, 10)
+        # Case 1: 10-11-18, 21-2-18, 21-11-18, 12-2-18
+        else:
+            previous_month, previous_year = today.month - 1, today.year
+            middle_month, middle_year = today.month, today.year
+            next_month, next_year = today.month + 1, today.year
 
-    return previous_10th, current_10th, next_10th
+    start_cycle1 = pd.datetime(previous_year, previous_month, 10)
+    end_cycle1 = pd.datetime(middle_year, middle_month, 9)
+    start_cycle2 = pd.datetime(middle_year, middle_month, 10)
+    end_cycle2 = pd.datetime(next_year, next_month, 9)
+
+    return start_cycle1, end_cycle1, start_cycle2, end_cycle2
