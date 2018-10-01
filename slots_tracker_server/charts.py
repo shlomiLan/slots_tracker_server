@@ -27,7 +27,7 @@ class Charts:
         self.today = pd.datetime.today()
         self.charts = []
         self.ref_fields_summary()
-        self.previous_10th, self.current_10th, self.next_10th = get_bill_cycles(self.today)
+        self.start_cycle1, self.end_cycle1, self.start_cycle2, self.end_cycle2 = get_bill_cycles(self.today)
 
     def ref_fields_summary(self):
         methods_summary = PayMethods.get_summary()
@@ -95,19 +95,19 @@ class Charts:
 
         table = []
         # Chart 1 (table) - All expenses since the last 10th
-        condition = (self.expense_data.timestamp > self.current_10th) & \
-                    (self.expense_data.timestamp < self.next_10th)
+        condition = (self.expense_data.timestamp > self.start_cycle1) & \
+                    (self.expense_data.timestamp < self.end_cycle1)
 
         total = self.expense_data[condition].sum().round().amount
-        title = f'All expenses since the last 10th ({print_date(self.next_10th)} - {print_date(self.current_10th)})'
+        title = f'All expenses since the last 10th ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
         # All expenses in previous month (10th to 10th)
-        condition = (self.expense_data.timestamp > self.previous_10th) & \
-                    (self.expense_data.timestamp < self.current_10th)
+        condition = (self.expense_data.timestamp > self.start_cycle1) & \
+                    (self.expense_data.timestamp < self.end_cycle2)
 
         total = self.expense_data[condition].sum().amount.round()
-        title = f'All expenses since the last 10th ({print_date(self.current_10th)} - {print_date(self.previous_10th)})'
+        title = f'All expenses since the last 10th ({print_date(self.end_cycle2)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
         self.charts.insert(0, self.to_chart_data(table=table, title=title, c_type='table'))
