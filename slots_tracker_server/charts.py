@@ -95,19 +95,19 @@ class Charts:
 
         table = []
         # Chart 1 (table) - All expenses since the last 10th
-        condition = (self.expense_data.timestamp > self.start_cycle1) & \
-                    (self.expense_data.timestamp < self.end_cycle1)
+        condition = (self.expense_data.timestamp >= self.start_cycle2) & \
+                    (self.expense_data.timestamp <= self.end_cycle2)
 
         total = self.expense_data[condition].amount.sum().round()
-        title = f'All expenses since the last 10th ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
+        title = f'All expenses in current month ({print_date(self.end_cycle2)} - {print_date(self.start_cycle2)})'
         table.append([title, total])
 
         # All expenses in previous month (10th to 10th)
-        condition = (self.expense_data.timestamp > self.start_cycle1) & \
-                    (self.expense_data.timestamp < self.end_cycle2)
+        condition = (self.expense_data.timestamp >= self.start_cycle1) & \
+                    (self.expense_data.timestamp <= self.end_cycle1)
 
         total = self.expense_data[condition].amount.sum().round()
-        title = f'All expenses since the last 10th ({print_date(self.end_cycle2)} - {print_date(self.start_cycle1)})'
+        title = f'All expenses in previous month ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
         self.charts.insert(0, self.to_chart_data(table=table, title=title, c_type='table'))
