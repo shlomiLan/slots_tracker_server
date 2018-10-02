@@ -1,7 +1,9 @@
 import datetime
 import os
+from itertools import chain
 
 from invoke import task
+from progress.bar import Bar
 
 from pyinvoke.base import init_app
 from pyinvoke.email import email
@@ -114,23 +116,34 @@ def sync_db_from_gsheet(c, settings=None, reset_db=True):
             gsheet.update_with_retry(wks, row=i, col=1, value=str(expense.id))
 
 
-@task(init_app)
-def add_count_to_ref_fields(_):
-    from slots_tracker_server.models import Expense, Categories
+@task()
+def add_count_to_ref_fields(c, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import Expense
 
     expenses = Expense.objects()
-    for expense in expenses:
-        category = expense.category
+    for expense in Bar('Resting').iter(expenses):
         expense.update_reference_filed_count(reset=True)
-        _ = Categories.objects().get(id=category.id)
 
     expenses = Expense.objects()
-    for expense in expenses:
-        category = expense.category
+    for expense in Bar('Updating').iter(expenses):
         expense.update_reference_filed_count()
-        _ = Categories.objects().get(id=category.id)
 
 
 def get_db_info():
     return os.environ['DB_HOST'], os.environ['DB_PORT'], os.environ['DB_NAME'], os.environ['DB_USERNAME'], \
            os.environ['DB_PASS']
+
+
+@task()
+def remove_numbers_from_name(c, settings=None):
+    init_app(c, settings=settings)
+
+    from slots_tracker_server.models import Categories, PayMethods
+    for item in Bar('Updating').iter(chain(PayMethods.objects(), Categories.objects())):
+        item_name = item.name
+        if item_name[0].isdigit():
+            item_name = item_name.split(' ')
+            item_name = ' '.join(item_name[1:])
+            item.name = item_name
+            item.save()
