@@ -4,7 +4,7 @@ import os
 import yaml
 from mongoengine import DoesNotExist
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
+BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
 BACKUPS = os.path.join(BASEDIR, 'backups')
 
