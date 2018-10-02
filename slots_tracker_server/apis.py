@@ -3,7 +3,6 @@ import abc
 from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
-from mongoengine import DateTimeField, BooleanField
 from mongoengine.errors import NotUniqueError
 
 from slots_tracker_server.gsheet import write_expense, update_expense
@@ -20,19 +19,9 @@ class BaseAPI(MethodView):
         raise NotImplementedError
 
     def get(self, obj_id):
-        if obj_id is None:
-            if hasattr(self.api_class, 'timestamp') and type(self.api_class.timestamp) == DateTimeField and \
-                    hasattr(self.api_class, 'one_time') and type(self.api_class.one_time) == BooleanField:
-                return self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
-
-            if hasattr(self.api_class, 'name'):
-                return self.api_class.objects(active=True).order_by('name').to_json()
-
-            return self.api_class.objects(active=True).to_json()
-        else:
-            object_id = convert_to_object_id(obj_id)
-            instance = self.api_class.objects.get_or_404(id=object_id)
-            return instance.to_json()
+        object_id = convert_to_object_id(obj_id)
+        instance = self.api_class.objects.get_or_404(id=object_id)
+        return [instance.to_json()]
 
     def post(self, obj_data):
         # TODO: Check that all reference fields are not inactive before creating a new object
@@ -73,9 +62,10 @@ class BasicObjectAPI(BaseAPI):
         raise NotImplementedError
 
     def get(self, obj_id):
-        obj_data = super(BasicObjectAPI, self).get(obj_id)
-        if isinstance(obj_data, dict):
-            obj_data = [obj_data]
+        if obj_id:
+            obj_data = super(BasicObjectAPI, self).get(obj_id)
+        else:
+            obj_data = self.api_class.objects(active=True).order_by('name').to_json()
 
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
@@ -108,9 +98,10 @@ class ExpenseAPI(BaseAPI):
     api_class = Expense
 
     def get(self, obj_id):
-        obj_data = super(ExpenseAPI, self).get(obj_id)
-        if isinstance(obj_data, dict):
-            obj_data = [obj_data]
+        if obj_id:
+            obj_data = super(ExpenseAPI, self).get(obj_id)
+        else:
+            obj_data = self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
 
         for name, document_type in self.api_class.get_all_reference_fields():
             for item in obj_data:
