@@ -165,6 +165,24 @@ def sync_db_from_gsheet(c, settings=None, reset_db=True):
             gsheet.update_with_retry(wks, row=i, col=1, value=str(expense.id))
 
 
+@task(init_app)
+def add_count_to_ref_fields(c):
+    from slots_tracker_server.models import Expense, Categories
+
+    expenses = Expense.objects()
+    for expense in expenses:
+        category = expense.category
+        expense.update_reference_filed_count(reset=True)
+        new_category = Categories.objects().get(id=category.id)
+
+    expenses = Expense.objects()
+    for expense in expenses:
+        category = expense.category
+        expense.update_reference_filed_count()
+        new_category = Categories.objects().get(id=category.id)
+        print(new_category.to_json())
+
+
 @task()
 def fix_gsheet(c, settings=None):
     init_app(c, settings=settings)

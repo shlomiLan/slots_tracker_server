@@ -65,7 +65,7 @@ class BasicObjectAPI(BaseAPI):
         if obj_id:
             obj_data = super(BasicObjectAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True).order_by('name').to_json()
+            obj_data = self.api_class.objects(active=True).order_by('-instances').to_json()
 
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
