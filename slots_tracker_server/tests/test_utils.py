@@ -5,7 +5,8 @@ import pytest
 from bson import ObjectId
 from werkzeug.exceptions import BadRequest
 
-from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date, get_10th
+from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date, \
+    get_bill_cycles
 
 VALID_ID = '5b5c8a2b2c88848042426dff'
 INVALID_ID = '5b5c8a2b2c88848042426dffa'
@@ -40,43 +41,63 @@ def test_convert_date():
     assert expected_data == data
 
 
-def test_get_10th():
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 11, 10))
-    assert previous_10th == pd.datetime(2018, 10, 10)
-    assert current_10th == pd.datetime(2018, 11, 10)
-    assert next_10th == pd.datetime(2018, 12, 10)
+def test_get_bill_cycles():
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 11, 10))
+    assert start_cycle1 == pd.datetime(2018, 10, 10)
+    assert end_cycle1 == pd.datetime(2018, 11, 9)
+    assert start_cycle2 == pd.datetime(2018, 11, 10)
+    assert end_cycle2 == pd.datetime(2018, 12, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 12, 10))
-    assert previous_10th == pd.datetime(2018, 11, 10)
-    assert current_10th == pd.datetime(2018, 12, 10)
-    assert next_10th == pd.datetime(2019, 1, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 12, 10))
+    assert start_cycle1 == pd.datetime(2018, 11, 10)
+    assert end_cycle1 == pd.datetime(2018, 12, 9)
+    assert start_cycle2 == pd.datetime(2018, 12, 10)
+    assert end_cycle2 == pd.datetime(2019, 1, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 1, 10))
-    assert previous_10th == pd.datetime(2017, 12, 10)
-    assert current_10th == pd.datetime(2018, 1, 10)
-    assert next_10th == pd.datetime(2018, 2, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 1, 10))
+    assert start_cycle1 == pd.datetime(2017, 12, 10)
+    assert end_cycle1 == pd.datetime(2018, 1, 9)
+    assert start_cycle2 == pd.datetime(2018, 1, 10)
+    assert end_cycle2 == pd.datetime(2018, 2, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 2, 21))
-    assert previous_10th == pd.datetime(2017, 12, 10)
-    assert current_10th == pd.datetime(2018, 1, 10)
-    assert next_10th == pd.datetime(2018, 2, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 21))
+    assert start_cycle1 == pd.datetime(2018, 1, 10)
+    assert end_cycle1 == pd.datetime(2018, 2, 9)
+    assert start_cycle2 == pd.datetime(2018, 2, 10)
+    assert end_cycle2 == pd.datetime(2018, 3, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 11, 21))
-    assert previous_10th == pd.datetime(2018, 10, 10)
-    assert current_10th == pd.datetime(2018, 11, 10)
-    assert next_10th == pd.datetime(2018, 12, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 11, 21))
+    assert start_cycle1 == pd.datetime(2018, 10, 10)
+    assert end_cycle1 == pd.datetime(2018, 11, 9)
+    assert start_cycle2 == pd.datetime(2018, 11, 10)
+    assert end_cycle2 == pd.datetime(2018, 12, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 9, 1))
-    assert previous_10th == pd.datetime(2018, 8, 10)
-    assert current_10th == pd.datetime(2018, 9, 10)
-    assert next_10th == pd.datetime(2018, 10, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 9, 1))
+    assert start_cycle1 == pd.datetime(2018, 7, 10)
+    assert end_cycle1 == pd.datetime(2018, 8, 9)
+    assert start_cycle2 == pd.datetime(2018, 8, 10)
+    assert end_cycle2 == pd.datetime(2018, 9, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 12, 1))
-    assert previous_10th == pd.datetime(2018, 11, 10)
-    assert current_10th == pd.datetime(2018, 12, 10)
-    assert next_10th == pd.datetime(2019, 1, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 12, 1))
+    assert start_cycle1 == pd.datetime(2018, 10, 10)
+    assert end_cycle1 == pd.datetime(2018, 11, 9)
+    assert start_cycle2 == pd.datetime(2018, 11, 10)
+    assert end_cycle2 == pd.datetime(2018, 12, 9)
 
-    previous_10th, current_10th, next_10th = get_10th(pd.datetime(2018, 1, 1))
-    assert previous_10th == pd.datetime(2017, 12, 10)
-    assert current_10th == pd.datetime(2018, 1, 10)
-    assert next_10th == pd.datetime(2018, 2, 10)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 1, 1))
+    assert start_cycle1 == pd.datetime(2017, 11, 10)
+    assert end_cycle1 == pd.datetime(2017, 12, 9)
+    assert start_cycle2 == pd.datetime(2017, 12, 10)
+    assert end_cycle2 == pd.datetime(2018, 1, 9)
+
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 1))
+    assert start_cycle1 == pd.datetime(2017, 12, 10)
+    assert end_cycle1 == pd.datetime(2018, 1, 9)
+    assert start_cycle2 == pd.datetime(2018, 1, 10)
+    assert end_cycle2 == pd.datetime(2018, 2, 9)
+
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 10))
+    assert start_cycle1 == pd.datetime(2018, 1, 10)
+    assert end_cycle1 == pd.datetime(2018, 2, 9)
+    assert start_cycle2 == pd.datetime(2018, 2, 10)
+    assert end_cycle2 == pd.datetime(2018, 3, 9)

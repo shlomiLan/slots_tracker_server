@@ -67,9 +67,6 @@ def update_expense(expense):
                     continue
 
             updates += 1
-            print(f'new_expense_value: {new_expense_value}')
-            print(f'existing_value: {existing_value}')
-            print(f'Updating row: {expense_row}, col: {i + 1}, with value: {new_expense_value}')
             update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
 
     return updates
@@ -142,7 +139,7 @@ def compare_dates(expense_date, gsheet_date):
     month1, day1, year1 = expense_date.split('/')
     day2, month2, year2 = gsheet_date.split('/')
 
-    year2 = f'20{year2}'
+    year1 = year1[2:]
     return int(year1) == int(year2) and int(month1) == int(month2) and int(day1) == int(day2)
 
 

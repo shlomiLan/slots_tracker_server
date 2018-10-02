@@ -18,3 +18,4 @@ python_http_client==3.1.0
 
 # CLI
 click==7.0
+progress==1.4

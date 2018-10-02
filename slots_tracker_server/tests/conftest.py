@@ -16,7 +16,14 @@ def client():
 
     # create fake documents
     pay_method = PayMethods(name='Visa').save()
+    PayMethods(name='Visa1111').save()
+    PayMethods(name='Visa2222').save()
+    PayMethods(name='Visa3333').save()
     category = Categories('Cat 1').save()
+    Categories('Cat 11').save()
+    Categories('Cat 111').save()
+    Categories('Cat 1111').save()
+    Categories('Cat 11111').save()
 
     now_date = datetime.datetime.utcnow
     expense_data = dict(amount=200, description='Random stuff', pay_method=pay_method.id, timestamp=now_date,

@@ -54,14 +54,22 @@ def test_post_expenses(_, client, amount, description, timestamp, active, one_ti
 
     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
-    expected_data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(),
-                     'timestamp': date_to_str(timestamp), 'active': active, 'category': category.to_json(),
-                     'one_time': one_time}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
     # Clean the Expense
     clean_api_object(result)
+    # Update instances counters
+    data['pay_method']['instances'] += 1
+    data['category']['instances'] += 1
+
+    # reload pay method and category
+    pay_method = pay_method.reload()
+    category = category.reload()
+
+    expected_data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(),
+                     'timestamp': date_to_str(timestamp), 'active': active, 'category': category.to_json(),
+                     'one_time': one_time}
 
     assert rv.status_code == 201
     assert result == expected_data
@@ -84,14 +92,51 @@ def test_update_expense(client):
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
-    id = result.get('_id')
     result['amount'] = 100
+    obj_id = result.get('_id')
     clean_api_object(result)
 
-    rv = client.put('/expenses/{}'.format(id), json=result)
+    rv = client.put('/expenses/{}'.format(obj_id), json=result)
     result = json.loads(rv.get_data(as_text=True))
+
+    # reload pay method and category
+    pay_method = pay_method.reload()
+    category = category.reload()
+
     assert rv.status_code == 200
     assert result.get('amount') == 100
+    # Increase because of the post
+    assert data.get('pay_method').get('instances') + 1 == pay_method.instances
+    assert data.get('category').get('instances') + 1 == category.instances
+
+
+def test_update_expense_change_ref_filed(client):
+    pay_method = PayMethods.objects().first()
+    category = Categories.objects().first()
+
+    amount, description, timestamp, active, one_time = 10, 'AAA', datetime.datetime.now(), True, False
+    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+            'category': category.to_json(), 'active': active, 'one_time': one_time}
+
+    rv = client.post('/expenses/', json=data)
+    result = json.loads(rv.get_data(as_text=True))
+    new_pay_method = PayMethods(name='Very random text 1111').save()
+    result['pay_method'] = new_pay_method.to_json()
+    obj_id = result.get('_id')
+    clean_api_object(result)
+
+    rv = client.put('/expenses/{}'.format(obj_id), json=result)
+    _ = json.loads(rv.get_data(as_text=True))
+
+    # reload pay method and category
+    new_pay_method = new_pay_method.reload()
+    category = category.reload()
+
+    assert rv.status_code == 200
+    assert new_pay_method.instances == 1
+    # Increase because of the post
+    assert data.get('pay_method').get('instances') + 1 == category.instances
+    assert data.get('category').get('instances') + 1 == category.instances
 
 
 # Pay method
@@ -100,6 +145,10 @@ def test_get_pay_methods(client):
     r_data = json.loads(rv.get_data(as_text=True))
     assert isinstance(r_data, list)
     assert all(x.get('active') for x in r_data)
+    print(r_data)
+    instances = [x.get('instances') for x in r_data]
+    print(instances)
+    assert sorted(instances, reverse=True) == instances
 
 
 def test_get_pay_method(client):
@@ -116,7 +165,7 @@ def test_get_deleted_pay_method(client):
 
 def test_post_pay_method(client):
     data = {'name': 'New visa'}
-    expected_data = {'name': 'New visa', 'active': True}
+    expected_data = {'name': 'New visa', 'active': True, 'instances': 0}
 
     rv = client.post('/pay_methods/', json=data)
     result = json.loads(rv.get_data(as_text=True))
