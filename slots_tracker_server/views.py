@@ -11,8 +11,8 @@ def home_page():
 
 @app.route('/charts/')
 def charts():
-    charts = Charts()
-    return charts.clac_charts()
+    chart = Charts()
+    return chart.clac_charts()
 
 
 register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')

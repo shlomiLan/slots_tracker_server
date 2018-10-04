@@ -1,15 +1,16 @@
 import datetime
-from typing import Tuple
+from typing import Tuple, Dict, Any, Union, Type
 
 import pandas as pd
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from flask import abort
+from flask.views import MethodView
 
 from slots_tracker_server import app
 
 
-def convert_to_object_id(str_id):
+def convert_to_object_id(str_id: str) -> Union[ObjectId]:
     if not str_id:
         abort(400, 'object ID can not be None')
     try:
@@ -19,34 +20,34 @@ def convert_to_object_id(str_id):
         abort(400, '{} is not a valid object ID'.format(str_id))
 
 
-def object_id_to_str(object_id):
+def object_id_to_str(object_id: ObjectId) -> str:
     return str(object_id)
 
 
-def find_and_convert_object_id(obj):
+def find_and_convert_object_id(obj: Dict[str, Any]) -> None:
     for k, v in obj.items():
         if isinstance(v, ObjectId):
             obj[k] = object_id_to_str(v)
 
 
-def date_to_str(date):
+def date_to_str(date) -> str:
     return str(date.date())
 
 
-def find_and_convert_date(obj):
+def find_and_convert_date(obj: Dict[str, Any]) -> None:
     for k, v in obj.items():
         if isinstance(v, datetime.datetime):
             obj[k] = date_to_str(v)
 
 
-def register_api(view, endpoint, url, pk='id', pk_type='string'):
+def register_api(view: Type[MethodView], endpoint: str, url: str, pk: str = 'id', pk_type: str = 'string') -> None:
     view_func = view.as_view(endpoint)
     app.add_url_rule(url, defaults={pk: None}, view_func=view_func, methods=['GET', ])
     app.add_url_rule(url, view_func=view_func, methods=['POST', ])
     app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func, methods=['GET', 'PUT', 'DELETE'])
 
 
-def clean_api_object(obj_data):
+def clean_api_object(obj_data: Dict[str, Any]) -> None:
     if obj_data.get('_id'):
         # Remove the object ID from obj_data
         del obj_data['_id']

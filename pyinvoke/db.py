@@ -123,10 +123,10 @@ def add_count_to_ref_fields(c, settings=None):
 
     # TODO: Change this so it will make changes based on chain(PayMethods.objects(), Categories.objects()
     # Now we repeat this process to many times
-    expenses = Expense.objects()
-    for expense in Bar('Resting').iter(expenses):
-        pass
-        # expense.update_reference_filed_count(reset=True)
+    # expenses = Expense.objects()
+    # for expense in Bar('Resting').iter(expenses):
+    #     pass
+    # expense.update_reference_filed_count(reset=True)
 
     expenses = Expense.objects()
     for expense in Bar('Updating').iter(expenses):
