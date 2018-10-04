@@ -57,6 +57,8 @@ def test_post_expenses(_, client, amount, description, timestamp, active, one_ti
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
+    assert len(result) == 1
+    result = result[0]
     # Clean the Expense
     clean_api_object(result)
     # Update instances counters
@@ -92,12 +94,16 @@ def test_update_expense(client):
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
+    assert len(result) == 1
+    result = result[0]
     result['amount'] = 100
     obj_id = result.get('_id')
     clean_api_object(result)
 
     rv = client.put('/expenses/{}'.format(obj_id), json=result)
     result = json.loads(rv.get_data(as_text=True))
+    assert len(result) == 1
+    result = result[0]
 
     # reload pay method and category
     pay_method = pay_method.reload()
@@ -120,6 +126,8 @@ def test_update_expense_change_ref_filed(client):
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
+    assert len(result) == 1
+    result = result[0]
     new_pay_method = PayMethods(name='Very random text 1111').save()
     result['pay_method'] = new_pay_method.to_json()
     obj_id = result.get('_id')
@@ -145,9 +153,7 @@ def test_get_pay_methods(client):
     r_data = json.loads(rv.get_data(as_text=True))
     assert isinstance(r_data, list)
     assert all(x.get('active') for x in r_data)
-    print(r_data)
     instances = [x.get('instances') for x in r_data]
-    print(instances)
     assert sorted(instances, reverse=True) == instances
 
 
@@ -209,3 +215,21 @@ def test_delete_pay_method(client):
     rv = client.delete('/pay_methods/{}'.format(pay_method.id))
     assert rv.status_code == 200
     assert pay_method.reload().active is False
+
+
+@mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
+def test_post_expenses_with_payments(_, client):
+    amount, description, timestamp, active, one_time = 100, 'A', datetime.datetime.today(), True, False
+    pay_method = PayMethods.objects().first()
+    category = Categories.objects().first()
+
+    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+            'category': category.to_json(), 'active': active, 'one_time': one_time}
+
+    payments = 3
+    rv = client.post(f'/expenses/?payments={payments}', json=data)
+    result = json.loads(rv.get_data(as_text=True))
+
+    assert rv.status_code == 201
+    assert isinstance(result, list)
+    assert len(result) == payments

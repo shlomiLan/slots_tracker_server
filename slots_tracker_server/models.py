@@ -44,12 +44,9 @@ class Expense(BaseDocument):
 
         return super(Expense, self).update(**kwargs)
 
-    def update_reference_filed_count(self, reset=False):
+    def update_reference_filed_count(self):
         for name, _ in self.get_all_reference_fields():
             ref_object = self.__getattribute__(name)
-            if reset:
-                ref_object.instances = 0
-            else:
-                ref_object.instances += 1
+            ref_object.instances += 1
 
             ref_object.save()

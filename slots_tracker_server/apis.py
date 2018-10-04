@@ -107,29 +107,16 @@ class ExpenseAPI(BaseAPI):
             for item in obj_data:
                 item[name] = document_type.objects.get(id=item.get(name)).to_json()
 
-        limit = int(request.args.get('limit')) if request.args.get('limit') else len(obj_data)
+        limit = int(request.args.get('limit', len(obj_data)))
         return json_util.dumps(obj_data[0] if obj_id else obj_data[:limit])
 
     def post(self, obj_data=None):
-        obj_data = self.get_obj_data()
-        self.reference_field_to_object_id(obj_data)
-        new_expense = super(ExpenseAPI, self).post(obj_data)
-        new_expense_as_json = new_expense.to_json()
-        self.objects_id_to_json(new_expense_as_json)
-
-        write_expense(new_expense)
-        return json_util.dumps(new_expense_as_json), 201
+        new_expenses_as_json = self.create_multi_expenses()
+        return new_expenses_as_json, 201
 
     def put(self, obj_id, obj_data=None):
-        obj_data = self.get_obj_data()
-        self.reference_field_to_object_id(obj_data)
-
-        new_expense = super(ExpenseAPI, self).put(obj_id, obj_data)
-        new_expense_as_json = new_expense.to_json()
-        self.objects_id_to_json(new_expense_as_json)
-
-        update_expense(new_expense)
-        return json_util.dumps(new_expense_as_json)
+        new_expenses_as_json = self.create_multi_expenses(obj_id=obj_id)
+        return new_expenses_as_json
 
     def reference_field_to_object_id(self, obj_data):
         for name, _ in self.api_class.get_all_reference_fields():
@@ -137,3 +124,29 @@ class ExpenseAPI(BaseAPI):
             if field_data and not isinstance(field_data, ObjectId):
                 field_data_id = field_data.get('_id') if isinstance(field_data, dict) else field_data
                 obj_data[name] = convert_to_object_id(field_data_id)
+
+    def create_multi_expenses(self, obj_id=None):
+        obj_data = self.get_obj_data()
+        self.reference_field_to_object_id(obj_data)
+
+        new_expenses = []
+        payments = int(request.args.get('payments', 1))
+        obj_data['amount'] = int(obj_data.get('amount')) / payments
+        for _ in range(payments):
+            new_expenses.append(self.create_expense(obj_data, obj_id))
+        return json_util.dumps(new_expenses)
+
+    def create_expense(self, obj_data, obj_id=None):
+        if obj_id:
+            new_expense = super(ExpenseAPI, self).put(obj_id, obj_data)
+        else:
+            new_expense = super(ExpenseAPI, self).post(obj_data)
+        new_expense_as_json = new_expense.to_json()
+        self.objects_id_to_json(new_expense_as_json)
+
+        if obj_id:
+            update_expense(new_expense)
+        else:
+            write_expense(new_expense)
+
+        return new_expense_as_json
