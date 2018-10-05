@@ -4,6 +4,8 @@ from typing import Tuple, Dict, Any, Union, Type
 import pandas as pd
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+from dateutil.parser import parse
+from dateutil.relativedelta import relativedelta
 from flask import abort
 from flask.views import MethodView
 
@@ -89,3 +91,7 @@ def get_bill_cycles(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.da
     end_cycle2 = pd.datetime(next_year, next_month, 9)
 
     return start_cycle1, end_cycle1, start_cycle2, end_cycle2
+
+
+def next_payment_date(current_date: str, payment: int = 1) -> datetime.datetime:
+    return parse(current_date) + relativedelta(months=+payment)

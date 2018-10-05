@@ -1,4 +1,5 @@
 import abc
+import copy
 
 from bson import json_util, ObjectId
 from flask import request
@@ -7,7 +8,7 @@ from mongoengine.errors import NotUniqueError
 
 from slots_tracker_server.gsheet import write_expense, update_expense
 from slots_tracker_server.models import Expense, PayMethods, Categories
-from slots_tracker_server.utils import convert_to_object_id, clean_api_object
+from slots_tracker_server.utils import convert_to_object_id, clean_api_object, next_payment_date
 
 
 class BaseAPI(MethodView):
@@ -131,9 +132,11 @@ class ExpenseAPI(BaseAPI):
 
         new_expenses = []
         payments = int(request.args.get('payments', 1))
-        obj_data['amount'] = int(obj_data.get('amount')) / payments
-        for _ in range(payments):
-            new_expenses.append(self.create_expense(obj_data, obj_id))
+        payments_data = copy.deepcopy(obj_data)
+        payments_data['amount'] = int(payments_data.get('amount')) / payments
+        for i in range(payments):
+            payments_data['timestamp'] = next_payment_date(obj_data['timestamp'], payment=i)
+            new_expenses.append(self.create_expense(payments_data, obj_id))
         return json_util.dumps(new_expenses)
 
     def create_expense(self, obj_data, obj_id=None):

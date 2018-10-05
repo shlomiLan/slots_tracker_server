@@ -88,7 +88,7 @@ def test_update_expense(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
-    amount, description, timestamp, active, one_time = 10, 'AAA', datetime.datetime.now(), True, False
+    amount, description, timestamp, active, one_time = test_expense()
     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
@@ -120,7 +120,7 @@ def test_update_expense_change_ref_filed(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
-    amount, description, timestamp, active, one_time = 10, 'AAA', datetime.datetime.now(), True, False
+    amount, description, timestamp, active, one_time = test_expense()
     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
@@ -219,7 +219,7 @@ def test_delete_pay_method(client):
 
 @mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
 def test_post_expenses_with_payments(_, client):
-    amount, description, timestamp, active, one_time = 100, 'A', datetime.datetime.today(), True, False
+    amount, description, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
@@ -233,3 +233,7 @@ def test_post_expenses_with_payments(_, client):
     assert rv.status_code == 201
     assert isinstance(result, list)
     assert len(result) == payments
+
+
+def test_expense():
+    return 100, 'A', datetime.datetime.utcnow(), True, False

@@ -16,3 +16,5 @@ sendgrid==5.6.0
 
 # Charts
 pandas==0.23.4
+
+dateutils==0.6.6

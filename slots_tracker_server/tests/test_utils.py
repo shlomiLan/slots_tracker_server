@@ -6,7 +6,7 @@ from bson import ObjectId
 from werkzeug.exceptions import BadRequest
 
 from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date, \
-    get_bill_cycles
+    get_bill_cycles, next_payment_date
 
 VALID_ID = '5b5c8a2b2c88848042426dff'
 INVALID_ID = '5b5c8a2b2c88848042426dffa'
@@ -101,3 +101,20 @@ def test_get_bill_cycles():
     assert end_cycle1 == pd.datetime(2018, 2, 9)
     assert start_cycle2 == pd.datetime(2018, 2, 10)
     assert end_cycle2 == pd.datetime(2018, 3, 9)
+
+
+def test_next_payment_date():
+    date = str(datetime.datetime(2018, 2, 10))
+    assert next_payment_date(date) == pd.datetime(2018, 3, 10)
+
+    date = str(datetime.datetime(2018, 12, 21))
+    assert next_payment_date(date, payment=2) == pd.datetime(2019, 2, 21)
+
+    date = str(datetime.datetime(2018, 1, 31))
+    assert next_payment_date(date) == pd.datetime(2018, 2, 28)
+
+    date = str(datetime.datetime(2018, 1, 31))
+    assert next_payment_date(date, payment=2) == pd.datetime(2018, 3, 31)
+
+    date = str(datetime.datetime(2018, 10, 29))
+    assert next_payment_date(date, payment=3) == pd.datetime(2019, 1, 29)
