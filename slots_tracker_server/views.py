@@ -19,7 +19,7 @@ def charts():
 def handle_general_exception(e):
     app.logger.error(e)
     sentry.captureException()
-    return "An error occurred, I'm on it to fix it :-)", e.code or 400
+    return "An error occurred, I'm on it to fix it :-)", 400 or e.code
 
 
 register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')
