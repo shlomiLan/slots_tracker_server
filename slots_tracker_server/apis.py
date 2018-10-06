@@ -133,7 +133,7 @@ class ExpenseAPI(BaseAPI):
         new_expenses = []
         payments = int(request.args.get('payments', 1))
         payments_data = copy.deepcopy(obj_data)
-        payments_data['amount'] = int(payments_data.get('amount')) / payments
+        payments_data['amount'] = float(payments_data.get('amount')) / payments
         for i in range(payments):
             payments_data['timestamp'] = next_payment_date(obj_data['timestamp'], payment=i)
             new_expenses.append(self.create_expense(payments_data, obj_id))

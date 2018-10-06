@@ -45,7 +45,7 @@ def test_get_expense_404(client):
 
 
 @mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
-@given(amount=st.integers(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
+@given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
 def test_post_expenses(_, client, amount, description, timestamp, active, one_time):
