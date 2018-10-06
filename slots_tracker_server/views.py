@@ -1,4 +1,4 @@
-from slots_tracker_server import app
+from slots_tracker_server import app, sentry
 from slots_tracker_server.apis import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.utils import register_api
@@ -13,6 +13,12 @@ def home_page():
 def charts():
     chart = Charts()
     return chart.clac_charts()
+
+
+@app.errorhandler(Exception)
+def handle_general_exception(e):
+    sentry.captureException()
+    return "An error occurred, I'm on it to fix it :-)", 400
 
 
 register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')
