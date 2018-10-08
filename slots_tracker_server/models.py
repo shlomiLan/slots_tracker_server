@@ -50,3 +50,16 @@ class Expense(BaseDocument):
             ref_object.instances += 1
 
             ref_object.save()
+
+
+class Kinds(BaseDocument):
+    name = db.StringField(required=True, max_length=200, unique=True)
+    active = db.BooleanField(default=True)
+
+
+class Withdrawal(BaseDocument):
+    amount = db.FloatField(required=True)
+    timestamp = db.DateTimeField(required=True)
+    pay_method = db.ReferenceField(PayMethods, required=True)
+    kind = db.ReferenceField(PayMethods, required=True)
+    active = db.BooleanField(default=True)

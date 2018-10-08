@@ -44,7 +44,7 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-@mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
+@mock.patch('slots_tracker_server.api.base.write_expense', return_value='None')
 @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
@@ -217,7 +217,7 @@ def test_delete_pay_method(client):
     assert pay_method.reload().active is False
 
 
-@mock.patch('slots_tracker_server.apis.write_expense', return_value='None')
+@mock.patch('slots_tracker_server.api.base.write_expense', return_value='None')
 def test_post_expenses_with_payments(_, client):
     amount, description, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()

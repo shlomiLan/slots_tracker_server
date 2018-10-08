@@ -1,5 +1,5 @@
 from slots_tracker_server import app, sentry
-from slots_tracker_server.apis import ExpenseAPI, PayMethodsAPI, CategoriesAPI
+from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.utils import register_api
 
