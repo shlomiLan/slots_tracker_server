@@ -5,7 +5,7 @@ from flask import request
 from flask.views import MethodView
 from mongoengine import NotUniqueError
 
-from slots_tracker_server.gsheet import write_expense, update_expense
+from slots_tracker_server import gsheet
 from slots_tracker_server.utils import convert_to_object_id, clean_api_object
 
 
@@ -67,9 +67,9 @@ class BaseAPI(MethodView):
         self.objects_id_to_json(new_doc_as_json)
 
         if obj_id:
-            update_expense(new_doc)
+            gsheet.update_doc(new_doc)
         else:
-            write_expense(new_doc)
+            gsheet.write_doc(new_doc)
 
         return new_doc_as_json
 

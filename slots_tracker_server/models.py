@@ -61,5 +61,5 @@ class Withdrawal(BaseDocument):
     amount = db.FloatField(required=True)
     timestamp = db.DateTimeField(required=True)
     pay_method = db.ReferenceField(PayMethods, required=True)
-    kind = db.ReferenceField(PayMethods, required=True)
+    kind = db.ReferenceField(Kinds, required=True)
     active = db.BooleanField(default=True)

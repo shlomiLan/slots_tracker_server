@@ -44,7 +44,7 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-@mock.patch('slots_tracker_server.api.base.write_expense', return_value='None')
+@mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
 @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
@@ -128,6 +128,8 @@ def test_update_expense_change_ref_filed(client):
     result = json.loads(rv.get_data(as_text=True))
     assert len(result) == 1
     result = result[0]
+    old_pay_method = pay_method.to_json()
+
     new_pay_method = PayMethods(name='Very random text 1111').save()
     result['pay_method'] = new_pay_method.to_json()
     obj_id = result.get('_id')
@@ -137,13 +139,14 @@ def test_update_expense_change_ref_filed(client):
     _ = json.loads(rv.get_data(as_text=True))
 
     # reload pay method and category
+    pay_method = pay_method.reload()
     new_pay_method = new_pay_method.reload()
     category = category.reload()
 
     assert rv.status_code == 200
     assert new_pay_method.instances == 1
     # Increase because of the post
-    assert data.get('pay_method').get('instances') + 1 == category.instances
+    assert old_pay_method.get('instances') == pay_method.instances
     assert data.get('category').get('instances') + 1 == category.instances
 
 
@@ -217,7 +220,7 @@ def test_delete_pay_method(client):
     assert pay_method.reload().active is False
 
 
-@mock.patch('slots_tracker_server.api.base.write_expense', return_value='None')
+@mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
 def test_post_expenses_with_payments(_, client):
     amount, description, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()

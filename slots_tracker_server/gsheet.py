@@ -1,11 +1,13 @@
 import json
 import os
 import time
+from typing import Union, Dict, Type
 
 import gspread
 from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 
+from slots_tracker_server.models import Expense, Withdrawal
 from slots_tracker_server.utils import object_id_to_str
 
 START_COLUMN = 'A'
@@ -27,61 +29,84 @@ def init_connection():
     return gspread.authorize(credentials)
 
 
-def get_worksheet():
+def get_worksheet(doc_type: Type[Union[Expense, Withdrawal]]):
     gc = init_connection()
-    return gc.open_by_key(os.environ.get('GSHEET_ID')).worksheet('All data')
+    sheet_name = 'Withdrawal' if doc_type == Withdrawal else 'All data'
+    return gc.open_by_key(os.environ.get('GSHEET_ID')).worksheet(sheet_name)
 
 
-def write_expense(expense):
-    wks = get_worksheet()
+def write_doc(doc: Union[Expense, Withdrawal]) -> None:
+    wks = get_worksheet(type(doc))
     headers = get_headers(wks)
     new_index = find_last_row(wks) + 1
     value_list = []
 
-    expense_as_json = clean_expense_for_write(expense)
+    doc_as_json = doc_to_json(doc)
+
     for i, header in enumerate(headers):
-        value_list.append(expense_as_json[header.value])
+        if header.value:
+            value_list.append(doc_as_json[header.value])
 
     update_with_retry(wks, index=new_index, value_list=value_list)
 
 
-def update_expense(expense):
-    wks = get_worksheet()
-    headers = get_headers(wks)
-    cell = wks.find(object_id_to_str(expense.id))
-    expense_row = cell.row
-    expense_gsheet_data = get_expense_by_row(wks, expense_row)
+def doc_to_json(doc):
+    if isinstance(doc, Expense):
+        return clean_expense_for_write(doc)
+    else:
+        return clean_withdrawal_for_write(doc)
 
-    expense_as_json = clean_expense_for_write(expense)
+
+def update_doc(doc: Union[Expense, Withdrawal]):
+    wks = get_worksheet(type(doc))
+    headers = get_headers(wks)
+    cell = wks.find(object_id_to_str(doc.id))
+    doc_row = cell.row
+    doc_gsheet_data = get_row_data(wks, doc_row)
+
+    doc_as_json = doc_to_json(doc)
     updates = 0
     for i, header in enumerate(headers):
-        new_expense_value = str(expense_as_json[header.value])
-        existing_value = expense_gsheet_data[i].value
+        new_doc_value = str(doc_as_json[header.value])
+        existing_value = doc_gsheet_data[i].value
 
-        if new_expense_value != existing_value:
+        if new_doc_value != existing_value:
             if header.value == 'timestamp':
-                if compare_dates(new_expense_value, existing_value):
+                if compare_dates(new_doc_value, existing_value):
                     continue
             elif header.value == 'amount':
-                if compare_floats(new_expense_value, existing_value):
+                if compare_floats(new_doc_value, existing_value):
                     continue
 
             updates += 1
-            update_with_retry(wks, row=expense_row, col=i + 1, value=new_expense_value)
+            update_with_retry(wks, row=doc_row, col=i + 1, value=new_doc_value)
 
     return updates
 
 
-def clean_expense_for_write(expense):
+def clean_expense_for_write(expense: Expense):
     temp = expense.to_json()
     temp['pay_method'] = expense.pay_method.name
     temp['category'] = expense.category.name
     temp['one_time'] = 'One time' if expense.one_time else 'Regular'
-    if '-' in temp['timestamp']:
-        year, month, day = temp['timestamp'].split('-')
-        temp['timestamp'] = f'{month}/{day}/{year}'
+    convert_timestamp(temp)
 
     return temp
+
+
+def clean_withdrawal_for_write(withdrawal: Withdrawal):
+    temp = withdrawal.to_json()
+    temp['pay_method'] = withdrawal.pay_method.name
+    temp['kind'] = withdrawal.kind.name
+    convert_timestamp(temp)
+
+    return temp
+
+
+def convert_timestamp(dictionary: Dict):
+    if '-' in dictionary['timestamp']:
+        year, month, day = dictionary['timestamp'].split('-')
+        dictionary['timestamp'] = f'{month}/{day}/{year}'
 
 
 def find_last_row(wks):
@@ -92,7 +117,7 @@ def get_headers(wks):
     return wks.range(f'{START_COLUMN}1:{END_COLUMN}1')
 
 
-def get_expense_by_row(wks, row):
+def get_row_data(wks, row):
     return wks.range(f'{START_COLUMN}{row}:{END_COLUMN}{row}')
 
 
@@ -135,16 +160,16 @@ def update_with_retry(wks, row=None, col=None, value=None, index=None, value_lis
                 raise e
 
 
-def compare_dates(expense_date, gsheet_date):
-    month1, day1, year1 = expense_date.split('/')
+def compare_dates(doc_date, gsheet_date):
+    month1, day1, year1 = doc_date.split('/')
     day2, month2, year2 = gsheet_date.split('/')
 
     year1 = year1[2:]
     return int(year1) == int(year2) and int(month1) == int(month2) and int(day1) == int(day2)
 
 
-def compare_floats(expense_number, gsheet_number):
+def compare_floats(doc_number, gsheet_number):
     try:
-        return float(expense_number) == float(gsheet_number.replace(',', ''))
+        return float(doc_number) == float(gsheet_number.replace(',', ''))
     except ValueError:
         return True
