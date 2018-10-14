@@ -55,32 +55,43 @@ def get_venv_action():
         return f'{BASEDIR}\\venv\\Scripts\\activate'
 
 
-def translate(expense_data):
+def translate(doc_data):
     trans_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'translate.yml'))
 
-    for k, v in expense_data.items():
+    for k, v in doc_data.items():
         if trans_data.get(k):
             if trans_data[k].get(v):
-                expense_data[k] = trans_data[k][v]
+                doc_data[k] = trans_data[k][v]
 
 
 def transform_expense_to_dict(expense_data, headers):
     return {headers[i].value: expense_data[i] for i in range(len(expense_data))}
 
 
-def reference_objects_str_to_id(expense_data):
-    from slots_tracker_server.models import PayMethods, Categories
+def reference_objects_str_to_id(doc_data):
+    from slots_tracker_server.models import PayMethods, Categories, Kinds
     try:
-        expense_data['pay_method'] = PayMethods.objects.get(name=expense_data.get('pay_method'))
-        expense_data['category'] = Categories.objects.get(name=expense_data.get('category'))
+        doc_data['pay_method'] = PayMethods.objects.get(name=doc_data.get('pay_method'))
     except DoesNotExist:
-        print(f'Error in pay method or category: {expense_data.get("pay_method")} and {expense_data.get("category")}')
+        print(f'Error in Pay method: {doc_data.get("pay_method")}')
+
+    try:
+        if doc_data.get('category'):
+            doc_data['category'] = Categories.objects.get(name=doc_data.get('category'))
+    except DoesNotExist:
+        print(f'Error in Category: {doc_data.get("category")}')
+    try:
+        if doc_data.get('kind'):
+            doc_data['kind'] = Kinds.objects.get(name=doc_data.get('kind'))
+    except DoesNotExist:
+        print(f'Error in Kind: {doc_data.get("kind")}')
 
 
-def clean_expense(expense_data):
-    del expense_data['_id']
-    expense_data['amount'] = expense_data.get('amount').replace(',', '')
-    expense_data['one_time'] = expense_data['one_time'] == 'one_time'
-    if '/' in expense_data['timestamp']:
-        day, month, year = expense_data['timestamp'].split('/')
-        expense_data['timestamp'] = f'20{year}-{month}-{day}'
+def clean_doc_data(doc_data):
+    del doc_data['_id']
+    doc_data['amount'] = doc_data.get('amount').replace(',', '')
+    if doc_data.get('one_time'):
+        doc_data['one_time'] = doc_data['one_time'] == 'one_time'
+    if '/' in doc_data['timestamp']:
+        day, month, year = doc_data['timestamp'].split('/')
+        doc_data['timestamp'] = f'20{year}-{month}-{day}'

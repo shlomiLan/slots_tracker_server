@@ -7,7 +7,7 @@ from progress.bar import Bar
 
 from pyinvoke.base import init_app
 from pyinvoke.email import email
-from pyinvoke.utils import transform_expense_to_dict, translate, reference_objects_str_to_id, clean_expense, BASEDIR, \
+from pyinvoke.utils import transform_expense_to_dict, translate, reference_objects_str_to_id, clean_doc_data, BASEDIR, \
     BACKUPS, run, load_yaml_from_file
 
 
@@ -17,6 +17,8 @@ def clean_db(c, settings=None):
     clean_expenses(c)
     clean_pay_methods(c)
     clean_categories(c)
+    clean_kinds(c)
+    clean_withdrawals(c)
 
 
 @task(init_app)
@@ -42,8 +44,26 @@ def clean_categories(_):
     # Leave here tp prevent circular import
     from slots_tracker_server.models import Categories
 
-    print('Removing all pay methods objects')
+    print('Removing all categories objects')
     Categories.objects.delete()
+
+
+@task(init_app)
+def clean_kinds(_):
+    # Leave here tp prevent circular import
+    from slots_tracker_server.models import Kinds
+
+    print('Removing all kinds objects')
+    Kinds.objects.delete()
+
+
+@task(init_app)
+def clean_withdrawals(_):
+    # Leave here tp prevent circular import
+    from slots_tracker_server.models import Withdrawal
+
+    print('Removing all withdrawal objects')
+    Withdrawal.objects.delete()
 
 
 @task()
@@ -52,9 +72,10 @@ def init_db(c, env=None, settings=None):
     clean_db(c, settings)
     initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
     # Leave here tp prevent circular import
-    from slots_tracker_server.models import PayMethods, Categories
+    from slots_tracker_server.models import PayMethods, Categories, Kinds
     insert_db_data(PayMethods, initial_data.get('pay_methods'))
     insert_db_data(Categories, initial_data.get('categories'))
+    insert_db_data(Kinds, initial_data.get('kinds'))
 
 
 def insert_db_data(cls, db_data):
@@ -88,32 +109,40 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
 
 
 @task()
-def sync_db_from_gsheet(c, settings=None, reset_db=True):
+def sync_db_from_gsheet(c, settings=None, reset_db=False, cls='expense'):
     init_app(c, settings=settings)
     if reset_db:
         init_db(c, settings=settings)
 
     import slots_tracker_server.gsheet as gsheet
-    wks = gsheet.get_worksheet()
+    from slots_tracker_server.models import Expense, Withdrawal, Kinds
+
+    # Reset only withdrawals data
+    # clean_kinds(c)
+    clean_withdrawals(c)
+    if not Kinds.objects:
+        initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
+        insert_db_data(Kinds, initial_data.get('kinds'))
+
+    cls = Withdrawal if cls != 'expense' else Expense
+    wks = gsheet.get_worksheet(cls)
     headers = gsheet.get_headers(wks)
     last_row = gsheet.find_last_row(wks)
     g_data = gsheet.get_all_data(wks)
 
     # skip the headers row
-    for i, row in enumerate(g_data[1:last_row], start=2):
-        expense_data = row[:gsheet.end_column_as_number()]
+    for i, row in enumerate(Bar('Reading data').iter(g_data[1:last_row]), start=2):
+        doc_data = row[:gsheet.end_column_as_number()]
         # Only write to DB rows without id
-        if not expense_data[0]:
-            print(f'Processing row number: {i}')
-            expense_dict = transform_expense_to_dict(expense_data, headers)
-            translate(expense_dict)
-            reference_objects_str_to_id(expense_dict)
-            clean_expense(expense_dict)
+        if not doc_data[0]:
+            doc_dict = transform_expense_to_dict(doc_data, headers)
+            translate(doc_dict)
+            reference_objects_str_to_id(doc_dict)
+            clean_doc_data(doc_dict)
 
-            from slots_tracker_server.models import Expense
-            expense = Expense(**expense_dict).save()
+            doc = cls(**doc_dict).save()
             # Update the id column
-            gsheet.update_with_retry(wks, row=i, col=1, value=str(expense.id))
+            gsheet.update_with_retry(wks, row=i, col=1, value=str(doc.id))
 
 
 @task()
