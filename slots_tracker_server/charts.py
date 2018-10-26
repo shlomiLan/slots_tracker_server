@@ -121,8 +121,7 @@ class Charts:
                 labels: List[str] = series.index.tolist()
                 c_data: List[Dict[str, Any]] = [dict(data=series.values.tolist(), label='')]
                 options: Dict[str, Any] = \
-                    dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title, display=True),
-                         plugins=dict(datalabels=dict(anchor='end', align='end')), legend=dict(display=False))
+                    dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title))
 
                 if c_type == 'line':
                     for d in c_data:
