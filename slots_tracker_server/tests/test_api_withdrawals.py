@@ -97,8 +97,8 @@ def test_update_withdrawal(client):
 
     assert rv.status_code == 200
     assert result.get('amount') == 100
-    # Increase because of the post
-    assert data.get('pay_method').get('instances') + 1 == pay_method.instances
+    # No increase because this is not an expense
+    assert data.get('pay_method').get('instances') == pay_method.instances
 
 
 def test_update_withdrawal_change_ref_filed(client):
@@ -115,12 +115,12 @@ def test_update_withdrawal_change_ref_filed(client):
     result = result[0]
     old_pay_method = pay_method.to_json()
 
-    new_pay_method = PayMethods(name='Very random text 1111').save()
+    new_pay_method = PayMethods(name='Very random text 1111345').save()
     result['pay_method'] = new_pay_method.to_json()
     obj_id = result.get('_id')
     clean_api_object(result)
 
-    rv = client.put('/expenses/{}'.format(obj_id), json=result)
+    rv = client.put('/withdrawals/{}'.format(obj_id), json=result)
     _ = json.loads(rv.get_data(as_text=True))
 
     # reload pay methods

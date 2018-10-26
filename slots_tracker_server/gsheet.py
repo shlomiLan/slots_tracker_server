@@ -31,7 +31,11 @@ def init_connection():
 
 def get_worksheet(doc_type: Type[Union[Expense, Withdrawal]]):
     gc = init_connection()
-    sheet_name = 'Withdrawal' if doc_type == Withdrawal else 'All data'
+    sheet_name = 'All data'
+    if doc_type == Withdrawal:
+        sheet_name = 'Withdrawal'
+        global END_COLUMN
+        END_COLUMN = 'E'
     return gc.open_by_key(os.environ.get('GSHEET_ID')).worksheet(sheet_name)
 
 
