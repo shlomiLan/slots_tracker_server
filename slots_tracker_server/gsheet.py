@@ -1,13 +1,13 @@
 import json
 import os
 import time
-from typing import Union, Dict, Type
+from typing import Dict
 
 import gspread
 from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 
-from slots_tracker_server.models import Expense, Withdrawal
+from slots_tracker_server.models import Expense
 from slots_tracker_server.utils import object_id_to_str
 
 START_COLUMN = 'A'
@@ -29,18 +29,14 @@ def init_connection():
     return gspread.authorize(credentials)
 
 
-def get_worksheet(doc_type: Type[Union[Expense, Withdrawal]]):
+def get_worksheet():
     gc = init_connection()
     sheet_name = 'All data'
-    if doc_type == Withdrawal:
-        sheet_name = 'Withdrawal'
-        global END_COLUMN
-        END_COLUMN = 'E'
     return gc.open_by_key(os.environ.get('GSHEET_ID')).worksheet(sheet_name)
 
 
-def write_doc(doc: Union[Expense, Withdrawal]) -> None:
-    wks = get_worksheet(type(doc))
+def write_doc(doc: Expense) -> None:
+    wks = get_worksheet()
     headers = get_headers(wks)
     new_index = find_last_row(wks) + 1
     value_list = []
@@ -55,14 +51,11 @@ def write_doc(doc: Union[Expense, Withdrawal]) -> None:
 
 
 def doc_to_json(doc):
-    if isinstance(doc, Expense):
-        return clean_expense_for_write(doc)
-    else:
-        return clean_withdrawal_for_write(doc)
+    return clean_expense_for_write(doc)
 
 
-def update_doc(doc: Union[Expense, Withdrawal]):
-    wks = get_worksheet(type(doc))
+def update_doc(doc: Expense):
+    wks = get_worksheet()
     headers = get_headers(wks)
     cell = wks.find(object_id_to_str(doc.id))
     doc_row = cell.row
@@ -93,15 +86,6 @@ def clean_expense_for_write(expense: Expense):
     temp['pay_method'] = expense.pay_method.name
     temp['category'] = expense.category.name
     temp['one_time'] = 'One time' if expense.one_time else 'Regular'
-    convert_timestamp(temp)
-
-    return temp
-
-
-def clean_withdrawal_for_write(withdrawal: Withdrawal):
-    temp = withdrawal.to_json()
-    temp['pay_method'] = withdrawal.pay_method.name
-    temp['kind'] = withdrawal.kind.name
     convert_timestamp(temp)
 
     return temp

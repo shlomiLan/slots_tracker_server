@@ -17,8 +17,6 @@ def clean_db(c, settings=None):
     clean_expenses(c)
     clean_pay_methods(c)
     clean_categories(c)
-    clean_kinds(c)
-    clean_withdrawals(c)
 
 
 @task(init_app)
@@ -48,34 +46,15 @@ def clean_categories(_):
     Categories.objects.delete()
 
 
-@task(init_app)
-def clean_kinds(_):
-    # Leave here tp prevent circular import
-    from slots_tracker_server.models import Kinds
-
-    print('Removing all kinds objects')
-    Kinds.objects.delete()
-
-
-@task(init_app)
-def clean_withdrawals(_):
-    # Leave here tp prevent circular import
-    from slots_tracker_server.models import Withdrawal
-
-    print('Removing all withdrawal objects')
-    Withdrawal.objects.delete()
-
-
 @task()
 def init_db(c, env=None, settings=None):
     init_app(c, env, settings)
     clean_db(c, settings)
     initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
     # Leave here tp prevent circular import
-    from slots_tracker_server.models import PayMethods, Categories, Kinds
+    from slots_tracker_server.models import PayMethods, Categories
     insert_db_data(PayMethods, initial_data.get('pay_methods'))
     insert_db_data(Categories, initial_data.get('categories'))
-    insert_db_data(Kinds, initial_data.get('kinds'))
 
 
 def insert_db_data(cls, db_data):
@@ -117,23 +96,16 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
 
 
 @task()
-def sync_db_from_gsheet(c, settings=None, reset_db=False, cls='expense'):
+def sync_db_from_gsheet(c, settings=None, reset_db=False):
     init_app(c, settings=settings)
     if reset_db:
         init_db(c, settings=settings)
 
     import slots_tracker_server.gsheet as gsheet
-    from slots_tracker_server.models import Expense, Withdrawal, Kinds
+    from slots_tracker_server.models import Expense
 
-    # Reset only withdrawals data
-    # clean_kinds(c)
-    clean_withdrawals(c)
-    if not Kinds.objects:
-        initial_data = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'init_db.yml'))
-        insert_db_data(Kinds, initial_data.get('kinds'))
-
-    cls = Withdrawal if cls != 'expense' else Expense
-    wks = gsheet.get_worksheet(cls)
+    cls = Expense
+    wks = gsheet.get_worksheet()
     headers = gsheet.get_headers(wks)
     last_row = gsheet.find_last_row(wks)
     g_data = gsheet.get_all_data(wks)

@@ -19,29 +19,21 @@ def test_init_connection_no_credentials():
 
 
 def test_get_worksheet():
-    # Leave here to prevent circular import
-    from slots_tracker_server.models import Expense
-    assert isinstance(gsheet.get_worksheet(Expense), Worksheet)
+    assert isinstance(gsheet.get_worksheet(), Worksheet)
 
 
 def test_find_last_row():
-    # Leave here to prevent circular import
-    from slots_tracker_server.models import Expense
-    wks = gsheet.get_worksheet(Expense)
+    wks = gsheet.get_worksheet()
     assert gsheet.find_last_row(wks) > 0
 
 
 def test_get_header():
-    # Leave here to prevent circular import
-    from slots_tracker_server.models import Expense
-    wks = gsheet.get_worksheet(Expense)
+    wks = gsheet.get_worksheet()
     assert isinstance(gsheet.get_headers(wks), list)
 
 
 def test_get_all_data():
-    # Leave here to prevent circular import
-    from slots_tracker_server.models import Expense
-    wks = gsheet.get_worksheet(Expense)
+    wks = gsheet.get_worksheet()
     assert isinstance(gsheet.get_all_data(wks), list)
 
 
@@ -49,7 +41,7 @@ def test_write_expense():
     # Leave here to prevent circular import
     from slots_tracker_server.models import Expense
     expense = Expense.objects[0]
-    wks = gsheet.get_worksheet(Expense)
+    wks = gsheet.get_worksheet()
     last_row = gsheet.find_last_row(wks)
     gsheet.write_doc(expense)
 
@@ -59,9 +51,7 @@ def test_write_expense():
 
 
 def test_update_with_retry_invalid_params():
-    # Leave here to prevent circular import
-    from slots_tracker_server.models import Expense
-    wks = gsheet.get_worksheet(Expense)
+    wks = gsheet.get_worksheet()
     with pytest.raises(ValueError):
         gsheet.update_with_retry(wks, row=1, value=10)
 
