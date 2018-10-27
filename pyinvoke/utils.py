@@ -69,7 +69,7 @@ def transform_expense_to_dict(expense_data, headers):
 
 
 def reference_objects_str_to_id(doc_data):
-    from slots_tracker_server.models import PayMethods, Categories, Kinds
+    from slots_tracker_server.models import PayMethods, Categories
     try:
         doc_data['pay_method'] = PayMethods.objects.get(name=doc_data.get('pay_method'))
     except DoesNotExist:
@@ -80,11 +80,6 @@ def reference_objects_str_to_id(doc_data):
             doc_data['category'] = Categories.objects.get(name=doc_data.get('category'))
     except DoesNotExist:
         print(f'Error in Category: {doc_data.get("category")}')
-    try:
-        if doc_data.get('kind'):
-            doc_data['kind'] = Kinds.objects.get(name=doc_data.get('kind'))
-    except DoesNotExist:
-        print(f'Error in Kind: {doc_data.get("kind")}')
 
 
 def clean_doc_data(doc_data):
