@@ -15,15 +15,16 @@ def charts():
     return chart.clac_charts()
 
 
-@app.errorhandler(Exception)
-def handle_general_exception(e):
-    app.logger.error(e)
-    sentry.captureException()
-    code = 400
-    if hasattr(e, 'code'):
-        code = e.code
+if not app.debug:
+    @app.errorhandler(Exception)
+    def handle_general_exception(e):
+        app.logger.error(e)
+        sentry.captureException()
+        code = 400
+        if hasattr(e, 'code'):
+            code = e.code
 
-    return "An error occurred, I'm on it to fix it :-)", code
+        return "An error occurred, I'm on it to fix it :-)", code
 
 
 register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')
