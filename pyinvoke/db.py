@@ -107,7 +107,7 @@ def backup_db(c, settings='prod', force_restore=False):
 
 @task()
 def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
-    init_app(c, settings=settings)
+    init_app(c, settings=settings, force=True)
     host, port, db_name, username, password = get_db_info()
     source_path = os.path.join(BACKUPS, date, backup_db_name)
     run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)

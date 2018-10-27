@@ -6,9 +6,9 @@ from pyinvoke.utils import load_yaml_from_file, set_env_var, BASEDIR, run
 
 
 @task()
-def init_app(c, env=None, settings=None):
+def init_app(c, env=None, settings=None, force=False):
     # Prevent execute this function more than once
-    if not os.environ.get('FLASK_APP'):
+    if force or not os.environ.get('FLASK_APP'):
         # Load the basic configs
         env_vars = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'settings.yml'))
 
