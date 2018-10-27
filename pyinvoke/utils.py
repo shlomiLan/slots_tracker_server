@@ -9,12 +9,12 @@ BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir
 BACKUPS = os.path.join(BASEDIR, 'backups')
 
 
-def run(c, command, with_venv=True):
+def run(c, command, with_venv=True, warn=False):
     if with_venv:
         command = '{} && {}'.format(get_venv_action(), command)
 
     print('Running: {}'.format(command))
-    c.run(command)
+    return c.run(command, warn=warn)
 
 
 def set_env_var(c, name, value, env, is_protected=True, heroku_app_name=None):

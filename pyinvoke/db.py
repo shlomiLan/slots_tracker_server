@@ -96,8 +96,13 @@ def backup_db(c, settings='prod', force_restore=False):
     day = datetime.datetime.now().day
     # If first backup of the month or force
     if day <= 7 or force_restore:
-        restore_db(c, today_str)
-        email(c, subject='DB restore test', content=f'The {today_str} daily backup was restored to stage successfully.')
+        res = restore_db(c, today_str)
+        if res.exited == 1:
+            email_text = res.stderr
+        else:
+            email_text = f'The {today_str} daily backup was restored to stage successfully.'
+
+        email(c, subject='DB restore test', content=email_text)
 
 
 @task()
