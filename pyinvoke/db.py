@@ -110,7 +110,10 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
     init_app(c, settings=settings, force=True)
     host, port, db_name, username, password = get_db_info()
     source_path = os.path.join(BACKUPS, date, backup_db_name)
-    run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
+    if settings == 'dev':
+        run(c, f'mongorestore -h {host}:{port} -d {db_name} {source_path} --drop', False)
+    else:
+        run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
 
 
 @task()
@@ -168,8 +171,9 @@ def add_count_to_ref_fields(c, settings=None):
 
 
 def get_db_info():
-    return os.environ['DB_HOST'], os.environ['DB_PORT'], os.environ['DB_NAME'], os.environ['DB_USERNAME'], \
-           os.environ['DB_PASS']
+    # Use get to not get error when loading the 'dev' settings
+    return os.environ['DB_HOST'], os.environ['DB_PORT'], os.environ['DB_NAME'], os.environ.get('DB_USERNAME'), \
+           os.environ.get('DB_PASS')
 
 
 @task()

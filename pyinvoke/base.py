@@ -12,7 +12,7 @@ def init_app(c, env=None, settings=None, force=False):
         # Load the basic configs
         env_vars = load_yaml_from_file(os.path.join(BASEDIR, 'resources', 'settings.yml'))
 
-        if settings:
+        if settings and settings != 'dev':
             env_vars.update(load_yaml_from_file(os.path.join(BASEDIR, 'resources', f'settings_{settings}.yml')))
 
         heroku_app_name = env_vars.pop('HEROKU_APP_NAME').get('value')
