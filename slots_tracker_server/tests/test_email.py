@@ -7,7 +7,7 @@ import slots_tracker_server.email as email
 
 
 @mock.patch('slots_tracker_server.email.send_email', return_value={'status_code': 202})
-def test_send_email(_, __):
+def test_send_email(_, client):
     res = email.send_email(content='This is test content', subject='Test subject')
     assert res.get('status_code') == 202
 
