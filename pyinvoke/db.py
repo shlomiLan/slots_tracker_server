@@ -97,7 +97,7 @@ def backup_db(c, settings='prod', force_restore=False):
     # If first backup of the month or force
     if day <= 7 or force_restore:
         res = restore_db(c, today_str)
-        if res.exited == 1:
+        if res and res.exited != 0:
             email_text = res.stderr
         else:
             email_text = f'The {today_str} daily backup was restored to stage successfully.'
