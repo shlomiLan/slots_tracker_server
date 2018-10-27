@@ -48,7 +48,8 @@ class Charts:
         self.get_expense_data()
         one_time = self.expense_data[self.expense_data.one_time]
         not_one_time = self.expense_data[~self.expense_data.one_time]
-        self.datasets = dict(one_time=one_time, not_one_time=not_one_time)
+        days = (not_one_time.timestamp.max() - one_time.timestamp.min()).days
+        self.datasets = dict(one_time=dict(data=one_time), not_one_time=dict(data=not_one_time, days=days))
 
     def clac_charts(self):
         self.get_datasets()
@@ -59,15 +60,16 @@ class Charts:
         return json.dumps(self.charts)
 
     def regular_expense_charts(self):
-        chart_data = self.datasets.get('not_one_time')
+        chart_data = self.datasets.get('not_one_time').get('data')
+        days = self.datasets.get('not_one_time').get('days1')
 
         # Chart 4 - Regular (not one time) expenses
-        temp = chart_data.groupby('category').sum().round().amount.sort_values(ascending=False)
+        temp = round((chart_data.groupby('category').sum().amount.sort_values(ascending=False) / days) * 30, 1)
         title = 'Regular (not one time) expenses'
         self.charts.insert(3, self.to_chart_data(series=temp, title=title))
 
         # Chart 3 - Regular expenses by card
-        temp = chart_data.groupby('pay_method').sum().round().amount.sort_values(ascending=False)
+        temp = round((chart_data.groupby('pay_method').sum().amount.sort_values(ascending=False) / days) * 30, 1)
         title = 'Regular expenses by card'
         self.charts.append(self.to_chart_data(series=temp, title=title))
 
@@ -78,7 +80,7 @@ class Charts:
         self.charts.insert(4, self.to_chart_data(series=temp, title=title, c_type='line'))
 
     def oen_time_charts(self):
-        chart_data = self.datasets.get('one_time')
+        chart_data = self.datasets.get('one_time').get('data')
 
         # Chart 6 - One time expenses
         temp = chart_data.groupby('description').sum().round().amount.sort_values(ascending=False)
@@ -86,7 +88,6 @@ class Charts:
         self.charts.insert(5, self.to_chart_data(series=temp, title=title))
 
     def time_charts(self):
-
         # Chart 7 - All expenses by month
         chart_data = self.expense_data.groupby(pd.Grouper(key='timestamp', freq='1M')).sum().round().amount
         chart_data.index = chart_data.index.strftime('%B %Y')
