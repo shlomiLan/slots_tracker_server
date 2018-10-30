@@ -61,7 +61,7 @@ class Charts:
 
     def regular_expense_charts(self):
         chart_data = self.datasets.get('not_one_time').get('data')
-        days = self.datasets.get('not_one_time').get('days1')
+        days = self.datasets.get('not_one_time').get('days')
 
         # Chart 4 - Regular (not one time) expenses
         temp = round((chart_data.groupby('category').sum().amount.sort_values(ascending=False) / days) * 30, 1)
