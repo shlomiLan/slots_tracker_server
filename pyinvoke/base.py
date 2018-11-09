@@ -25,6 +25,11 @@ def run_app(c):
     run(c, 'flask run')
 
 
+@task(init_app)
+def run_app_gunicorn(c):
+    run(c, 'gunicorn slots_tracker_server:app')
+
+
 @task()
 def update_requirements(c):
     run(c, 'pip install -r development.txt')
