@@ -13,19 +13,14 @@ def print_date(date):
 
 
 class Charts:
-    ref_summary: Dict[str, Dict[str, str]]
-    expense_data: pd.DataFrame
-    datasets: Dict[str, pd.DataFrame]
-    charts: List[Any]
-    today: pd.datetime
-    next_10th: pd.datetime
-    current_10th: pd.datetime
-    previous_10th: pd.datetime
-
     def __init__(self):
         pd.set_option('precision', 3)
-        self.today = pd.datetime.today()
-        self.charts = []
+        self.ref_summary: Dict[str, Dict[str, str]] = None
+        self.expense_data: pd.DataFrame = None
+        self.datasets: Dict[str, pd.DataFrame] = None
+
+        self.today: pd.datetime = pd.datetime.today()
+        self.charts: List[Any] = []
         self.ref_fields_summary()
         self.start_cycle1, self.end_cycle1, self.start_cycle2, self.end_cycle2 = get_bill_cycles(self.today)
 
@@ -112,6 +107,13 @@ class Charts:
         table.append([title, total])
 
         self.charts.insert(0, self.to_chart_data(table=table, title=title, c_type='table'))
+
+    def get_summary_table(self):
+        self.clac_charts()
+        if self.charts:
+            return self.charts[0]
+
+        return None
 
     @staticmethod
     def to_chart_data(title: str, series: pd.Series = None, c_type: str = 'horizontalBar',
