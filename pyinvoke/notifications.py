@@ -1,3 +1,4 @@
+import requests
 from invoke import task
 
 from pyinvoke.base import init_app
@@ -5,13 +6,15 @@ from pyinvoke.base import init_app
 
 @task(init_app)
 def send_monthly_update(_):
-    from slots_tracker_server.charts import Charts
     from slots_tracker_server.notifications import Notifications
 
-    table = Charts().get_summary_table()
-    if table and table.get('data'):
-        message = ''
-        for row in table.get('data'):
-            message += f'{row[0]}: {row[1]}\n'
+    charts = requests.get('https://slots-tracker.herokuapp.com/charts/')
+    charts_as_json = charts.json()
+    for chart in charts_as_json:
+        if chart.get('type') == 'table':
+            if chart and chart.get('data'):
+                message = ''
+                for row in chart.get('data'):
+                    message += f'{row[0]}: {row[1]}\n'
 
-        Notifications().send('Monthly update', message)
+                Notifications().send('Monthly update', message)
