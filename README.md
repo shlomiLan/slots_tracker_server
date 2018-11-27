@@ -5,7 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b2e7d48e65d94750bde443d41042a87d)](https://app.codacy.com/app/public/slots_tracker_server?utm_source=github.com&utm_medium=referral&utm_content=shlomiLan/slots_tracker_server&utm_campaign=Badge_Grade_Dashboard)
 
 
-# slots tracker server
+# slots tracker server - 1
 Flask and MongoDB RestAPI for keeping track on expenses.
 
 **Endpoints:**
