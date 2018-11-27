@@ -1,9 +1,9 @@
 language: python
-python: ['3.6.5']
+python: ['3.6.7']
 script:
-- coverage run -m pytest --disable-pytest-warnings
+  - coverage run -m pytest --disable-pytest-warnings
 install:
-- pip install -r development.txt
+  - pip install -r development.txt
 after_success:
   - codecov
   - python-codacy-coverage -r coverage.xml
