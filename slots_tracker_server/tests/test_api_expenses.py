@@ -48,7 +48,7 @@ def test_get_expense_404(client):
 @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
-@settings(deadline=1500)
+@settings(deadline=2000)
 def test_post_expenses(_, client, amount, description, timestamp, active, one_time):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
