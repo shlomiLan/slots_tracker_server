@@ -5,6 +5,7 @@ from unittest import mock
 import hypothesis.strategies as st
 from hypothesis import given, settings
 
+from slots_tracker_server.api.expenses import ExpenseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import date_to_str, clean_api_object
 
@@ -15,6 +16,8 @@ def test_get_expenses(client):
     r_data = json.loads(rv.get_data(as_text=True))
     assert isinstance(r_data, list)
     assert all(x.get('active') for x in r_data)
+    for name, document_type in ExpenseAPI.api_class.get_all_reference_fields():
+        assert all(isinstance(x[name], dict) for x in r_data)
 
 
 def test_get_expenses_with_limit(client):

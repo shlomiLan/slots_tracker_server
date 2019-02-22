@@ -19,6 +19,13 @@ class CategoriesAPI(BasicObjectAPI):
 class ExpenseAPI(BaseAPI):
     api_class = Expense
 
+    @staticmethod
+    def update_value_for_doc(entry, docs, name):
+        for item in docs[name]:
+            if entry.get(name) == item.get('_id'):
+                entry[name] = item
+                return
+
     def reference_fields_to_data(self, obj_data):
         docs = dict()
         for name, document_type in self.api_class.get_all_reference_fields():
@@ -26,10 +33,7 @@ class ExpenseAPI(BaseAPI):
 
         for entry in obj_data:
             for name, document_type in self.api_class.get_all_reference_fields():
-                for item in docs[name]:
-                    if entry.get(name) == item.get('_id'):
-                        entry[name] = item
-                        return
+                self.update_value_for_doc(entry, docs, name)
 
     def get(self, obj_id):
         if obj_id:
