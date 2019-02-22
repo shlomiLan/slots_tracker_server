@@ -20,20 +20,19 @@ class ExpenseAPI(BaseAPI):
     api_class = Expense
 
     @staticmethod
-    def update_value_for_doc(entry, docs, name):
-        for item in docs[name]:
-            if entry.get(name) == item.get('_id'):
-                entry[name] = item
-                return
+    def get_full_doc(doc_id, docs):
+        for doc in docs:
+            if doc.get('_id') == doc_id:
+                return doc
+
+    def update_value_for_doc(self, field, docs):
+        return self.get_full_doc(field, docs)
 
     def reference_fields_to_data(self, obj_data):
-        docs = dict()
         for name, document_type in self.api_class.get_all_reference_fields():
-            docs[name] = document_type.objects.to_json()
-
-        for entry in obj_data:
-            for name, document_type in self.api_class.get_all_reference_fields():
-                self.update_value_for_doc(entry, docs, name)
+            docs = document_type.objects.to_json()
+            for entry in obj_data:
+                entry[name] = self.update_value_for_doc(entry[name], docs)
 
     def get(self, obj_id):
         if obj_id:
