@@ -19,15 +19,26 @@ class CategoriesAPI(BasicObjectAPI):
 class ExpenseAPI(BaseAPI):
     api_class = Expense
 
+    def reference_fields_to_data(self, obj_data):
+        docs = dict()
+        for name, document_type in self.api_class.get_all_reference_fields():
+            docs[name] = document_type.objects.to_json()
+
+        for entry in obj_data:
+            for name, document_type in self.api_class.get_all_reference_fields():
+                for item in docs[name]:
+                    if entry.get(name) == item.get('_id'):
+                        entry[name] = item
+                        return
+
     def get(self, obj_id):
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
             obj_data = self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
 
-        for name, document_type in self.api_class.get_all_reference_fields():
-            for item in obj_data:
-                item[name] = document_type.objects.get(id=item.get(name)).to_json()
+        # Translate all reference fields from ID to data
+        self.reference_fields_to_data(obj_data)
 
         # TODO: remove this section
         limit = int(request.args.get('limit', len(obj_data)))
