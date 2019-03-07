@@ -7,6 +7,8 @@ from slots_tracker_server.api.base import BasicObjectAPI, BaseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
 from slots_tracker_server.utils import next_payment_date
 
+RETURN_EXPENSES_COUNT = 50
+
 
 class PayMethodsAPI(BasicObjectAPI):
     api_class = PayMethods
@@ -38,14 +40,13 @@ class ExpenseAPI(BaseAPI):
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
+            obj_data = self.api_class.objects(active=True).order_by('one_time', '-timestamp')\
+                .limit(RETURN_EXPENSES_COUNT).to_json()
 
         # Translate all reference fields from ID to data
         self.reference_fields_to_data(obj_data)
 
-        # TODO: remove this section
-        limit = int(request.args.get('limit', len(obj_data)))
-        return json_util.dumps(obj_data[0] if obj_id else obj_data[:limit])
+        return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
     def post(self, obj_data=None):
         new_expenses_as_json = self.create_multi_expenses()
