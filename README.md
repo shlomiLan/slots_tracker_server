@@ -18,3 +18,6 @@ Flask and MongoDB RestAPI for keeping track on expenses.
 * `/expenses/` - Get, Update and Post (create) new expenses, each expense should have a Paying method and Category
 
 Each expense is been writing to a Google spreadsheet
+
+
+* Use this is notebook doesn't work: https://taufiqhabib.wordpress.com/2016/12/18/intalling-jupyter-in-a-virtualenv/

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import datetime
 import os
 from itertools import chain
@@ -44,6 +47,28 @@ def clean_categories(_):
 
     print('Removing all categories objects')
     Categories.objects.delete()
+
+
+@task()
+def merge_descriptions(c, env=None, settings=None):
+    print('Merge and clean descriptions')
+    init_app(c, env, settings)
+
+    # Leave here tp prevent circular import
+    from slots_tracker_server.models import Expense
+
+    res = Expense.objects(active=True)
+    for item in res:
+        description = item.description
+        new_description = transform_desc(description)
+
+        if new_description != description:
+            print('Description changed: original value: {} new value: {}'.format(description, new_description))
+            item.description = new_description
+            item.save()
+
+            new_object = Expense.objects.get(id=item.id)
+            assert new_object.description == item.description
 
 
 @task()
@@ -160,3 +185,44 @@ def remove_numbers_from_name(c, settings=None):
             item_name = ' '.join(item_name[1:])
             item.name = item_name
             item.save()
+
+
+def transform_desc(x):
+    from_to = {
+        'AM:PM': ['ampm', 'appm', 'Ampm', 'AMPM', 'AP:PM', 'AM PM', 'AM: PM'],
+        'סופר-פארם': ['סופרפארם', 'סופר פארם'],
+        'פלאפון - סתו': ['טלפון סתו', 'פלאפון סתו', 'פלאפון'],
+        'פלאפון - שלומי': ['טלפון שלומי', 'טלפון - שלומי', 'פלאפון - שלומי - ספטמבר'],
+        'Spotify': ['ספוטיפיי', 'ספוטיפי'],
+        'מיציק': ['איציק'],
+        'מכבי - סתו': ['מכבי סתו', 'מכבי'],
+        'חניה': ['חנייה'],
+        'פילאטיס - סתו': ['פילאטיס', 'פילאטיס תמר', 'פילאטיס - סתו - אוקטובר', 'פילטיס', 'תמר פילאטיס'],
+        'אוטובוס - שלומי': ['אוטובוס', 'רב קו', 'הטענת רב קו - שלומי'],
+        'אינטרנט': ['אינטרנט לבית', 'אינטרנט', 'אינטרנט בזק', 'אינטרנט ביתי'],
+        'בירה': ['בירוש'],
+        'הדרכה ירון': ['ירון'],
+        'מרקטו': ['מרקט'],
+        'ארוחת צהריים': ['ארוחת צהרים'],
+        'ביטוח רכב': ['ביטוח'],
+        'ביטוח - שלומי': ['ביטוח שלומי'],
+        'גבינות': ['גבינה - שוק', 'גבינה'],
+        "ג'ירף": ['גירף'],
+        'המוסד לסנדווצים': ['המוסד לסנדווצים', 'המוסד לסנוודווצים'],
+        'המוציא': ['המוציא לחם'],
+        'טיב טעם': ['טים טעם'],
+        'אוטובוס - סתו': ['טעינת רב קו - סתו', 'רב קו חידוש', 'שחזור רב קו'],
+        'מאפה': ['מאפים'],
+        'מכבי - שלומי': ['מכבי - שלומי - אוקטובר', 'מכבי - שלומי - נובמבר', 'מכבי - שלומי - דצמבר', 'מכבי - שלומי ספטמבר'],
+        'מתתיהו': ['מתיתיהו'],
+        'קפה': ['קפה ומאפה', 'קפה ליקס'],
+        'שוקיט': ['שוקיסט']
+    }
+
+    clean_text = x.strip()
+
+    for k, v in from_to.items():
+        if clean_text in v:
+            return k
+
+    return clean_text
