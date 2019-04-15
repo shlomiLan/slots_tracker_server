@@ -27,6 +27,6 @@ dateutils==0.6.6
 
 # Notifications
 firebase-admin==2.16.0
-pyfcm==1.4.5
+pyfcm==1.4.7
 grpcio==1.19.0
 requests==2.21.0
