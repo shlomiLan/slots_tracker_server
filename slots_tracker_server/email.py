@@ -1,13 +1,22 @@
 import os
 
-from sendgrid import sendgrid, Email
-from sendgrid.helpers.mail import Content, Mail
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, MailSettings, SandBoxMode
 
 
 def send_email(subject, content):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-    from_email = Email(name='Slots tracker', email='slots.tracker@gmail.com')
-    to_email = Email(name='Slots tracker', email='slots.tracker@gmail.com')
-    content = Content("text/plain", content)
-    mail = Mail(from_email, subject, to_email, content)
-    return sg.client.mail.send.post(request_body=mail.get())
+    sendgrid_client = SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+    message = Mail(
+        from_email='slots.tracker@gmail.com',
+        to_emails='slots.tracker@gmail.com',
+        subject=subject,
+        plain_text_content=content,
+    )
+    sand_box = os.environ.get('SAND_BOX')
+
+    if sand_box == 'true':
+        mail_settings = MailSettings()
+        mail_settings.sandbox_mode = SandBoxMode(True)
+        message.mail_settings = mail_settings
+
+    return sendgrid_client.send(message)
