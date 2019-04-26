@@ -122,16 +122,16 @@ class Charts:
         if c_type in ['horizontalBar', 'line']:
             if series is not None:
                 labels: List[str] = series.index.tolist()
-                c_data: List[Dict[str, Any]] = [dict(data=series.values.tolist(), label='')]
+                c_data: Dict[str, Any] = dict(labels=labels, datasets=[dict(data=series.values.tolist(), label='')])
                 options: Dict[str, Any] = \
-                    dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title))
+                    dict(scales=dict(xAxes=[dict(ticks=dict(autoSkip=False))]), title=dict(text=title, display=True),
+                         maintainAspectRatio=False)
 
                 if c_type == 'line':
-                    for d in c_data:
-                        d['fill'] = False
-                    options.update(dict(elements=dict(line=dict(tension=0))))
+                    for data_point in c_data.get('datasets'):
+                        data_point['fill'] = False
 
-                return dict(type=c_type, labels=labels, data=c_data, options=options)
+                return dict(type=c_type, data=c_data, options=options)
         elif c_type == 'table':
             return dict(type=c_type, data=table)
         else:

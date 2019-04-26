@@ -1,6 +1,5 @@
 import datetime
 import json
-from unittest import mock
 
 import hypothesis.strategies as st
 from hypothesis import given, settings
@@ -20,18 +19,23 @@ def test_get_expenses(client):
         assert all(isinstance(x[name], dict) for x in r_data)
 
 
-def test_get_expenses_with_limit(client):
-    limit = 1
-    rv = client.get(f'/expenses/?limit={limit}')
-    r_data = json.loads(rv.get_data(as_text=True))
-    assert isinstance(r_data, list)
-    assert len(r_data) == limit
-
-
 def test_get_expense(client):
     expense = Expense.objects[0]
     rv = client.get('/expenses/{}'.format(expense.id))
-    assert isinstance(json.loads(rv.get_data(as_text=True)), dict)
+    assert isinstance(json.loads(rv.get_data(as_text=True))[0], dict)
+
+
+def test_filtered_expenses(client):
+    rv = client.get('/expenses/?filter={}'.format('random'))
+    data = json.loads(rv.get_data(as_text=True))
+    assert isinstance(data[0], dict)
+    assert len(data) == 1
+
+
+def test_filtered_expenses_empty(client):
+    rv = client.get('/expenses/?filter={}'.format('XXXX'))
+    data = json.loads(rv.get_data(as_text=True))
+    assert len(data) == 0
 
 
 def test_get_deleted_expense(client):
@@ -47,12 +51,12 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-@mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
+# @mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
 @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
        one_time=st.booleans())
 @settings(deadline=None)
-def test_post_expenses(_, client, amount, description, timestamp, active, one_time):
+def test_post_expenses(client, amount, description, timestamp, active, one_time):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
@@ -224,8 +228,8 @@ def test_delete_pay_method(client):
     assert pay_method.reload().active is False
 
 
-@mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
-def test_post_expenses_with_payments(_, client):
+# @mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
+def test_post_expenses_with_payments(client):
     amount, description, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()

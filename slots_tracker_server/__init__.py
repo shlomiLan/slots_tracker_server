@@ -15,4 +15,4 @@ sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 import slots_tracker_server.views  # noqa
 
-app.cli.add_command(commands.update_gsheet_header)
+# app.cli.add_command(commands.update_gsheet_header)

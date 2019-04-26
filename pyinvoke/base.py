@@ -60,3 +60,11 @@ def calc_chart_data_task(_):
     charts = Charts().clac_charts()
     print(charts)
     return charts
+
+
+# Descriptions
+@task(init_app)
+def descriptions(_):
+    from slots_tracker_server.api.expenses import ExpenseAPI
+    res = ExpenseAPI().get_descriptions()
+    return res

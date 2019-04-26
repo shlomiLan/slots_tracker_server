@@ -120,35 +120,35 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
         run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
 
 
-@task()
-def sync_db_from_gsheet(c, settings=None, reset_db=False):
-    init_app(c, settings=settings)
-    if reset_db:
-        init_db(c, settings=settings)
-
-    import slots_tracker_server.gsheet as gsheet
-    from slots_tracker_server.models import Expense
-
-    cls = Expense
-    wks = gsheet.get_worksheet()
-    headers = gsheet.get_headers(wks)
-    last_row = gsheet.find_last_row(wks)
-    g_data = gsheet.get_all_data(wks)
-
-    # skip the headers row
-    for i, row in enumerate(Bar('Reading data').iter(g_data[1:last_row]), start=2):
-        doc_data = row[:gsheet.end_column_as_number()]
-        # Only write to DB rows without id
-        if not doc_data[0]:
-            doc_dict = transform_expense_to_dict(doc_data, headers)
-            translate(doc_dict)
-            reference_objects_str_to_id(doc_dict)
-            clean_doc_data(doc_dict)
-
-            doc = cls(**doc_dict).save()
-            # Update the id column
-            gsheet.update_with_retry(wks, row=i, col=1, value=str(doc.id))
-
+# @task()
+# def sync_db_from_gsheet(c, settings=None, reset_db=False):
+#     init_app(c, settings=settings)
+#     if reset_db:
+#         init_db(c, settings=settings)
+#
+#     import slots_tracker_server.gsheet as gsheet
+#     from slots_tracker_server.models import Expense
+#
+#     cls = Expense
+#     wks = gsheet.get_worksheet()
+#     headers = gsheet.get_headers(wks)
+#     last_row = gsheet.find_last_row(wks)
+#     g_data = gsheet.get_all_data(wks)
+#
+#     # skip the headers row
+#     for i, row in enumerate(Bar('Reading data').iter(g_data[1:last_row]), start=2):
+#         doc_data = row[:gsheet.end_column_as_number()]
+#         # Only write to DB rows without id
+#         if not doc_data[0]:
+#             doc_dict = transform_expense_to_dict(doc_data, headers)
+#             translate(doc_dict)
+#             reference_objects_str_to_id(doc_dict)
+#             clean_doc_data(doc_dict)
+#
+#             doc = cls(**doc_dict).save()
+#             # Update the id column
+#             gsheet.update_with_retry(wks, row=i, col=1, value=str(doc.id))
+#
 
 @task()
 def add_count_to_ref_fields(c, settings=None):

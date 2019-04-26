@@ -1,4 +1,5 @@
 import copy
+from collections import Counter
 
 from bson import json_util
 from flask import request
@@ -19,31 +20,41 @@ class CategoriesAPI(BasicObjectAPI):
 class ExpenseAPI(BaseAPI):
     api_class = Expense
 
+    def __init__(self):
+        self.docs = dict()
+        for name, document_type in self.api_class.get_all_reference_fields():
+            self.docs[name] = document_type.objects.to_json()
+
     @staticmethod
-    def get_full_doc(doc_id, docs):
+    def get_full_doc_by_id(doc_id, docs):
+        # return filter(lambda x: x.get('_id') == doc_id, docs)
+
         for doc in docs:
             if doc.get('_id') == doc_id:
                 return doc
 
     def update_value_for_doc(self, field, docs):
-        return self.get_full_doc(field, docs)
+        return self.get_full_doc_by_id(field, docs)
 
     def reference_fields_to_data(self, obj_data):
         for name, document_type in self.api_class.get_all_reference_fields():
-            docs = document_type.objects.to_json()
             for entry in obj_data:
-                entry[name] = self.update_value_for_doc(entry[name], docs)
+                entry[name] = self.update_value_for_doc(entry[name], self.docs[name])
 
     def get(self, obj_id):
+        filter_text = request.args.get('filter')
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True).order_by('one_time', '-timestamp').to_json()
+            obj_data = self.api_class.objects(active=True)
+            if filter_text:
+                obj_data = obj_data.filter(active=True, description__icontains=filter_text)
 
+            obj_data = obj_data.limit(50).order_by('one_time', '-timestamp').to_json()
         # Translate all reference fields from ID to data
         self.reference_fields_to_data(obj_data)
 
-        return json_util.dumps(obj_data[0] if obj_id else obj_data)
+        return json_util.dumps(obj_data)
 
     def post(self, obj_data=None):
         new_expenses_as_json = self.create_multi_expenses()
@@ -65,3 +76,22 @@ class ExpenseAPI(BaseAPI):
             payments_data['timestamp'] = next_payment_date(obj_data['timestamp'], payment=i)
             new_expenses.append(self.create_doc(payments_data, obj_id))
         return json_util.dumps(new_expenses)
+
+    def get_descriptions(self):
+        c = Counter()
+        res = self.api_class.objects(active=True)
+        for item in res:
+            description = item.description
+
+            def clean(x):
+                clean_text = x.strip().lower().replace(':', '').replace('-', '')
+                if clean_text in ['ampm', 'appm']:
+                    clean_text = 'AM:PM'
+
+                if clean_text == 'סופרפארם':
+                    clean_text = 'סופר-פארם'
+                return clean_text
+
+            c[clean(description)] += 1
+
+        return json_util.dumps([x[0] for x in c.most_common()])
