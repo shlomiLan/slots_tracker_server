@@ -23,7 +23,6 @@ class BaseAPI(MethodView):
         return [instance.to_json()]
 
     def post(self, obj_data):
-        # TODO: Check that all reference fields are not inactive before creating a new object
         return self.api_class(**obj_data).save()
 
     def delete(self, obj_id):
