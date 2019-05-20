@@ -29,4 +29,4 @@ dateutils==0.6.6
 firebase-admin==2.16.0
 pyfcm==1.4.7
 grpcio==1.20.1
-requests==2.21.0
+requests==2.22.0
