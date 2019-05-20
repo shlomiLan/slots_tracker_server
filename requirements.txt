@@ -5,7 +5,7 @@ gunicorn==19.9.0
 # DB
 mongoengine==0.17.0
 pymongo==3.8.0
-Werkzeug==0.15.2
+Werkzeug==0.15.4
 
 # Google spreadsheet
 gspread==3.1.0
