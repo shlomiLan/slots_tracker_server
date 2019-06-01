@@ -14,5 +14,3 @@ connect(host=os.environ.get('DB_HOST'), port=int(str(os.environ.get('DB_PORT')))
 sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 import slots_tracker_server.views  # noqa
-
-# app.cli.add_command(commands.update_gsheet_header)

@@ -71,27 +71,21 @@ class ExpenseAPI(BaseAPI):
         new_expenses = []
         payments = int(request.args.get('payments', 1))
         payments_data = copy.deepcopy(obj_data)
-        payments_data['amount'] = float(payments_data.get('amount')) / payments
+        payments_data['amount'] = self.calc_amount(payments_data.get('amount'), payments)
         for i in range(payments):
             payments_data['timestamp'] = next_payment_date(obj_data['timestamp'], payment=i)
             new_expenses.append(self.create_doc(payments_data, obj_id))
         return json_util.dumps(new_expenses)
+
+    @staticmethod
+    def calc_amount(original_amount, payments):
+        return float(original_amount) / payments
 
     def get_descriptions(self):
         c = Counter()
         res = self.api_class.objects(active=True)
         for item in res:
             description = item.description
-
-            def clean(x):
-                clean_text = x.strip().lower().replace(':', '').replace('-', '')
-                if clean_text in ['ampm', 'appm']:
-                    clean_text = 'AM:PM'
-
-                if clean_text == 'סופרפארם':
-                    clean_text = 'סופר-פארם'
-                return clean_text
-
-            c[clean(description)] += 1
+            c[description] += 1
 
         return json_util.dumps([x[0] for x in c.most_common()])

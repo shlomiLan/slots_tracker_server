@@ -8,6 +8,7 @@ from pyfcm import FCMNotification
 class Notifications:
     def __init__(self, name=None):
         api_key = os.environ.get('FIREBASE_API_KEY')
+        os.environ['GRPC_DNS_RESOLVER'] = 'native'
         if not api_key:
             raise KeyError('No firebase API key')
         self.push_service = FCMNotification(api_key=api_key)

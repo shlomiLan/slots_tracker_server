@@ -6,7 +6,7 @@ from hypothesis import given, settings
 
 from slots_tracker_server.api.expenses import ExpenseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
-from slots_tracker_server.utils import date_to_str, clean_api_object
+from slots_tracker_server.utils import date_to_str, clean_api_object, next_payment_date
 
 
 # Expense
@@ -51,38 +51,32 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-# @mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
 @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
-       one_time=st.booleans())
+       one_time=st.booleans(), payments=st.integers(2, 50))
 @settings(deadline=None)
-def test_post_expenses(client, amount, description, timestamp, active, one_time):
+def test_post_expenses(client, amount, description, timestamp, active, one_time, payments):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
-    rv = client.post('/expenses/', json=data)
+    rv = client.post(f'/expenses/?payments={payments}', json=data)
     result = json.loads(rv.get_data(as_text=True))
-    assert len(result) == 1
-    result = result[0]
-    # Clean the Expense
-    clean_api_object(result)
-    # Update instances counters
-    data['pay_method']['instances'] += 1
-    data['category']['instances'] += 1
-
-    # reload pay method and category
-    pay_method = pay_method.reload()
-    category = category.reload()
-
-    expected_data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(),
-                     'timestamp': date_to_str(timestamp), 'active': active, 'category': category.to_json(),
-                     'one_time': one_time}
-
+    assert len(result) == payments
     assert rv.status_code == 201
-    assert result == expected_data
+
+    for i, r in enumerate(result):
+        # Clean the Expense
+        clean_api_object(r)
+        data['pay_method']['instances'] += 1
+        data['category']['instances'] += 1
+        expected_data = {'amount': ExpenseAPI.calc_amount(amount, payments), 'description': description,
+                         'pay_method': data['pay_method'],
+                         'timestamp': date_to_str(next_payment_date(date_to_str(timestamp), payment=i)),
+                         'active': active, 'category': data['category'], 'one_time': one_time}
+        assert r == expected_data
 
 
 def test_delete_expense(client):
@@ -228,7 +222,6 @@ def test_delete_pay_method(client):
     assert pay_method.reload().active is False
 
 
-# @mock.patch('slots_tracker_server.api.base.gsheet.write_doc', return_value='None')
 def test_post_expenses_with_payments(client):
     amount, description, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()
@@ -248,3 +241,9 @@ def test_post_expenses_with_payments(client):
 
 def test_expense():
     return 100, 'A', datetime.datetime.utcnow(), True, False
+
+
+def test_calc_amount():
+    assert ExpenseAPI.calc_amount(100, 3) == 33.333333333333336
+    assert ExpenseAPI.calc_amount(62, 4) == 15.5
+    assert ExpenseAPI.calc_amount(63, 5) == 12.6
