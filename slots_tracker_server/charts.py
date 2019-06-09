@@ -6,6 +6,8 @@ import pandas as pd
 from slots_tracker_server.models import Expense, Categories, PayMethods
 from slots_tracker_server.utils import get_bill_cycles
 
+NUM_OF_CHARTS = 8
+
 
 def print_date(date):
     date_format = '%d/%m/%Y'
@@ -20,7 +22,7 @@ class Charts:
         self.datasets: Dict[str, pd.DataFrame] = None
 
         self.today: pd.datetime = pd.datetime.today()
-        self.charts: List[Any] = []
+        self.charts: List[Any] = [None] * NUM_OF_CHARTS
         self.ref_fields_summary()
         self.start_cycle1, self.end_cycle1, self.start_cycle2, self.end_cycle2 = get_bill_cycles(self.today)
 
@@ -58,36 +60,52 @@ class Charts:
         chart_data = self.datasets.get('not_one_time').get('data')
         days = self.datasets.get('not_one_time').get('days')
 
-        # Chart 4 - Regular (not one time) expenses
+        # Chart 5 - Regular (not one time) expenses
         temp = round((chart_data.groupby('category').sum().amount.sort_values(ascending=False) / days) * 30, 1)
-        title = 'Regular (not one time) expenses'
-        self.charts.insert(3, self.to_chart_data(series=temp, title=title))
+        title = 'Regular (not one time) expenses - Average'
+        self.charts[4] = self.to_chart_data(series=temp, title=title)
 
-        # Chart 3 - Regular expenses by card
+        # Chart 4 - Regular expenses by card
         temp = round((chart_data.groupby('pay_method').sum().amount.sort_values(ascending=False) / days) * 30, 1)
-        title = 'Regular expenses by card'
-        self.charts.append(self.to_chart_data(series=temp, title=title))
+        title = 'Regular expenses by card - Average'
+        self.charts[3] = self.to_chart_data(series=temp, title=title)
 
-        # Chart 5 - Regular expenses by month
+        # Chart 6 - Regular expenses by month
         temp = chart_data.groupby(pd.Grouper(key='timestamp', freq='1M')).sum().round().amount
         temp.index = temp.index.strftime('%B %Y')
-        title = 'Regular expenses by month'
-        self.charts.insert(4, self.to_chart_data(series=temp, title=title, c_type='line'))
+        title = 'Regular expenses by month - Total'
+        self.charts[5] = self.to_chart_data(series=temp, title=title, c_type='line')
 
     def oen_time_charts(self):
         chart_data = self.datasets.get('one_time').get('data')
 
-        # Chart 6 - One time expenses
+        # Chart 7 - One time expenses
         temp = chart_data.groupby('description').sum().round().amount.sort_values(ascending=False)
-        title = 'One time expenses'
-        self.charts.insert(5, self.to_chart_data(series=temp, title=title))
+        title = 'One time expenses - Total'
+        self.charts[6] = self.to_chart_data(series=temp, title=title)
 
     def time_charts(self):
-        # Chart 7 - All expenses by month
+        # Chart 2 - Regular (not one time) expenses
+        condition = (self.expense_data.timestamp >= self.start_cycle2) & \
+                    (self.expense_data.timestamp <= self.end_cycle2)
+
+        temp = round(self.expense_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
+        title = f'Regular (not one time) expenses - current month ({print_date(self.end_cycle2)} - {print_date(self.start_cycle2)})'
+        self.charts[1] = self.to_chart_data(series=temp, title=title)
+
+        # Chart 3 - Regular (not one time) expenses
+        condition = (self.expense_data.timestamp >= self.start_cycle1) & \
+                    (self.expense_data.timestamp <= self.end_cycle1)
+
+        temp = round(self.expense_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
+        title = f'Regular (not one time) expenses - last month ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
+        self.charts[2] = self.to_chart_data(series=temp, title=title)
+
+        # Chart 8 - All expenses by month
         chart_data = self.expense_data.groupby(pd.Grouper(key='timestamp', freq='1M')).sum().round().amount
         chart_data.index = chart_data.index.strftime('%B %Y')
-        title = 'All expenses by month'
-        self.charts.insert(6, self.to_chart_data(series=chart_data, title=title, c_type='line'))
+        title = 'All expenses by month - Total'
+        self.charts[7] = self.to_chart_data(series=chart_data, title=title, c_type='line')
 
         table = []
         # Chart 1 (table) - All expenses since the last 10th
@@ -106,7 +124,7 @@ class Charts:
         title = f'All expenses in previous month ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
         table.append([title, total])
 
-        self.charts.insert(0, self.to_chart_data(table=table, title=title, c_type='table'))
+        self.charts[0] = self.to_chart_data(table=table, title=title, c_type='table')
 
     def get_summary_table(self):
         self.clac_charts()
