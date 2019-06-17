@@ -10,7 +10,7 @@ mypy==0.701
 
 # testing
 pytest-cov==2.7.1
-pytest==4.6.1
+pytest==4.6.3
 codecov==2.0.15
 codacy-coverage==1.3.11
 hypothesis==4.24.0
