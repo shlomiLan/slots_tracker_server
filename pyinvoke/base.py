@@ -1,7 +1,7 @@
 import os
 
+import requests
 from invoke import task
-
 from pyinvoke.utils import load_yaml_from_file, set_env_var, BASEDIR, run
 
 
@@ -68,3 +68,18 @@ def descriptions(_):
     from slots_tracker_server.api.expenses import ExpenseAPI
     res = ExpenseAPI().get_descriptions()
     return res
+
+
+# Keep alive - prevent Heroku sleep
+@task(init_app)
+def keep_server_alive(_):
+    from pyinvoke.email import email
+    subject = 'Keep server alive error'
+    try:
+        urls = ['https://slots-tracker.herokuapp.com/', 'https://slots-tracker-client.herokuapp.com/expenses']
+        for url in urls:
+            res = requests.get(url)
+            if res.status_code != 200:
+                email(_, subject=subject, content=str(res.__dict__))
+    except Exception as e:
+        email(_, subject=subject, content=e)
