@@ -15,7 +15,7 @@ oauth2client==4.1.3
 sendgrid==6.0.5
 
 # Charts
-pandas==0.24.2
+pandas==0.25.0
 
 dateutils==0.6.6
 
