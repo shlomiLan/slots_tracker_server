@@ -86,10 +86,11 @@ class Charts:
 
     def time_charts(self):
         # Chart 2 - Regular (not one time) expenses
+        chart_data = self.datasets.get('not_one_time').get('data')
         condition = (self.expense_data.timestamp >= self.start_cycle2) & \
                     (self.expense_data.timestamp <= self.end_cycle2)
 
-        temp = round(self.expense_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
+        temp = round(chart_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
         title = f'Regular (not one time) expenses - current month ({print_date(self.end_cycle2)} - {print_date(self.start_cycle2)})'
         self.charts[1] = self.to_chart_data(series=temp, title=title)
 
@@ -97,7 +98,7 @@ class Charts:
         condition = (self.expense_data.timestamp >= self.start_cycle1) & \
                     (self.expense_data.timestamp <= self.end_cycle1)
 
-        temp = round(self.expense_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
+        temp = round(chart_data[condition].groupby('category').sum().amount.sort_values(ascending=False), 1)
         title = f'Regular (not one time) expenses - last month ({print_date(self.end_cycle1)} - {print_date(self.start_cycle1)})'
         self.charts[2] = self.to_chart_data(series=temp, title=title)
 
