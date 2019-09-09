@@ -1,5 +1,4 @@
 import copy
-from collections import Counter
 
 from bson import json_util
 from flask import request
@@ -42,13 +41,13 @@ class ExpenseAPI(BaseAPI):
                 entry[name] = self.update_value_for_doc(entry[name], self.docs[name])
 
     def get(self, obj_id):
-        filter_text = request.args.get('filter')
+        filter_str = request.args.get('filter')
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
             obj_data = self.api_class.objects(active=True)
-            if filter_text:
-                obj_data = obj_data.filter(active=True, description__icontains=filter_text)
+            if filter_str:
+                obj_data = obj_data.filter(active=True, amount=filter_str)
 
             obj_data = obj_data.limit(50).order_by('one_time', '-timestamp').to_json()
         # Translate all reference fields from ID to data
@@ -80,12 +79,3 @@ class ExpenseAPI(BaseAPI):
     @staticmethod
     def calc_amount(original_amount, payments):
         return float(original_amount) / payments
-
-    def get_descriptions(self):
-        c = Counter()
-        res = self.api_class.objects(active=True)
-        for item in res:
-            description = item.description
-            c[description] += 1
-
-        return json_util.dumps([x[0] for x in c.most_common()])

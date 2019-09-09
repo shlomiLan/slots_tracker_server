@@ -5,8 +5,6 @@ from flask_cors import CORS
 from mongoengine import connect
 from raven.contrib.flask import Sentry
 
-from slots_tracker_server import commands
-
 app = Flask(__name__)
 CORS(app)
 connect(host=os.environ.get('DB_HOST'), port=int(str(os.environ.get('DB_PORT'))),

@@ -26,8 +26,7 @@ def client():
     Categories('Cat 11111').save()
 
     now_date = datetime.datetime.utcnow
-    expense_data = dict(amount=200, description='Random stuff', pay_method=pay_method.id, timestamp=now_date,
-                        category=category.id)
+    expense_data = dict(amount=200, pay_method=pay_method.id, timestamp=now_date, category=category.id)
     Expense(**expense_data).save()
 
     # Create deleted items

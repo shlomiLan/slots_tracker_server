@@ -50,28 +50,6 @@ def clean_categories(_):
 
 
 @task()
-def merge_descriptions(c, env=None, settings=None):
-    print('Merge and clean descriptions')
-    init_app(c, env, settings)
-
-    # Leave here tp prevent circular import
-    from slots_tracker_server.models import Expense
-
-    res = Expense.objects(active=True)
-    for item in res:
-        description = item.description
-        new_description = transform_desc(description)
-
-        if new_description != description:
-            print('Description changed: original value: {} new value: {}'.format(description, new_description))
-            item.description = new_description
-            item.save()
-
-            new_object = Expense.objects.get(id=item.id)
-            assert new_object.description == item.description
-
-
-@task()
 def init_db(c, env=None, settings=None):
     init_app(c, env, settings)
     clean_db(c, settings)

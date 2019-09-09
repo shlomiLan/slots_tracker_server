@@ -15,11 +15,6 @@ def charts():
     return chart.clac_charts()
 
 
-@app.route('/descriptions/')
-def descriptions():
-    return ExpenseAPI().get_descriptions()
-
-
 if not app.debug:
     @app.errorhandler(Exception)
     def handle_general_exception(e):

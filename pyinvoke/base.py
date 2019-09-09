@@ -62,14 +62,6 @@ def calc_chart_data_task(_):
     return charts
 
 
-# Descriptions
-@task(init_app)
-def descriptions(_):
-    from slots_tracker_server.api.expenses import ExpenseAPI
-    res = ExpenseAPI().get_descriptions()
-    return res
-
-
 # Keep alive - prevent Heroku sleep
 @task(init_app)
 def keep_server_alive(_):

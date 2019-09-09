@@ -26,20 +26,14 @@ def test_get_expense(client):
 
 
 def test_filtered_expenses(client):
-    rv = client.get('/expenses/?filter={}'.format('random'))
+    rv = client.get('/expenses/?filter={}'.format('200'))
     data = json.loads(rv.get_data(as_text=True))
     assert isinstance(data[0], dict)
     assert len(data) == 1
 
 
-def test_filtered_expenses_empty(client):
-    rv = client.get('/expenses/?filter={}'.format('XXXX'))
-    data = json.loads(rv.get_data(as_text=True))
-    assert len(data) == 0
-
-
 def test_get_deleted_expense(client):
-    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+    expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
                       timestamp=datetime.datetime.utcnow(), active=False, category=Categories.objects().first()).save()
     rv = client.get('/expenses/{}'.format(expense.id))
     assert rv.status_code == 404
@@ -51,15 +45,15 @@ def test_get_expense_404(client):
     assert rv.status_code == 404
 
 
-# @given(amount=st.floats(min_value=-1000000000, max_value=1000000000), description=st.text(min_size=1),
+# @given(amount=st.floats(min_value=-10000, max_value=10000),
 #        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
-#        one_time=st.booleans(), payments=st.integers(2, 50))
+#        one_time=st.booleans(), payments=st.integers(2, 10))
 # @settings(deadline=None)
-# def test_post_expenses(client, amount, description, timestamp, active, one_time, payments):
+# def test_post_expenses(client, amount, timestamp, active, one_time, payments):
 #     pay_method = PayMethods.objects().first()
 #     category = Categories.objects().first()
 #
-#     data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+#     data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
 #             'category': category.to_json(), 'active': active, 'one_time': one_time}
 #
 #     rv = client.post(f'/expenses/?payments={payments}', json=data)
@@ -72,15 +66,14 @@ def test_get_expense_404(client):
 #         clean_api_object(r)
 #         data['pay_method']['instances'] += 1
 #         data['category']['instances'] += 1
-#         expected_data = {'amount': ExpenseAPI.calc_amount(amount, payments), 'description': description,
-#                          'pay_method': data['pay_method'],
+#         expected_data = {'amount': ExpenseAPI.calc_amount(amount, payments), 'pay_method': data['pay_method'],
 #                          'timestamp': date_to_str(next_payment_date(date_to_str(timestamp), payment=i)),
 #                          'active': active, 'category': data['category'], 'one_time': one_time}
 #         assert r == expected_data
-
+#
 
 def test_delete_expense(client):
-    expense = Expense(amount=200, description='Random stuff', pay_method=PayMethods.objects().first(),
+    expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
                       timestamp=datetime.datetime.utcnow(), category=Categories.objects().first()).save()
     rv = client.delete('/expenses/{}'.format(expense.id))
     assert rv.status_code == 200
@@ -90,8 +83,8 @@ def test_update_expense(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
-    amount, description, timestamp, active, one_time = test_expense()
-    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+    amount, timestamp, active, one_time = test_expense()
+    data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
     rv = client.post('/expenses/', json=data)
@@ -122,8 +115,8 @@ def test_update_expense_change_ref_filed(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
-    amount, description, timestamp, active, one_time = test_expense()
-    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+    amount, timestamp, active, one_time = test_expense()
+    data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
     rv = client.post('/expenses/', json=data)
@@ -223,11 +216,11 @@ def test_delete_pay_method(client):
 
 
 def test_post_expenses_with_payments(client):
-    amount, description, timestamp, active, one_time = test_expense()
+    amount, timestamp, active, one_time = test_expense()
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
 
-    data = {'amount': amount, 'description': description, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
+    data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
             'category': category.to_json(), 'active': active, 'one_time': one_time}
 
     payments = 3
@@ -240,7 +233,7 @@ def test_post_expenses_with_payments(client):
 
 
 def test_expense():
-    return 100, 'A', datetime.datetime.utcnow(), True, False
+    return 100, datetime.datetime.utcnow(), True, False
 
 
 def test_calc_amount():

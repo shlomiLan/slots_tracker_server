@@ -80,8 +80,8 @@ class Charts:
         chart_data = self.datasets.get('one_time').get('data')
 
         # Chart 7 - One time expenses
-        temp = chart_data.groupby('description').sum().round().amount.sort_values(ascending=False)
-        title = 'One time expenses - Total'
+        temp = chart_data.groupby('category').sum().round().amount.sort_values(ascending=False)
+        title = 'One time expenses sum by category - Total'
         self.charts[6] = self.to_chart_data(series=temp, title=title)
 
     def time_charts(self):
