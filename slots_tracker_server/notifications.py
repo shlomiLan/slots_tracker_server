@@ -30,16 +30,19 @@ class Notifications:
 
         self.db = firestore.client()
 
-    def send(self, title, message, collection='devices', dry_run=False):
+    def send(self, title, message, target_env, collection='devices', dry_run=False):
         errors = []
         docs_ref = self.db.collection(collection)
         docs = docs_ref.get()
 
         for doc in docs:
             try:
-                token = doc.to_dict().get('token')
-                self.push_service.notify_single_device(registration_id=token, message_title=title,
-                                                       message_body=message, dry_run=dry_run)
+                doc_as_dict = doc.to_dict()
+                token = doc_as_dict.get('token')
+                env = doc_as_dict.get('env')
+                if env == target_env:
+                    self.push_service.notify_single_device(registration_id=token, message_title=title,
+                                                           message_body=message, dry_run=dry_run)
             except Exception as e:
                 errors.append(e)
 

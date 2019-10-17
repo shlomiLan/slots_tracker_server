@@ -24,4 +24,4 @@ def test_init_connection_no_credentials():
 
 
 def test_send_notifications(connection):
-    assert connection.send('x', 'y', dry_run=True) == []
+    assert connection.send('x', 'y', target_env='dev', dry_run=True) == []
