@@ -1,4 +1,5 @@
-from unittest import mock
+from unittest.mock import patch
+
 import pytest
 
 from slots_tracker_server.notifications import Notifications
@@ -6,7 +7,7 @@ from slots_tracker_server.notifications import Notifications
 
 @pytest.fixture(scope="module")
 def connection():
-    yield Notifications()
+    return Notifications()
 
 
 def test_init_connection(connection):
@@ -14,14 +15,15 @@ def test_init_connection(connection):
 
 
 def test_init_connection_no_credentials():
-    with mock.patch.dict('os.environ', {'FIREBASE_CREDENTIALS': ''}):
-        with pytest.raises(KeyError):
-            Notifications(name='test1')
+    with patch('slots_tracker_server.notifications.initialize_app', return_value=None):
+        with patch.dict('os.environ', {'FIREBASE_CREDENTIALS': ''}):
+            with pytest.raises(KeyError):
+                Notifications()
 
-    with mock.patch.dict('os.environ', {'FIREBASE_API_KEY': ''}):
-        with pytest.raises(KeyError):
-            Notifications(name='test2')
+        with patch.dict('os.environ', {'FIREBASE_API_KEY': ''}):
+            with pytest.raises(KeyError):
+                Notifications()
 
 
 def test_send_notifications(connection):
-    assert connection.send('x', 'y', target_env='dev', dry_run=True) == []
+    assert connection.send('x', 'y', dry_run=True) is True

@@ -1,4 +1,5 @@
 import datetime
+import os
 from typing import Tuple, Dict, Any, Union, Type
 
 import pandas as pd
@@ -10,6 +11,10 @@ from flask import abort
 from flask.views import MethodView
 
 from slots_tracker_server import app
+
+
+ENV_NAME = 'FLASK_ENV'
+PROD_ENV_NAME = 'production'
 
 
 def convert_to_object_id(str_id: str) -> Union[ObjectId]:
@@ -95,3 +100,7 @@ def get_bill_cycles(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.da
 
 def next_payment_date(current_date: str, payment: int = 1) -> datetime.datetime:
     return parse(current_date) + relativedelta(months=+payment)
+
+
+def is_prod():
+    return os.environ[ENV_NAME] == PROD_ENV_NAME

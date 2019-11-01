@@ -68,37 +68,6 @@ def insert_db_data(cls, db_data):
 
 
 @task()
-def backup_db(c, settings='prod', force_restore=False):
-    init_app(c, settings=settings)
-    host, port, db_name, username, password = get_db_info()
-    today_str = str(datetime.datetime.now().date()).replace('-', '_')
-    dest_path = os.path.join(BACKUPS, today_str)
-    run(c, f'mongodump -h {host}:{port} -d {db_name} -u {username} -p {password} -o {dest_path}', False)
-
-    day = datetime.datetime.now().day
-    # If first backup of the month or force
-    if day <= 7 or force_restore:
-        res = restore_db(c, today_str)
-        if res and res.exited != 0:
-            email_text = res.stderr
-        else:
-            email_text = f'The {today_str} daily backup was restored to stage successfully.'
-
-        email(c, subject='DB restore test', content=email_text)
-
-
-@task()
-def restore_db(c, date, backup_db_name='slots_tracker', settings='stage'):
-    init_app(c, settings=settings, force=True)
-    host, port, db_name, username, password = get_db_info()
-    source_path = os.path.join(BACKUPS, date, backup_db_name)
-    if settings == 'dev':
-        run(c, f'mongorestore -h {host}:{port} -d {db_name} {source_path} --drop', False)
-    else:
-        run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
-
-
-@task()
 def add_count_to_ref_fields(c, settings=None):
     init_app(c, settings=settings)
     from slots_tracker_server.models import Expense

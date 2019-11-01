@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Union
 
 import pandas as pd
 
+from slots_tracker_server import app
 from slots_tracker_server.models import Expense, Categories, PayMethods
 from slots_tracker_server.utils import get_bill_cycles
 
@@ -31,10 +32,19 @@ class Charts:
         categories_summary = Categories.get_summary()
         self.ref_summary = dict(pay_method=methods_summary, category=categories_summary)
 
+    def is_db_empty(self):
+        return self.expense_data.empty
+
     def get_expense_data(self):
         self.expense_data = pd.DataFrame(Expense.objects().to_json())
+        if self.is_db_empty():
+            app.logger.info('No data in DB, can not create charts')
+            return None
+
         self.translate_expense_data()
         self.expense_data = self.expense_data[self.expense_data.timestamp <= self.today]
+
+        return True
 
     def translate_expense_data(self):
         self.expense_data.category.replace(to_replace=self.ref_summary['category'], inplace=True)
@@ -42,19 +52,24 @@ class Charts:
         self.expense_data.timestamp = pd.to_datetime(self.expense_data.timestamp, format='%Y-%m-%d')
 
     def get_datasets(self):
-        self.get_expense_data()
-        one_time = self.expense_data[self.expense_data.one_time]
-        not_one_time = self.expense_data[~self.expense_data.one_time]
-        days = (not_one_time.timestamp.max() - one_time.timestamp.min()).days
-        self.datasets = dict(one_time=dict(data=one_time), not_one_time=dict(data=not_one_time, days=days))
+        if self.get_expense_data():
+            one_time = self.expense_data[self.expense_data.one_time]
+            not_one_time = self.expense_data[~self.expense_data.one_time]
+            days = (not_one_time.timestamp.max() - one_time.timestamp.min()).days
+            self.datasets = dict(one_time=dict(data=one_time), not_one_time=dict(data=not_one_time, days=days))
+            return True
+
+        return False
 
     def clac_charts(self):
-        self.get_datasets()
-        self.regular_expense_charts()
-        self.oen_time_charts()
-        self.time_charts()
+        if self.get_datasets():
+            self.regular_expense_charts()
+            self.oen_time_charts()
+            self.time_charts()
 
-        return json.dumps(self.charts)
+            return json.dumps(self.charts)
+
+        return None
 
     def regular_expense_charts(self):
         chart_data = self.datasets.get('not_one_time').get('data')

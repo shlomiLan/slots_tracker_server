@@ -4,9 +4,13 @@ import os
 from firebase_admin import credentials, firestore, initialize_app
 from pyfcm import FCMNotification
 
+from slots_tracker_server import app
+
 
 class Notifications:
-    def __init__(self, name=None):
+    firebase_app = None
+
+    def __init__(self):
         api_key = os.environ.get('FIREBASE_API_KEY')
         os.environ['GRPC_DNS_RESOLVER'] = 'native'
         if not api_key:
@@ -23,27 +27,31 @@ class Notifications:
 
         # Use the application default credentials
         cred = credentials.Certificate(credentials_data)
-        if name:
-            initialize_app(cred, name=name)
-        else:
-            initialize_app(cred)
+        if Notifications.firebase_app is None:
+            Notifications.firebase_app = initialize_app(cred)
 
         self.db = firestore.client()
 
-    def send(self, title, message, target_env, collection='devices', dry_run=False):
+    def send(self, title, message, collection='devices', dry_run=False):
         errors = []
         docs_ref = self.db.collection(collection)
         docs = docs_ref.get()
+
+        env = os.environ['FLASK_ENV']
+        app.logger.info('Sending message to all user in env: {}'.format(env))
 
         for doc in docs:
             try:
                 doc_as_dict = doc.to_dict()
                 token = doc_as_dict.get('token')
-                env = doc_as_dict.get('env')
-                if env == target_env:
+                doc_env = doc_as_dict.get('env')
+                if doc_env == env:
                     self.push_service.notify_single_device(registration_id=token, message_title=title,
                                                            message_body=message, dry_run=dry_run)
             except Exception as e:
                 errors.append(e)
 
-        return errors
+        if errors:
+            return errors
+        else:
+            return True
