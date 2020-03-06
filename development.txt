@@ -11,15 +11,15 @@ mypy==0.761
 # testing
 pytest-cov==2.8.1
 pytest==5.3.5
-codecov==2.0.15
+codecov==2.0.16
 codacy-coverage==1.3.11
-hypothesis==5.5.4
-python_http_client==3.2.4
+hypothesis==5.6.0
+python_http_client==3.2.5
 
 # CLI
 click==7.0
 progress==1.5
 
 # Notebook
-ipython==7.12.0
+ipython==7.13.0
 jupyter==1.0.0
