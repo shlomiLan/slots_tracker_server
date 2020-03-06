@@ -1,8 +1,7 @@
-import datetime
+from datetime import datetime
 import os
 from typing import Tuple, Dict, Any, Union, Type
 
-import pandas as pd
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from dateutil.parser import parse
@@ -43,7 +42,7 @@ def date_to_str(date) -> str:
 
 def find_and_convert_date(obj: Dict[str, Any]) -> None:
     for k, v in obj.items():
-        if isinstance(v, datetime.datetime):
+        if isinstance(v, datetime):
             obj[k] = date_to_str(v)
 
 
@@ -60,7 +59,7 @@ def clean_api_object(obj_data: Dict[str, Any]) -> None:
         del obj_data['_id']
 
 
-def get_bill_cycles(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.datetime, pd.datetime]:
+def get_bill_cycles(today: datetime) -> Tuple[datetime, datetime, datetime, datetime]:
     # Case 4: 1-1-18
     if today.month == 1 and today.day < 10:
         previous_month, previous_year = 11, today.year - 1
@@ -90,15 +89,15 @@ def get_bill_cycles(today: pd.datetime) -> Tuple[pd.datetime, pd.datetime, pd.da
             middle_month, middle_year = today.month, today.year
             next_month, next_year = today.month + 1, today.year
 
-    start_cycle1 = pd.datetime(previous_year, previous_month, 10)
-    end_cycle1 = pd.datetime(middle_year, middle_month, 9)
-    start_cycle2 = pd.datetime(middle_year, middle_month, 10)
-    end_cycle2 = pd.datetime(next_year, next_month, 9)
+    start_cycle1 = datetime(previous_year, previous_month, 10)
+    end_cycle1 = datetime(middle_year, middle_month, 9)
+    start_cycle2 = datetime(middle_year, middle_month, 10)
+    end_cycle2 = datetime(next_year, next_month, 9)
 
     return start_cycle1, end_cycle1, start_cycle2, end_cycle2
 
 
-def next_payment_date(current_date: str, payment: int = 1) -> datetime.datetime:
+def next_payment_date(current_date: str, payment: int = 1) -> datetime:
     return parse(current_date) + relativedelta(months=+payment)
 
 

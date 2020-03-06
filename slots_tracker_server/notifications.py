@@ -35,7 +35,7 @@ class Notifications:
     def send(self, title, message, collection='devices', dry_run=False):
         errors = []
         docs_ref = self.db.collection(collection)
-        docs = docs_ref.get()
+        docs = docs_ref.stream()
 
         env = os.environ['FLASK_ENV']
         app.logger.info('Sending message to all user in env: {}'.format(env))

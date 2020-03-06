@@ -18,7 +18,7 @@ def test(c, cov=False, file=None):
     del os.environ['DB_USERNAME']
     del os.environ['DB_PASS']
 
-    command = 'pytest -s --disable-pytest-warnings'
+    command = 'pytest -s'
     if cov:
         command = '{} --cov=slots_tracker_server --cov-report term-missing'.format(command)
     if file:

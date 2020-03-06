@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import json
 
 import hypothesis.strategies as st
@@ -34,7 +34,7 @@ def test_filtered_expenses(client):
 
 def test_get_deleted_expense(client):
     expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow(), active=False, category=Categories.objects().first()).save()
+                      timestamp=datetime.utcnow(), active=False, category=Categories.objects().first()).save()
     rv = client.get('/expenses/{}'.format(expense.id))
     assert rv.status_code == 404
 
@@ -46,7 +46,7 @@ def test_get_expense_404(client):
 
 
 # @given(amount=st.floats(min_value=-10000, max_value=10000),
-#        timestamp=st.datetimes(min_value=datetime.datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
+#        timestamp=st.datetimes(min_value=datetime(1900, 1, 1, 0, 0)), active=st.booleans(),
 #        one_time=st.booleans(), payments=st.integers(2, 10))
 # @settings(deadline=None)
 # def test_post_expenses(client, amount, timestamp, active, one_time, payments):
@@ -74,7 +74,7 @@ def test_get_expense_404(client):
 
 def test_delete_expense(client):
     expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.datetime.utcnow(), category=Categories.objects().first()).save()
+                      timestamp=datetime.utcnow(), category=Categories.objects().first()).save()
     rv = client.delete('/expenses/{}'.format(expense.id))
     assert rv.status_code == 200
 
@@ -189,7 +189,7 @@ def test_post_duplicate_pay_method(client):
 
 
 def test_update_pay_method(client):
-    pay_method = PayMethods('Random pay method').save()
+    pay_method = PayMethods(name='Random pay method').save()
     pay_method.name = '{}11111'.format(pay_method.name)
 
     rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
@@ -198,10 +198,10 @@ def test_update_pay_method(client):
 
 def test_update_duplicate_pay_method(client):
     name1 = 'Random random pay method'
-    _ = PayMethods(name1).save()
+    _ = PayMethods(name=name1).save()
 
     name2 = 'Random random random pay method'
-    pay_method = PayMethods(name2).save()
+    pay_method = PayMethods(name=name2).save()
 
     pay_method.name = name1
     rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
@@ -209,7 +209,7 @@ def test_update_duplicate_pay_method(client):
 
 
 def test_delete_pay_method(client):
-    pay_method = PayMethods('New pay method').save()
+    pay_method = PayMethods(name='New pay method').save()
     rv = client.delete('/pay_methods/{}'.format(pay_method.id))
     assert rv.status_code == 200
     assert pay_method.reload().active is False
@@ -233,7 +233,7 @@ def test_post_expenses_with_payments(client):
 
 
 def test_expense():
-    return 100, datetime.datetime.utcnow(), True, False
+    return 100, datetime.utcnow(), True, False
 
 
 def test_calc_amount():

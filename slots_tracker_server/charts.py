@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import Dict, Any, List, Union
 
@@ -18,11 +19,11 @@ def print_date(date):
 class Charts:
     def __init__(self):
         pd.set_option('precision', 3)
-        self.ref_summary: Dict[str, Dict[str, str]] = None
+        self.ref_summary: Dict[str, Dict[str, str]] = {}
         self.expense_data: pd.DataFrame = None
-        self.datasets: Dict[str, pd.DataFrame] = None
+        self.datasets: Dict[str, pd.DataFrame] = {}
 
-        self.today: pd.datetime = pd.datetime.today()
+        self.today: datetime = datetime.today()
         self.charts: List[Any] = [None] * NUM_OF_CHARTS
         self.ref_fields_summary()
         self.start_cycle1, self.end_cycle1, self.start_cycle2, self.end_cycle2 = get_bill_cycles(self.today)

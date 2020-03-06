@@ -1,6 +1,5 @@
-import datetime
+from datetime import datetime
 
-import pandas as pd
 import pytest
 from bson import ObjectId
 from werkzeug.exceptions import BadRequest
@@ -35,86 +34,86 @@ def test_object_id_to_str_none():
 
 
 def test_convert_date():
-    data = dict(time=datetime.datetime(2018, 8, 10, 9, 20, 57, 983368))
+    data = dict(time=datetime(2018, 8, 10, 9, 20, 57, 983368))
     expected_data = dict(time='2018-08-10')
     find_and_convert_date(data)
     assert expected_data == data
 
 
 def test_get_bill_cycles():
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 11, 10))
-    assert start_cycle1 == pd.datetime(2018, 10, 10)
-    assert end_cycle1 == pd.datetime(2018, 11, 9)
-    assert start_cycle2 == pd.datetime(2018, 11, 10)
-    assert end_cycle2 == pd.datetime(2018, 12, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 11, 10))
+    assert start_cycle1 == datetime(2018, 10, 10)
+    assert end_cycle1 == datetime(2018, 11, 9)
+    assert start_cycle2 == datetime(2018, 11, 10)
+    assert end_cycle2 == datetime(2018, 12, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 12, 10))
-    assert start_cycle1 == pd.datetime(2018, 11, 10)
-    assert end_cycle1 == pd.datetime(2018, 12, 9)
-    assert start_cycle2 == pd.datetime(2018, 12, 10)
-    assert end_cycle2 == pd.datetime(2019, 1, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 12, 10))
+    assert start_cycle1 == datetime(2018, 11, 10)
+    assert end_cycle1 == datetime(2018, 12, 9)
+    assert start_cycle2 == datetime(2018, 12, 10)
+    assert end_cycle2 == datetime(2019, 1, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 1, 10))
-    assert start_cycle1 == pd.datetime(2017, 12, 10)
-    assert end_cycle1 == pd.datetime(2018, 1, 9)
-    assert start_cycle2 == pd.datetime(2018, 1, 10)
-    assert end_cycle2 == pd.datetime(2018, 2, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 1, 10))
+    assert start_cycle1 == datetime(2017, 12, 10)
+    assert end_cycle1 == datetime(2018, 1, 9)
+    assert start_cycle2 == datetime(2018, 1, 10)
+    assert end_cycle2 == datetime(2018, 2, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 21))
-    assert start_cycle1 == pd.datetime(2018, 1, 10)
-    assert end_cycle1 == pd.datetime(2018, 2, 9)
-    assert start_cycle2 == pd.datetime(2018, 2, 10)
-    assert end_cycle2 == pd.datetime(2018, 3, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 2, 21))
+    assert start_cycle1 == datetime(2018, 1, 10)
+    assert end_cycle1 == datetime(2018, 2, 9)
+    assert start_cycle2 == datetime(2018, 2, 10)
+    assert end_cycle2 == datetime(2018, 3, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 11, 21))
-    assert start_cycle1 == pd.datetime(2018, 10, 10)
-    assert end_cycle1 == pd.datetime(2018, 11, 9)
-    assert start_cycle2 == pd.datetime(2018, 11, 10)
-    assert end_cycle2 == pd.datetime(2018, 12, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 11, 21))
+    assert start_cycle1 == datetime(2018, 10, 10)
+    assert end_cycle1 == datetime(2018, 11, 9)
+    assert start_cycle2 == datetime(2018, 11, 10)
+    assert end_cycle2 == datetime(2018, 12, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 9, 1))
-    assert start_cycle1 == pd.datetime(2018, 7, 10)
-    assert end_cycle1 == pd.datetime(2018, 8, 9)
-    assert start_cycle2 == pd.datetime(2018, 8, 10)
-    assert end_cycle2 == pd.datetime(2018, 9, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 9, 1))
+    assert start_cycle1 == datetime(2018, 7, 10)
+    assert end_cycle1 == datetime(2018, 8, 9)
+    assert start_cycle2 == datetime(2018, 8, 10)
+    assert end_cycle2 == datetime(2018, 9, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 12, 1))
-    assert start_cycle1 == pd.datetime(2018, 10, 10)
-    assert end_cycle1 == pd.datetime(2018, 11, 9)
-    assert start_cycle2 == pd.datetime(2018, 11, 10)
-    assert end_cycle2 == pd.datetime(2018, 12, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 12, 1))
+    assert start_cycle1 == datetime(2018, 10, 10)
+    assert end_cycle1 == datetime(2018, 11, 9)
+    assert start_cycle2 == datetime(2018, 11, 10)
+    assert end_cycle2 == datetime(2018, 12, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 1, 1))
-    assert start_cycle1 == pd.datetime(2017, 11, 10)
-    assert end_cycle1 == pd.datetime(2017, 12, 9)
-    assert start_cycle2 == pd.datetime(2017, 12, 10)
-    assert end_cycle2 == pd.datetime(2018, 1, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 1, 1))
+    assert start_cycle1 == datetime(2017, 11, 10)
+    assert end_cycle1 == datetime(2017, 12, 9)
+    assert start_cycle2 == datetime(2017, 12, 10)
+    assert end_cycle2 == datetime(2018, 1, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 1))
-    assert start_cycle1 == pd.datetime(2017, 12, 10)
-    assert end_cycle1 == pd.datetime(2018, 1, 9)
-    assert start_cycle2 == pd.datetime(2018, 1, 10)
-    assert end_cycle2 == pd.datetime(2018, 2, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 2, 1))
+    assert start_cycle1 == datetime(2017, 12, 10)
+    assert end_cycle1 == datetime(2018, 1, 9)
+    assert start_cycle2 == datetime(2018, 1, 10)
+    assert end_cycle2 == datetime(2018, 2, 9)
 
-    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(pd.datetime(2018, 2, 10))
-    assert start_cycle1 == pd.datetime(2018, 1, 10)
-    assert end_cycle1 == pd.datetime(2018, 2, 9)
-    assert start_cycle2 == pd.datetime(2018, 2, 10)
-    assert end_cycle2 == pd.datetime(2018, 3, 9)
+    start_cycle1, end_cycle1, start_cycle2, end_cycle2 = get_bill_cycles(datetime(2018, 2, 10))
+    assert start_cycle1 == datetime(2018, 1, 10)
+    assert end_cycle1 == datetime(2018, 2, 9)
+    assert start_cycle2 == datetime(2018, 2, 10)
+    assert end_cycle2 == datetime(2018, 3, 9)
 
 
 def test_next_payment_date():
-    date = str(datetime.datetime(2018, 2, 10))
-    assert next_payment_date(date) == pd.datetime(2018, 3, 10)
+    date = str(datetime(2018, 2, 10))
+    assert next_payment_date(date) == datetime(2018, 3, 10)
 
-    date = str(datetime.datetime(2018, 12, 21))
-    assert next_payment_date(date, payment=2) == pd.datetime(2019, 2, 21)
+    date = str(datetime(2018, 12, 21))
+    assert next_payment_date(date, payment=2) == datetime(2019, 2, 21)
 
-    date = str(datetime.datetime(2018, 1, 31))
-    assert next_payment_date(date) == pd.datetime(2018, 2, 28)
+    date = str(datetime(2018, 1, 31))
+    assert next_payment_date(date) == datetime(2018, 2, 28)
 
-    date = str(datetime.datetime(2018, 1, 31))
-    assert next_payment_date(date, payment=2) == pd.datetime(2018, 3, 31)
+    date = str(datetime(2018, 1, 31))
+    assert next_payment_date(date, payment=2) == datetime(2018, 3, 31)
 
-    date = str(datetime.datetime(2018, 10, 29))
-    assert next_payment_date(date, payment=3) == pd.datetime(2019, 1, 29)
+    date = str(datetime(2018, 10, 29))
+    assert next_payment_date(date, payment=3) == datetime(2019, 1, 29)

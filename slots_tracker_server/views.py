@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import json
 import os
 import subprocess
@@ -57,7 +57,7 @@ def validate_run_response_or_raise(response):
 
 @app.route('/backup/')
 def backup():
-    today_str = str(datetime.datetime.now().date()).replace('-', '_')
+    today_str = str(datetime.now().date()).replace('-', '_')
     dest_path = os.path.join(BACKUPS, today_str)
     app.logger.info('Backup folder is: {}'.format(dest_path))
 
