@@ -1,4 +1,4 @@
 requirements:
   - requirements.txt
   - development.txt
-schedule: "every two weeks"
+schedule: "every day"
