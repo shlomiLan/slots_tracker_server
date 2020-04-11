@@ -3,10 +3,16 @@ import json
 import os
 import subprocess
 
-from slots_tracker_server import app, sentry
+import flask
+import flask_login
+from flask import abort
+from mongoengine import DoesNotExist
+
+from slots_tracker_server import app, sentry, db
 from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.email import send_email
+from slots_tracker_server.models import Users
 from slots_tracker_server.notifications import Notifications
 from slots_tracker_server.utils import register_api, is_prod
 
@@ -102,6 +108,65 @@ if not app.debug:
             code = e.code
 
         return "An error occurred, I'm on it to fix it :-)", code
+
+
+# TODO: move
+def public_endpoint(function):
+    function.is_public = True
+    return function
+
+
+@app.route('/login', methods=['GET', 'POST'])
+@public_endpoint
+def login():
+    if flask.request.method == 'GET':
+        return '''
+               <form action='login' method='POST'>
+                <input type='text' name='email' id='email' placeholder='email'/>
+                <input type='password' name='password' id='password' placeholder='password'/>
+                <input type='submit' name='submit'/>
+               </form>
+               '''
+
+    email, password = flask.request.form['email'], flask.request.form['password']
+    try:
+        # TODO: user generic function
+        user = Users.objects.get(email=email)
+        if user and user.valid_password(password):
+            flask_login.login_user(user)
+            return flask.redirect(flask.url_for('home_page'))
+    except DoesNotExist:
+        app.logger.error('User not found')
+
+    return 'Bad login'
+
+
+@app.route('/logout')
+@public_endpoint
+def logout():
+    flask_login.logout_user()
+    return 'Logged out'
+
+
+@app.before_request
+def check_login():
+    is_user_authenticated = flask_login.current_user.is_authenticated
+
+    if (flask.request.endpoint and 'static' not in flask.request.endpoint
+            and not is_user_authenticated
+            and not getattr(app.view_functions[flask.request.endpoint], 'is_public', False)):
+        abort(401)
+
+
+@app.login_manager.user_loader
+def load_user(user_id):
+    user = None
+    try:
+        user = Users.objects.get(id=user_id)
+    except db.DoesNotExist:
+        app.logger.error('User not found')
+
+    return user
 
 
 register_api(ExpenseAPI, 'expense_api', '/expenses/', pk='obj_id')

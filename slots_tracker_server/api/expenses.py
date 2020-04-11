@@ -1,5 +1,6 @@
 import copy
 
+import flask_login
 from bson import json_util
 from flask import request
 
@@ -26,8 +27,6 @@ class ExpenseAPI(BaseAPI):
 
     @staticmethod
     def get_full_doc_by_id(doc_id, docs):
-        # return filter(lambda x: x.get('_id') == doc_id, docs)
-
         for doc in docs:
             if doc.get('_id') == doc_id:
                 return doc
@@ -45,9 +44,9 @@ class ExpenseAPI(BaseAPI):
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True)
+            obj_data = self.api_class.objects(active=True, work_group=flask_login.current_user.work_group)
             if filter_str:
-                obj_data = obj_data.filter(active=True, amount=filter_str)
+                obj_data = obj_data.filter(amount=filter_str)
 
             obj_data = obj_data.limit(50).order_by('one_time', '-timestamp').to_json()
         # Translate all reference fields from ID to data

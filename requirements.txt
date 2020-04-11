@@ -29,3 +29,7 @@ firebase-admin==4.0.0
 pyfcm==1.4.7
 grpcio==1.27.2
 requests==2.23.0
+
+# login
+flask-login==0.5.0
+bcrypt==3.1.7

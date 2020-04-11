@@ -9,7 +9,6 @@ from invoke import task
 from progress.bar import Bar
 
 from pyinvoke.base import init_app
-from pyinvoke.email import email
 from pyinvoke.utils import transform_expense_to_dict, translate, reference_objects_str_to_id, clean_doc_data, BASEDIR, \
     BACKUPS, run, load_yaml_from_file
 
@@ -103,3 +102,55 @@ def remove_numbers_from_name(c, settings=None):
             item.name = item_name
             item.save()
 
+
+# Users
+@task()
+def list_users(c, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import Users
+    users = Users.objects()
+    print('Loading users')
+    for user in users:
+        print(user.to_json())
+
+
+@task()
+def add_user(c, email, password, group, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import Users, WorkGroups
+    work_group = WorkGroups.objects.get(name=group)
+    print(Users(email=email, password=password, work_group=work_group).save())
+    list_users(c)
+
+
+# WorkGroup
+@task()
+def list_groups(c, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import WorkGroups
+    workgroups = WorkGroups.objects()
+    print('Loading workgroup')
+    for workgroup in workgroups:
+        print(workgroup.to_json())
+
+
+@task()
+def add_group(c, group_name, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import WorkGroups
+    print(WorkGroups(name=group_name).save())
+    list_groups(c)
+
+
+@task()
+def add_group_to_objects(c, group_name, settings=None):
+    init_app(c, settings=settings)
+    from slots_tracker_server.models import WorkGroups, Categories, PayMethods, Expense
+    workgroup = WorkGroups.objects.get(name=group_name)
+    for collection in [Categories, PayMethods, Expense]:
+        print(f'Adding workgroup: {workgroup} to collection" {collection}')
+        for obj in collection.objects():
+            print(obj)
+            obj.work_group = workgroup
+            obj.save()
+        pass
