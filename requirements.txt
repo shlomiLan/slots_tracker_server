@@ -25,7 +25,7 @@ raven[flask]==6.10.0
 dateutils==0.6.6
 
 # Notifications
-firebase-admin==4.0.0
+firebase-admin==4.0.1
 pyfcm==1.4.7
 grpcio==1.27.2
 requests==2.23.0
