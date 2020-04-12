@@ -68,14 +68,11 @@ class Users(BaseDocument, UserMixin):
 
     def save(self, **kwargs):
         success, message = True, None
-        print(kwargs)
         # check if we need to hash the password
         if not isinstance(self.password, bytes):
             # Hash a password for the first time, with a randomly-generated salt
             self.password = bcrypt.hashpw(self.password.encode('utf-8'), bcrypt.gensalt())
 
-        print(self.password)
-        print(type(self.password))
         try:
             super(Users, self).save(**kwargs)
         except db.NotUniqueError:

@@ -5,7 +5,7 @@ import hypothesis.strategies as st
 from hypothesis import given, settings
 
 from slots_tracker_server.api.expenses import ExpenseAPI
-from slots_tracker_server.models import Expense, PayMethods, Categories
+from slots_tracker_server.models import Expense, PayMethods, Categories, WorkGroups
 from slots_tracker_server.utils import date_to_str, clean_api_object, next_payment_date
 
 
@@ -34,7 +34,8 @@ def test_filtered_expenses(client):
 
 def test_get_deleted_expense(client):
     expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.utcnow(), active=False, category=Categories.objects().first()).save()
+                      timestamp=datetime.utcnow(), active=False, category=Categories.objects().first(),
+                      work_group=WorkGroups.objects().first()).save()
     rv = client.get('/expenses/{}'.format(expense.id))
     assert rv.status_code == 404
 
@@ -74,7 +75,8 @@ def test_get_expense_404(client):
 
 def test_delete_expense(client):
     expense = Expense(amount=200, pay_method=PayMethods.objects().first(),
-                      timestamp=datetime.utcnow(), category=Categories.objects().first()).save()
+                      timestamp=datetime.utcnow(), category=Categories.objects().first(),
+                      work_group=WorkGroups.objects().first()).save()
     rv = client.delete('/expenses/{}'.format(expense.id))
     assert rv.status_code == 200
 
@@ -82,10 +84,11 @@ def test_delete_expense(client):
 def test_update_expense(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
+    work_group = WorkGroups.objects().first()
 
     amount, timestamp, active, one_time = test_expense()
     data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
-            'category': category.to_json(), 'active': active, 'one_time': one_time}
+            'category': category.to_json(), 'active': active, 'one_time': one_time, 'work_group': work_group.to_json()}
 
     rv = client.post('/expenses/', json=data)
     result = json.loads(rv.get_data(as_text=True))
@@ -114,6 +117,7 @@ def test_update_expense(client):
 def test_update_expense_change_ref_filed(client):
     pay_method = PayMethods.objects().first()
     category = Categories.objects().first()
+    work_group = WorkGroups.objects().first()
 
     amount, timestamp, active, one_time = test_expense()
     data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
@@ -125,7 +129,7 @@ def test_update_expense_change_ref_filed(client):
     result = result[0]
     old_pay_method = pay_method.to_json()
 
-    new_pay_method = PayMethods(name='Very random text 1111').save()
+    new_pay_method = PayMethods(name='Very random text 1111', work_group=work_group).save()
     result['pay_method'] = new_pay_method.to_json()
     obj_id = result.get('_id')
     clean_api_object(result)
@@ -162,7 +166,8 @@ def test_get_pay_method(client):
 
 
 def test_get_deleted_pay_method(client):
-    pay_method = PayMethods(name='Very random text', active=False).save()
+    work_group = WorkGroups.objects().first()
+    pay_method = PayMethods(name='Very random text', active=False, work_group=work_group).save()
     rv = client.get('/pay_methods/{}'.format(pay_method.id))
     assert rv.status_code == 404
 
@@ -189,7 +194,8 @@ def test_post_duplicate_pay_method(client):
 
 
 def test_update_pay_method(client):
-    pay_method = PayMethods(name='Random pay method').save()
+    work_group = WorkGroups.objects().first()
+    pay_method = PayMethods(name='Random pay method', work_group=work_group).save()
     pay_method.name = '{}11111'.format(pay_method.name)
 
     rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
@@ -198,10 +204,11 @@ def test_update_pay_method(client):
 
 def test_update_duplicate_pay_method(client):
     name1 = 'Random random pay method'
-    _ = PayMethods(name=name1).save()
+    work_group = WorkGroups.objects().first()
+    _ = PayMethods(name=name1, work_group=work_group).save()
 
     name2 = 'Random random random pay method'
-    pay_method = PayMethods(name=name2).save()
+    pay_method = PayMethods(name=name2, work_group=work_group).save()
 
     pay_method.name = name1
     rv = client.put('/pay_methods/{}'.format(pay_method.id), json=pay_method.to_json())
@@ -209,7 +216,8 @@ def test_update_duplicate_pay_method(client):
 
 
 def test_delete_pay_method(client):
-    pay_method = PayMethods(name='New pay method').save()
+    work_group = WorkGroups.objects().first()
+    pay_method = PayMethods(name='New pay method', work_group=work_group).save()
     rv = client.delete('/pay_methods/{}'.format(pay_method.id))
     assert rv.status_code == 200
     assert pay_method.reload().active is False

@@ -153,6 +153,7 @@ def check_login():
     is_user_authenticated = flask_login.current_user.is_authenticated
 
     if (flask.request.endpoint and 'static' not in flask.request.endpoint
+            and not app.config.get('LOGIN_DISABLED', False)
             and not is_user_authenticated
             and not getattr(app.view_functions[flask.request.endpoint], 'is_public', False)):
         abort(401)
