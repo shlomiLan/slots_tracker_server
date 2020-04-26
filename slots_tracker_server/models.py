@@ -1,6 +1,4 @@
-import bcrypt
 import mongoengine as db
-from flask_login import UserMixin
 
 from slots_tracker_server.db import BaseDocument
 
@@ -61,7 +59,7 @@ class Expense(BaseDocument):
             ref_object.save()
 
 
-class Users(BaseDocument, UserMixin):
+class Users(BaseDocument):
     email = db.StringField(required=True, max_length=200, unique=True)
     password = db.BinaryField(required=True, max_length=200)
     work_group = db.ReferenceField(WorkGroups, required=True)

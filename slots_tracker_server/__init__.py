@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
-from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
 from mongoengine import connect
 from raven.contrib.flask import Sentry
 
@@ -13,10 +13,8 @@ connect(host=os.environ.get('DB_HOST'), port=int(str(os.environ.get('DB_PORT')))
         retryWrites=False)
 sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
-app.secret_key = os.environ['FLASK_SECRET_KEY']
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+app.config['JWT_SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
+jwt = JWTManager(app)
 
 
 import slots_tracker_server.views  # noqa

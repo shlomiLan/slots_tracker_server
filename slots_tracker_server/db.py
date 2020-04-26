@@ -1,4 +1,3 @@
-import flask_login
 from bson import json_util
 from flask import abort
 from mongoengine import Document, ReferenceField

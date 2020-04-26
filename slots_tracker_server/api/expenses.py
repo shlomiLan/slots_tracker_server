@@ -1,6 +1,5 @@
 import copy
 
-import flask_login
 from bson import json_util
 from flask import request
 

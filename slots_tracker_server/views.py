@@ -4,11 +4,13 @@ import os
 import subprocess
 
 import flask
-import flask_login
 from flask import abort
+from flask_jwt_extended import create_access_token, verify_jwt_in_request
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError
 from mongoengine import DoesNotExist
 
-from slots_tracker_server import app, sentry, db
+from slots_tracker_server import app, sentry
 from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.email import send_email
@@ -116,25 +118,21 @@ def public_endpoint(function):
     return function
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['POST'])
 @public_endpoint
 def login():
-    if flask.request.method == 'GET':
-        return '''
-               <form action='login' method='POST'>
-                <input type='text' name='email' id='email' placeholder='email'/>
-                <input type='password' name='password' id='password' placeholder='password'/>
-                <input type='submit' name='submit'/>
-               </form>
-               '''
+    if not flask.request.is_json:
+        return flask.jsonify({"msg": "Missing JSON in request"}), 400
 
-    email, password = flask.request.form['email'], flask.request.form['password']
+    req_data = json.loads(flask.request.data)
+    email, password = req_data.get('email'), req_data.get('password')
     try:
         # TODO: user generic function
         user = Users.objects.get(email=email)
         if user and user.valid_password(password):
-            flask_login.login_user(user)
-            return flask.redirect(flask.url_for('home_page'))
+            access_token = create_access_token(identity=str(user.id))
+            return flask.jsonify(access_token=access_token), 200
+
     except DoesNotExist:
         app.logger.error('User not found')
 

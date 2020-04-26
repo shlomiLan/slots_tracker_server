@@ -31,5 +31,4 @@ grpcio==1.28.1
 requests==2.23.0
 
 # login
-flask-login==0.5.0
-bcrypt==3.1.7
+Flask-JWT-Extended==3.24.1
