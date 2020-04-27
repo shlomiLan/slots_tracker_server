@@ -1,3 +1,4 @@
+import bcrypt as bcrypt
 import mongoengine as db
 
 from slots_tracker_server.db import BaseDocument

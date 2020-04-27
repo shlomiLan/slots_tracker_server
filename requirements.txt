@@ -32,3 +32,4 @@ requests==2.23.0
 
 # login
 Flask-JWT-Extended==3.24.1
+bcrypt==3.1.7
