@@ -17,7 +17,7 @@ hypothesis==5.10.4
 python_http_client==3.2.7
 
 # CLI
-click==7.1.1
+click==7.1.2
 progress==1.5
 
 # Notebook
