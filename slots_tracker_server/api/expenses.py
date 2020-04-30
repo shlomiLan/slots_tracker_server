@@ -2,6 +2,7 @@ import copy
 
 from bson import json_util
 from flask import request
+from flask_jwt_extended import current_user
 
 from slots_tracker_server.api.base import BasicObjectAPI, BaseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
@@ -43,7 +44,7 @@ class ExpenseAPI(BaseAPI):
         if obj_id:
             obj_data = super(ExpenseAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True, work_group=flask_login.current_user.work_group)
+            obj_data = self.api_class.objects(active=True, work_group=current_user.work_group)
             if filter_str:
                 obj_data = obj_data.filter(amount=filter_str)
 

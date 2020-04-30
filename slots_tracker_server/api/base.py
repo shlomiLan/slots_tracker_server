@@ -3,6 +3,7 @@ import abc
 from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
+from flask_jwt_extended import current_user
 from mongoengine import NotUniqueError
 
 # from slots_tracker_server import gsheet
@@ -37,6 +38,7 @@ class BaseAPI(MethodView):
 
         # Get and updated the object
         instance = self.api_class.objects.get_or_404(id=object_id)
+        self.reference_field_to_object_id(obj_data)
         instance.update(**obj_data)
         return instance.reload()
 
@@ -85,7 +87,7 @@ class BasicObjectAPI(BaseAPI):
         if obj_id:
             obj_data = super(BasicObjectAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True).order_by('-instances').to_json()
+            obj_data = self.api_class.objects(active=True, work_group=current_user.work_group).order_by('-instances').to_json()
 
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
