@@ -103,3 +103,8 @@ def next_payment_date(current_date: str, payment: int = 1) -> datetime:
 
 def is_prod():
     return os.environ[ENV_NAME] == PROD_ENV_NAME
+
+
+def public_endpoint(function):
+    function.is_public = True
+    return function

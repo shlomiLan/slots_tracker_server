@@ -6,22 +6,21 @@ import subprocess
 import flask
 from flask import abort
 from flask_jwt_extended import create_access_token, verify_jwt_in_request
-from flask_jwt_extended.exceptions import NoAuthorizationError
-from jwt import ExpiredSignatureError
 from mongoengine import DoesNotExist
 
-from slots_tracker_server import app, sentry
+from slots_tracker_server import app, sentry, jwt
 from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.email import send_email
 from slots_tracker_server.models import Users
 from slots_tracker_server.notifications import Notifications
-from slots_tracker_server.utils import register_api, is_prod
+from slots_tracker_server.utils import register_api, is_prod, public_endpoint
 
 BACKUPS = os.path.join('/tmp', 'backups')
 
 
 @app.route('/')
+@public_endpoint
 def home_page():
     return 'API index page'
 
@@ -112,12 +111,6 @@ if not app.debug:
         return "An error occurred, I'm on it to fix it :-)", code
 
 
-# TODO: move
-def public_endpoint(function):
-    function.is_public = True
-    return function
-
-
 @app.route('/login/', methods=['POST'])
 @public_endpoint
 def login():
@@ -139,32 +132,28 @@ def login():
     return 'Bad login'
 
 
-@app.route('/logout')
-@public_endpoint
-def logout():
-    flask_login.logout_user()
-    return 'Logged out'
+# TODO: add logout
+# @app.route('/logout/')
+# def logout():
+#     flask_login.logout_user()
+#     return 'Logged out'
 
 
 @app.before_request
 def check_login():
-    is_user_authenticated = flask_login.current_user.is_authenticated
-
     if (flask.request.endpoint and 'static' not in flask.request.endpoint
-            and not app.config.get('LOGIN_DISABLED', False)
-            and not is_user_authenticated
             and not getattr(app.view_functions[flask.request.endpoint], 'is_public', False)):
-        abort(401)
+        try:
+            verify_jwt_in_request()
+        except Exception as e:
+            app.logger.exception(e)
+            app.logger.error('Token error')
+            abort(401)
 
 
-@app.login_manager.user_loader
+@jwt.user_loader_callback_loader
 def load_user(user_id):
-    user = None
-    try:
-        user = Users.objects.get(id=user_id)
-    except db.DoesNotExist:
-        app.logger.error('User not found')
-
+    user = Users.objects.get(id=user_id)
     return user
 
 

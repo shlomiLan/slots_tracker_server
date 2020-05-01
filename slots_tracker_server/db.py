@@ -1,5 +1,6 @@
 from bson import json_util
 from flask import abort
+from flask_jwt_extended import current_user
 from mongoengine import Document, ReferenceField
 from mongoengine.queryset import DoesNotExist, QuerySet
 
@@ -17,7 +18,7 @@ class BaseQuerySet(QuerySet):
         try:
             if 'active' not in kwargs:
                 kwargs['active'] = True
-            return self.get(work_group=flask_login.current_user.work_group, *args, **kwargs)
+            return self.get(work_group=current_user.work_group, *args, **kwargs)
         except DoesNotExist:
             abort(404)
 

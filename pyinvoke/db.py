@@ -123,23 +123,25 @@ def add_user(c, email, password, group, settings=None):
     list_users(c)
 
 
-# WorkGroup
 @task()
-def list_groups(c, settings=None):
+def list_objects(c, settings=None, cls=None):
     init_app(c, settings=settings)
-    from slots_tracker_server.models import WorkGroups
-    workgroups = WorkGroups.objects()
-    print('Loading workgroup')
-    for workgroup in workgroups:
-        print(workgroup.to_json())
+    from slots_tracker_server.models import WorkGroups, Categories
+    if cls == 'categories':
+        objects = Categories.objects()
+    else:
+        objects = WorkGroups.objects()
+    print(f'Loading {cls}')
+    for o in objects:
+        print(o.to_json())
 
 
+# WorkGroup
 @task()
 def add_group(c, group_name, settings=None):
     init_app(c, settings=settings)
     from slots_tracker_server.models import WorkGroups
     print(WorkGroups(name=group_name).save())
-    list_groups(c)
 
 
 @task()

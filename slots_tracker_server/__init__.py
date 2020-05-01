@@ -13,7 +13,9 @@ connect(host=os.environ.get('DB_HOST'), port=int(str(os.environ.get('DB_PORT')))
         retryWrites=False)
 sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
-app.config['JWT_SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
+app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
+app.secret_key = os.environ['FLASK_SECRET_KEY']
+
 jwt = JWTManager(app)
 
 

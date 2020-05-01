@@ -8,11 +8,11 @@ from slots_tracker_server.utils import clean_api_object
 
 
 NEW_AMOUNT = 100
+WORK_GROUP_KEY = 'work_group'
 
 
-# Expense
 def test_get_expenses(client):
-    headers, _ = login_user(client)
+    headers, work_group_id = login_user(client)
     rv = client.get('/expenses/', headers=headers)
     r_data = json.loads(rv.get_data(as_text=True))
     assert isinstance(r_data, list)
@@ -20,12 +20,36 @@ def test_get_expenses(client):
     for name, document_type in ExpenseAPI.api_class.get_all_reference_fields():
         assert all(isinstance(x[name], dict) for x in r_data)
 
+    assert all(x[WORK_GROUP_KEY]['_id'] == str(work_group_id) for x in r_data)
+
+
+def test_no_overlapping_expenses(client):
+    headers, _ = login_user(client)
+    rv = client.get('/expenses/', headers=headers)
+    r_data = json.loads(rv.get_data(as_text=True))
+
+    headers, _ = login_user(client, work_group_id=3)
+    rv = client.get('/expenses/', headers=headers)
+    r_data_2 = json.loads(rv.get_data(as_text=True))
+
+    assert all(x != y for x in r_data for y in r_data_2)
+
 
 def test_get_expense(client):
     headers, work_group_id = login_user(client)
     expense = Expense.objects.filter(work_group=work_group_id)[0]
     rv = client.get('/expenses/{}'.format(expense.id), headers=headers)
     assert isinstance(json.loads(rv.get_data(as_text=True))[0], dict)
+
+
+def test_no_access_to_other_user_expense(client):
+    _, work_group_id = login_user(client, work_group_id=3)
+    expense = Expense.objects.filter(work_group=work_group_id)[0]
+
+    # Login as user from different work group
+    headers, _ = login_user(client)
+    rv = client.get('/expenses/{}'.format(expense.id), headers=headers)
+    assert rv.status_code == 404
 
 
 def test_get_expense_empty_result(client):
@@ -172,14 +196,16 @@ def test_calc_amount():
 
 def test_post_expenses_with_payments(client):
     amount, timestamp, active, one_time = expense_data()
-    pay_method = PayMethods.objects().first()
-    category = Categories.objects().first()
+    headers, work_group_id = login_user(client)
+    pay_method = PayMethods.objects().filter(work_group=work_group_id)[0]
+    category = Categories.objects().filter(work_group=work_group_id)[0]
+    work_group = WorkGroups.objects().get(id=work_group_id)
 
     data = {'amount': amount, 'pay_method': pay_method.to_json(), 'timestamp': timestamp,
-            'category': category.to_json(), 'active': active, 'one_time': one_time}
+            'category': category.to_json(), 'active': active, 'one_time': one_time, 'work_group': work_group.to_json()}
 
     payments = 3
-    rv = client.post(f'/expenses/?payments={payments}', json=data)
+    rv = client.post(f'/expenses/?payments={payments}', json=data, headers=headers)
     result = json.loads(rv.get_data(as_text=True))
 
     assert rv.status_code == 201
