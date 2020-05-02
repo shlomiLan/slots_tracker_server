@@ -155,4 +155,3 @@ def add_group_to_objects(c, group_name, settings=None):
             print(obj)
             obj.work_group = workgroup
             obj.save()
-        pass

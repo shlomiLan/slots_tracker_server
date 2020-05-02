@@ -27,7 +27,7 @@ def set_env_var(c, name, value, env, is_protected=True, heroku_app_name=None):
         if env == 'h':
             command = "heroku config:set {}='{}' -a {}".format(name, value, heroku_app_name)
         elif env == 't':
-            command = "travis env set {} '{}'".format(name, value)
+            command = "travis env set {} '{}' --com".format(name, value)
             if not is_protected:
                 command = '{} --public'.format(command)
 

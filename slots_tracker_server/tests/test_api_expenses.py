@@ -53,7 +53,7 @@ def test_no_access_to_other_user_expense(client):
 
 
 def test_get_expense_empty_result(client):
-    headers, work_group_id = login_user(client, work_group_id=1)
+    _, work_group_id = login_user(client, work_group_id=1)
     expense = Expense.objects.filter(work_group=work_group_id)
     assert not expense
 
