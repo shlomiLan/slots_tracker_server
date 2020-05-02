@@ -46,7 +46,7 @@ def test_post_category(client):
 
 
 def test_post_duplicate_category(client):
-    headers, work_group_id = login_user(client)
+    headers, _ = login_user(client)
 
     data = {'name': 'New visa'}
     _ = client.post('/categories/', json=data, headers=headers)

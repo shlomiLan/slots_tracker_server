@@ -46,7 +46,7 @@ def test_post_pay_method(client):
 
 
 def test_post_duplicate_pay_method(client):
-    headers, work_group_id = login_user(client)
+    headers, _ = login_user(client)
 
     data = {'name': 'New visa'}
     _ = client.post('/pay_methods/', json=data, headers=headers)
