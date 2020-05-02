@@ -33,7 +33,7 @@ def test_get_deleted_pay_method(client):
 def test_post_pay_method(client):
     headers, work_group_id = login_user(client)
 
-    data = {'name': 'New visa', 'work_group': str(work_group_id)}
+    data = {'name': 'New visa'}
     expected_data = {'name': 'New visa', 'active': True, 'instances': 0, 'work_group': str(work_group_id)}
 
     rv = client.post('/pay_methods/', json=data, headers=headers)
@@ -48,7 +48,7 @@ def test_post_pay_method(client):
 def test_post_duplicate_pay_method(client):
     headers, work_group_id = login_user(client)
 
-    data = {'name': 'New visa', 'work_group': str(work_group_id)}
+    data = {'name': 'New visa'}
     _ = client.post('/pay_methods/', json=data, headers=headers)
     # Create another pay method with the same name
     rv = client.post('/pay_methods/', json=data, headers=headers)

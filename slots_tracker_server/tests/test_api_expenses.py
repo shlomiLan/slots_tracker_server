@@ -2,13 +2,13 @@ from datetime import datetime
 import json
 
 from slots_tracker_server.api.expenses import ExpenseAPI
+from slots_tracker_server.consts import WORK_GROUP_KEY
 from slots_tracker_server.models import Expense, PayMethods, Categories, WorkGroups
 from slots_tracker_server.tests.conftest import login_user, AMOUNT
 from slots_tracker_server.utils import clean_api_object
 
 
 NEW_AMOUNT = 100
-WORK_GROUP_KEY = 'work_group'
 
 
 def test_get_expenses(client):

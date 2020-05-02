@@ -33,7 +33,7 @@ def test_get_deleted_category(client):
 def test_post_category(client):
     headers, work_group_id = login_user(client)
 
-    data = {'name': 'New visa', 'work_group': str(work_group_id)}
+    data = {'name': 'New visa'}
     expected_data = {'name': 'New visa', 'active': True, 'instances': 0, 'work_group': str(work_group_id)}
 
     rv = client.post('/categories/', json=data, headers=headers)
@@ -48,7 +48,7 @@ def test_post_category(client):
 def test_post_duplicate_category(client):
     headers, work_group_id = login_user(client)
 
-    data = {'name': 'New visa', 'work_group': str(work_group_id)}
+    data = {'name': 'New visa'}
     _ = client.post('/categories/', json=data, headers=headers)
     # Create another category with the same name
     rv = client.post('/categories/', json=data, headers=headers)

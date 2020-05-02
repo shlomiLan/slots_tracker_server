@@ -7,6 +7,7 @@ from flask_jwt_extended import current_user
 from mongoengine import NotUniqueError
 
 # from slots_tracker_server import gsheet
+from slots_tracker_server.consts import WORK_GROUP_KEY
 from slots_tracker_server.utils import convert_to_object_id, clean_api_object
 
 
@@ -44,7 +45,11 @@ class BaseAPI(MethodView):
 
     @staticmethod
     def get_obj_data():
-        return json_util.loads(request.data)
+        temp = json_util.loads(request.data)
+        if WORK_GROUP_KEY not in temp:
+            temp[WORK_GROUP_KEY] = current_user.work_group.id
+
+        return temp
 
     def objects_id_to_json(self, obj_data):
         for name, document_type in self.api_class.get_all_reference_fields():
@@ -93,7 +98,6 @@ class BasicObjectAPI(BaseAPI):
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
-        obj_data['work_group'] = current_user.work_group
         try:
             return json_util.dumps(super(BasicObjectAPI, self).post(obj_data).to_json()), 201
         except NotUniqueError:
