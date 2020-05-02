@@ -93,6 +93,7 @@ class BasicObjectAPI(BaseAPI):
 
     def post(self, obj_data=None):
         obj_data = self.get_obj_data()
+        obj_data['work_group'] = current_user.work_group
         try:
             return json_util.dumps(super(BasicObjectAPI, self).post(obj_data).to_json()), 201
         except NotUniqueError:
