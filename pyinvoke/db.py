@@ -148,10 +148,9 @@ def add_group(c, group_name, settings=None):
 def add_group_to_objects(c, group_name, settings=None):
     init_app(c, settings=settings)
     from slots_tracker_server.models import WorkGroups, Categories, PayMethods, Expense
-    workgroup = WorkGroups.objects.get(name=group_name)
+    work_group = WorkGroups.objects.get(name=group_name)
     for collection in [Categories, PayMethods, Expense]:
-        print(f'Adding workgroup: {workgroup} to collection" {collection}')
+        print(f'Adding work group: {work_group} to collection" {collection}')
         for obj in collection.objects():
-            print(obj)
-            obj.work_group = workgroup
+            obj.work_group = work_group
             obj.save()

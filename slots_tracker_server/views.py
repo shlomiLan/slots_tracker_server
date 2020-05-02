@@ -17,6 +17,8 @@ from slots_tracker_server.notifications import Notifications
 from slots_tracker_server.utils import register_api, is_prod, public_endpoint
 
 BACKUPS = os.path.join('/tmp', 'backups')
+DEFAULT_ERROR_CODE = 400
+UNAUTHORIZED_ERROR_CODE = 401
 
 
 @app.route('/')
@@ -104,9 +106,13 @@ if not app.debug:
     def handle_general_exception(e):
         app.logger.error(e)
         sentry.captureException()
-        code = 400
+        code = DEFAULT_ERROR_CODE
         if hasattr(e, 'code'):
             code = e.code
+
+            if code == UNAUTHORIZED_ERROR_CODE:
+                # Don't raise error in case of unauthorized error
+                return e
 
         return "An error occurred, I'm on it to fix it :-)", code
 
