@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, List, Union
 
 import pandas as pd
+from flask_jwt_extended import current_user
 
 from slots_tracker_server import app
 from slots_tracker_server.models import Expense, Categories, PayMethods
@@ -37,7 +38,7 @@ class Charts:
         return self.expense_data.empty
 
     def get_expense_data(self):
-        self.expense_data = pd.DataFrame(Expense.objects().to_json())
+        self.expense_data = pd.DataFrame(Expense.objects(work_group=current_user.work_group).to_json())
         if self.is_db_empty():
             app.logger.info('No data in DB, can not create charts')
             return None

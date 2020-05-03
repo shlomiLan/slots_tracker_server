@@ -63,6 +63,7 @@ class BaseDocument(Document):
     def get_summary(cls):
         summary = dict()
         for item in cls.objects:
-            summary[object_id_to_str(item.id)] = item.name
+            if item.work_group == current_user.work_group:
+                summary[object_id_to_str(item.id)] = item.name
 
         return summary
