@@ -30,7 +30,8 @@ def home_page():
 @app.route('/charts/')
 def charts():
     chart = Charts()
-    return chart.clac_charts()
+    charts_data = chart.clac_charts()
+    return charts_data or ('No charts', 200)
 
 
 @app.route('/monthly_update/')

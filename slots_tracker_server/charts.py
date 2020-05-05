@@ -57,7 +57,9 @@ class Charts:
         if self.get_expense_data():
             one_time = self.expense_data[self.expense_data.one_time]
             not_one_time = self.expense_data[~self.expense_data.one_time]
-            days = (not_one_time.timestamp.max() - one_time.timestamp.min()).days
+            max_day = not_one_time.timestamp.max() or one_time.timestamp.max()
+            min_day = not_one_time.timestamp.min() or one_time.timestamp.min()
+            days = (max_day - min_day).days
             self.datasets = dict(one_time=dict(data=one_time), not_one_time=dict(data=not_one_time, days=days))
             return True
 
