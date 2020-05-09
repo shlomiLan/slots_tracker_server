@@ -4,8 +4,6 @@ python:
 - 3.6.7
 script:
 - travis_wait 40 coverage run -m pytest --disable-pytest-warnings
-before_install:
-  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
 install:
 - pip install -r development.txt
 - pip install --upgrade attrs
