@@ -9,7 +9,7 @@ flask-shell-ipython==0.4.1
 mypy==0.780
 
 # testing
-pytest-cov==2.9.0
+pytest-cov==2.10.0
 pytest==5.4.3
 codecov==2.1.4
 codacy-coverage==1.3.11
