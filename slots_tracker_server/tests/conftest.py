@@ -6,7 +6,7 @@ from slots_tracker_server import app as flask_app
 from slots_tracker_server.models import Expense, PayMethods, Categories
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def client():
     flask_client = flask_app.test_client()
     # Clean the DB
@@ -19,6 +19,9 @@ def client():
     PayMethods(name='Visa1111').save()
     PayMethods(name='Visa2222').save()
     PayMethods(name='Visa3333').save()
+
+    PayMethods(name='Parser 1234').save()
+
     category = Categories(name='Cat 1').save()
     Categories(name='Cat 11').save()
     Categories(name='Cat 111').save()

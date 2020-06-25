@@ -75,3 +75,20 @@ def keep_server_alive(_):
                 email(_, subject=subject, content=str(res.__dict__))
     except Exception as e:
         email(_, subject=subject, content=e)
+
+
+@task(init_app)
+def read_expenses_from_files(_):
+    from slots_tracker_server.utils import get_parser_from_file_path
+
+    for dirpath, _, filenames in os.walk(os.path.join(BASEDIR, 'reports')):
+        if filenames:
+            for filename in filenames:
+                #  TODO: save to var
+                if '.DS_Store' in filename:
+                    continue
+
+                filepath = os.path.join(dirpath, filename)
+                parser = get_parser_from_file_path(filepath)
+                if parser:
+                    parser.parse_file()

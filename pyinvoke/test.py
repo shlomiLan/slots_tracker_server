@@ -15,8 +15,10 @@ def test(c, cov=False, file=None):
     os.environ['DB_NAME'] = 'slots_tracker_test'
     os.environ['DB_HOST'] = 'localhost'
     os.environ['DB_PORT'] = '27017'
-    del os.environ['DB_USERNAME']
-    del os.environ['DB_PASS']
+    if os.environ.get('DB_USERNAME'):
+        del os.environ['DB_USERNAME']
+    if os.environ.get('DB_PASS'):
+        del os.environ['DB_PASS']
 
     command = 'pytest -s'
     if cov:

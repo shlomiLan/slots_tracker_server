@@ -10,8 +10,7 @@ from progress.bar import Bar
 
 from pyinvoke.base import init_app
 from pyinvoke.email import email
-from pyinvoke.utils import transform_expense_to_dict, translate, reference_objects_str_to_id, clean_doc_data, BASEDIR, \
-    BACKUPS, run, load_yaml_from_file
+from pyinvoke.utils import BASEDIR, BACKUPS, run, load_yaml_from_file
 
 
 @task()
@@ -103,3 +102,33 @@ def remove_numbers_from_name(c, settings=None):
             item.name = item_name
             item.save()
 
+
+@task()
+def backup_db(c, settings='prod', force_restore=False):
+    init_app(c, settings=settings)
+    host, port, db_name, username, password = get_db_info()
+    today_str = str(datetime.datetime.now().date()).replace('-', '_')
+    dest_path = os.path.join(BACKUPS, today_str)
+    run(c, f'mongodump -h {host}:{port} -d {db_name} -u {username} -p {password} -o {dest_path}', False)
+
+    day = datetime.datetime.now().day
+    # If first backup of the month or force
+    if day <= 7 or force_restore:
+        res = restore_db(c, today_str)
+        if res and res.exited != 0:
+            email_text = res.stderr
+        else:
+            email_text = f'The {today_str} daily backup was restored to stage successfully.'
+
+        email(c, subject='DB restore test', content=email_text)
+
+
+@task()
+def restore_db(c, date, backup_db_name='slots_tracker', settings='dev'):
+    init_app(c, settings=settings, force=True)
+    host, port, db_name, username, password = get_db_info()
+    source_path = os.path.join(BACKUPS, date, backup_db_name)
+    if settings == 'dev':
+        run(c, f'mongorestore -h {host}:{port} -d {db_name} {source_path} --drop', False)
+    else:
+        run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)

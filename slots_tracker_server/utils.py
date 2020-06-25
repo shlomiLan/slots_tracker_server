@@ -1,3 +1,4 @@
+import pandas as pd
 from datetime import datetime
 import os
 from typing import Tuple, Dict, Any, Union, Type
@@ -11,7 +12,7 @@ from flask.views import MethodView
 
 from slots_tracker_server import app
 
-
+BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 ENV_NAME = 'FLASK_ENV'
 PROD_ENV_NAME = 'production'
 
@@ -103,3 +104,13 @@ def next_payment_date(current_date: str, payment: int = 1) -> datetime:
 
 def is_prod():
     return os.environ[ENV_NAME] == PROD_ENV_NAME
+
+
+def read_file(filepath):
+    excel_data_df = pd.read_excel(filepath)
+    return excel_data_df
+
+
+def get_parser_from_file_path(filepath):
+    from slots_tracker_server.parser import IsracardParser
+    return IsracardParser(filepath)

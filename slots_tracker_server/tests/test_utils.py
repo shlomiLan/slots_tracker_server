@@ -1,14 +1,19 @@
+import os
 from datetime import datetime
 
 import pytest
+from unittest.mock import patch
 from bson import ObjectId
 from werkzeug.exceptions import BadRequest
 
+from slots_tracker_server.parser import IsracardParser
+from slots_tracker_server.tests.test_parser import FILEPATH
 from slots_tracker_server.utils import convert_to_object_id, find_and_convert_object_id, find_and_convert_date, \
-    get_bill_cycles, next_payment_date
+    get_bill_cycles, next_payment_date, is_prod, ENV_NAME, PROD_ENV_NAME, get_parser_from_file_path
 
 VALID_ID = '5b5c8a2b2c88848042426dff'
 INVALID_ID = '5b5c8a2b2c88848042426dffa'
+DEFAULT_DATE_NEW_OBJECT = '1900-06-24 00:00:00'
 
 
 def test_convert_valid_id():
@@ -117,3 +122,15 @@ def test_next_payment_date():
 
     date = str(datetime(2018, 10, 29))
     assert next_payment_date(date, payment=3) == datetime(2019, 1, 29)
+
+
+def test_is_prod():
+    with patch.dict(os.environ, {ENV_NAME: PROD_ENV_NAME}):
+        assert is_prod()
+
+    assert not is_prod()
+
+
+def test_get_parser_from_file_path():
+    parser = get_parser_from_file_path(FILEPATH)
+    assert isinstance(parser, IsracardParser)

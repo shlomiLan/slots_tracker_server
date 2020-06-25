@@ -36,7 +36,7 @@ class ExpenseAPI(BaseAPI):
         return self.get_full_doc_by_id(field, docs)
 
     def reference_fields_to_data(self, obj_data):
-        for name, document_type in self.api_class.get_all_reference_fields():
+        for name, _ in self.api_class.get_all_reference_fields():
             for entry in obj_data:
                 entry[name] = self.update_value_for_doc(entry[name], self.docs[name])
 
