@@ -6,7 +6,7 @@ PyYAML==5.3.1
 flask-shell-ipython==0.4.1
 
 # Type checking
-mypy==0.780
+mypy==0.782
 
 # testing
 pytest-cov==2.10.0
