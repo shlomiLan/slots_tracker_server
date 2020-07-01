@@ -20,5 +20,5 @@ click==7.1.2
 progress==1.5
 
 # Notebook
-ipython==7.15.0
+ipython==7.16.1
 jupyter==1.0.0
