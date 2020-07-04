@@ -27,6 +27,7 @@ def client():
     Categories(name='Cat 111').save()
     Categories(name='Cat 1111').save()
     Categories(name='Cat 11111').save()
+    Categories(name='Eating out').save()
 
     now_date = datetime.utcnow
     expense_data = dict(amount=200, pay_method=pay_method.id, timestamp=now_date, category=category.id)

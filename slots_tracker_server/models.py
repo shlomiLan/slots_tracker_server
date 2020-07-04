@@ -23,14 +23,17 @@ class Categories(BaseDocument):
     CATEGORY_TO_BUSINESS_NAME = {
         'Transportation': ["באבאל", "gett"],
         'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור'],
-        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה'],
-        'Groceries': ["אי אם פי אם", "AM:PM", 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן', 'שופרסל', 'טיב טעם',
-                      'מגה בעיר'],
-        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי'],
-        'Home': ['מקס סטוק', 'חברת חשמל לישראל'],
+        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה', 'סונול'],
+        'Groceries': ["אי אם פי אם", "am:pm", 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן', 'שופרסל', 'טיב טעם',
+                      'מגה בעיר', 'שוקיט', 'ויקטורי', 'פירות', 'יוכי אספרגוס'],
+        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי', 'spotify', 'zagg'],
+        'Home': ['מקס סטוק', 'חברת חשמל לישראל', 'netflix', 'עתיקות אוחיון', 'שטראוס מים בע"מ', 'סולתם'],
         'Shows': ['רב חן'],
         'Health': ['קרן מכבי'],
-        'Insurance': ['הסתדרות העובדים הכלל']
+        'Insurance': ['הסתדרות העובדים הכלל'],
+        'Super-Pharm': ['סופר פארם'],
+        'Gifts': ['kiwico'],
+        'Baby': ['יופיי ליגת לה לצה']
     }
 
     @classmethod
@@ -67,6 +70,18 @@ class Categories(BaseDocument):
                 category = cls.objects.get(name=category_name)
 
         return category, is_new_category
+
+    def merge_categories(self, cat_to_merge_into_id):
+        if self.added_by_user or self.added_by_user is None:
+            raise Exception(f'Can not merge, {self.name} was added by user')
+
+        cat_to_merge_into = Categories.objects.get(id=cat_to_merge_into_id)
+        if not cat_to_merge_into.added_by_user:
+            raise Exception(f'Can not merge, {cat_to_merge_into.name} was not added by user')
+
+        Expense.objects.filter(category=self.id).update(multi=True, **{'category': cat_to_merge_into})
+        self.delete()
+        return f'Category {self.name} was merged with {cat_to_merge_into.name}'
 
 
 class Expense(BaseDocument):
@@ -107,8 +122,5 @@ class Expense(BaseDocument):
 
     @classmethod
     def is_new_expense(cls, expense):
-        try:
-            cls.objects.get(amount=expense.amount, timestamp=expense.timestamp)
-            return False
-        except DoesNotExist:
-            return True
+        res = cls.objects.filter(amount=expense.amount, timestamp=expense.timestamp)
+        return not bool(res)

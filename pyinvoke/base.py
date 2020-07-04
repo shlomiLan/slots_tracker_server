@@ -78,9 +78,11 @@ def keep_server_alive(_):
 
 
 @task(init_app)
-def read_expenses_from_files(_):
+def read_expenses_from_files(c, settings='dev'):
+    init_app(c, settings=settings, force=True)
     from slots_tracker_server.utils import get_parser_from_file_path
 
+    total_new_expenses, total_new_categories = 0, 0
     for dirpath, _, filenames in os.walk(os.path.join(BASEDIR, 'reports')):
         if filenames:
             for filename in filenames:
@@ -91,4 +93,9 @@ def read_expenses_from_files(_):
                 filepath = os.path.join(dirpath, filename)
                 parser = get_parser_from_file_path(filepath)
                 if parser:
-                    parser.parse_file()
+                    new_expenses, new_categories = parser.parse_file()
+                    total_new_expenses += len(new_expenses)
+                    total_new_categories += len(new_categories)
+
+    print(f'Total number of new expenses: {total_new_expenses}')
+    print(f'Total number of new categories: {total_new_categories}')

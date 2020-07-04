@@ -83,6 +83,4 @@ class IsracardParser(ExpenseParser):
         self.process_section(LOCAL_EXPENSES_KEY, ABROAD_EXPENSES_KEY)
         self.process_section(ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY, end_keyword=None)
 
-        print(f'Total number of new expenses: {len(self.new_expenses)}')
-        print(f'Total number of new categories: {len(self.new_categories)}')
         return self.new_expenses, self.new_categories

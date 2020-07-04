@@ -125,6 +125,9 @@ def backup_db(c, settings='prod', force_restore=False):
 
 @task()
 def restore_db(c, date, backup_db_name='slots_tracker', settings='dev'):
+    if settings == 'prod':
+        raise Exception('Manually remove this line to restore to prod DB?')
+
     init_app(c, settings=settings, force=True)
     host, port, db_name, username, password = get_db_info()
     source_path = os.path.join(BACKUPS, date, backup_db_name)

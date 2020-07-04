@@ -1,9 +1,10 @@
 import abc
+from distutils.util import strtobool
 
 from bson import json_util, ObjectId
 from flask import request
 from flask.views import MethodView
-from mongoengine import NotUniqueError
+from mongoengine import NotUniqueError, Q
 
 # from slots_tracker_server import gsheet
 from slots_tracker_server.utils import convert_to_object_id, clean_api_object
@@ -85,7 +86,17 @@ class BasicObjectAPI(BaseAPI):
         if obj_id:
             obj_data = super(BasicObjectAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True).order_by('-instances').to_json()
+            filtered_objs = self.api_class.objects(active=True)
+            added_by_user = request.args.get('added_by_user')
+            if added_by_user is not None:
+                added_by_user = bool(strtobool(added_by_user))
+                if added_by_user:
+                    condition = Q(added_by_user__ne=False)
+                else:
+                    condition = Q(added_by_user=False)
+                filtered_objs = filtered_objs.filter(condition)
+
+            obj_data = filtered_objs.order_by('-instances').to_json()
 
         return json_util.dumps(obj_data[0] if obj_id else obj_data)
 
@@ -98,9 +109,19 @@ class BasicObjectAPI(BaseAPI):
 
     def put(self, obj_id, obj_data=None):
         obj_data = self.get_obj_data()
-        try:
-            new_expense_as_json = super(BasicObjectAPI, self).put(obj_id, obj_data).to_json()
-            self.objects_id_to_json(new_expense_as_json)
-            return json_util.dumps(new_expense_as_json)
-        except NotUniqueError:
-            return 'Name value must be unique', 400
+        action = obj_data.get('action')
+
+        if action:
+            if action == 'merge_categories':
+                user_added_categories = obj_data.get('user_added_categories')
+                not_user_added_categories = self.api_class.objects.get_or_404(id=obj_id)
+                return not_user_added_categories.merge_categories(cat_to_merge_into_id=user_added_categories)
+            else:
+                raise Exception('Unsupported post action in categories')
+        else:
+            try:
+                new_expense_as_json = super(BasicObjectAPI, self).put(obj_id, obj_data).to_json()
+                self.objects_id_to_json(new_expense_as_json)
+                return json_util.dumps(new_expense_as_json)
+            except NotUniqueError:
+                return 'Name value must be unique', 400
