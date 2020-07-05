@@ -1,9 +1,12 @@
 import json
 import os
 
+from datetime import datetime
+
 from slots_tracker_server import app, sentry
 from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
+from slots_tracker_server.email import send_email
 from slots_tracker_server.notifications import Notifications
 from slots_tracker_server.utils import register_api
 
@@ -19,6 +22,15 @@ def home_page():
 def charts():
     chart = Charts()
     return chart.clac_charts()
+
+
+@app.route('/monthly_reminder/')
+def monthly_reminder():
+    today = datetime.today()
+    msg = f'Please send to me a report from the back website of month {today.month}'
+    send_email(subject='Monthly expenses report', content=msg)
+
+    return 'Email was sent'
 
 
 @app.route('/monthly_update/')
