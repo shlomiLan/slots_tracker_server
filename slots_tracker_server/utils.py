@@ -107,10 +107,10 @@ def is_prod():
 
 
 def read_file(filepath):
-    excel_data_df = pd.read_excel(filepath)
+    try:
+        excel_data_df = pd.read_excel(filepath)
+    except Exception as e:
+        app.logger.info(f'Can not read file as excel: {e}. Trying to load as csv')
+        excel_data_df = pd.read_csv(filepath, sep='\t', skiprows=2)
+
     return excel_data_df
-
-
-def get_parser_from_file_path(filepath):
-    from slots_tracker_server.parser import IsracardParser
-    return IsracardParser(filepath)

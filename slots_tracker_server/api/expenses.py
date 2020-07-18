@@ -2,6 +2,7 @@ import copy
 
 from bson import json_util
 from flask import request
+from mongoengine import Q
 
 from slots_tracker_server.api.base import BasicObjectAPI, BaseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
@@ -40,20 +41,31 @@ class ExpenseAPI(BaseAPI):
             for entry in obj_data:
                 entry[name] = self.update_value_for_doc(entry[name], self.docs[name])
 
+    def get_filters(self):
+        conditions = Q(active=True)
+
+        filter_keywords = ['amount', 'pay_method', 'category', 'timestamp']
+        for keyword in filter_keywords:
+            filter_data = request.args.get(keyword)
+            if filter_data:
+                conditions = conditions & Q(**{keyword: filter_data})
+
+        return conditions
+
     def get(self, obj_id):
-        filter_str = request.args.get('filter')
+        filters = self.get_filters()
+        filtered_objs = self.api_class.objects(active=True)
         if obj_id:
-            obj_data = super(ExpenseAPI, self).get(obj_id)
+            filtered_objs = super(ExpenseAPI, self).get(obj_id)
         else:
-            obj_data = self.api_class.objects(active=True)
-            if filter_str:
-                obj_data = obj_data.filter(active=True, amount=filter_str)
+            if filters:
+                filtered_objs = filtered_objs.filter(filters)
 
-            obj_data = obj_data.limit(50).order_by('one_time', '-timestamp').to_json()
+            filtered_objs = filtered_objs.limit(50).order_by('one_time', '-timestamp').to_json()
         # Translate all reference fields from ID to data
-        self.reference_fields_to_data(obj_data)
+        self.reference_fields_to_data(filtered_objs)
 
-        return json_util.dumps(obj_data)
+        return json_util.dumps(filtered_objs)
 
     def post(self, obj_data=None):
         new_expenses_as_json = self.create_multi_expenses()

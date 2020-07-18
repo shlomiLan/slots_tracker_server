@@ -3,6 +3,7 @@ import json
 
 from slots_tracker_server.api.expenses import ExpenseAPI
 from slots_tracker_server.models import Expense, PayMethods, Categories
+from slots_tracker_server.tests.conftest import AMOUNT_1, AMOUNT_3, EXPENSES_WITH_AMOUNT_3
 from slots_tracker_server.utils import clean_api_object
 
 
@@ -23,10 +24,24 @@ def test_get_expense(client):
 
 
 def test_filtered_expenses(client):
-    rv = client.get('/expenses/?filter={}'.format('200'))
+    rv = client.get(f'/expenses/?amount={AMOUNT_1}')
     data = json.loads(rv.get_data(as_text=True))
     assert isinstance(data[0], dict)
     assert len(data) == 1
+
+
+def test_multi_filters_expenses(client):
+    pay_method_id = PayMethods.objects().first().id
+    category_id = Categories.objects().first().id
+
+    rv = client.get(f'/expenses/?amount={AMOUNT_3}&pay_method={pay_method_id}&category={category_id}')
+    data = json.loads(rv.get_data(as_text=True))
+    assert len(data) == EXPENSES_WITH_AMOUNT_3
+
+    pay_method_2_id = PayMethods.objects()[1].id
+    rv = client.get(f'/expenses/?amount={AMOUNT_3}&pay_method={pay_method_2_id}&category={category_id}')
+    data = json.loads(rv.get_data(as_text=True))
+    assert len(data) == 0
 
 
 def test_get_deleted_expense(client):

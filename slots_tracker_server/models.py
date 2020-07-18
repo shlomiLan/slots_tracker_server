@@ -19,32 +19,40 @@ class Categories(BaseDocument):
     parser_class = db.StringField(max_length=200)
 
     # TODO: move to DB
-    BUSINESS_IGNORE = ['colu', 'bit', 'box העברה באפליקציית']
+    BUSINESS_IGNORE = ['colu', 'bit', 'box העברה באפליקציית', 'paypal']
     CATEGORY_TO_BUSINESS_NAME = {
         'Transportation': ["באבאל", "gett"],
-        'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור'],
-        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה', 'סונול'],
-        'Groceries': ["אי אם פי אם", "am:pm", 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן', 'שופרסל', 'טיב טעם',
+        'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור', 'נונה',
+                       'שולי לוצי', 'הכובשים', 'בוטיק סנטרל', 'לחם ושות', 'gin club', 'ארומה'],
+        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה', 'סונול', 'רכב חובה', 'פנגו', 'דואלי מכונות אוטומטיות', 'ביטוח רכב'],
+        'Groceries': ["אי אם פי אם", 'am pm', 'pm am', 'am:pm', 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן',
+                      'שופרסל', 'טיב טעם',
                       'מגה בעיר', 'שוקיט', 'ויקטורי', 'פירות', 'יוכי אספרגוס'],
-        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי', 'spotify', 'zagg'],
-        'Home': ['מקס סטוק', 'חברת חשמל לישראל', 'netflix', 'עתיקות אוחיון', 'שטראוס מים בע"מ', 'סולתם'],
+        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי', 'spotify', 'zagg', 'hot', 'הוט נט'],
+        'Home': ['מקס סטוק', 'חברת חשמל לישראל', 'חברת החשמל לישראל', 'netflix', 'עתיקות אוחיון', 'שטראוס מים בע"מ',
+                 'סולתם', 'הום סנטר'],
         'Shows': ['רב חן'],
         'Health': ['קרן מכבי'],
         'Insurance': ['הסתדרות העובדים הכלל'],
         'Super-Pharm': ['סופר פארם'],
         'Gifts': ['kiwico'],
-        'Baby': ['יופיי ליגת לה לצה']
+        'Baby': ['יופיי ליגת לה לצה'],
+        'Sport': ['סטודיו טשרנחובסקי', 'כפיים שיווק וקידום מכירות']
     }
+
+    @staticmethod
+    def is_business_name_in_list(values, business_name):
+        return any(x in business_name for x in values) or any(x[::-1] in business_name for x in values)
 
     @classmethod
     def guess_new_category(cls, business_name):
         clean_business_name = business_name.replace('.', ' ').lower()
-        if any(x in clean_business_name for x in cls.BUSINESS_IGNORE):
+        if cls.is_business_name_in_list(cls.BUSINESS_IGNORE, clean_business_name):
             app.logger.info(f'business name: {business_name} is in ignore list')
             return None
 
         for category_name, values in cls.CATEGORY_TO_BUSINESS_NAME.items():
-            if any(x in clean_business_name for x in values):
+            if cls.is_business_name_in_list(values, clean_business_name):
                 app.logger.info(f'business name: {business_name} is part of category: {category_name}')
                 return category_name
 
@@ -122,5 +130,5 @@ class Expense(BaseDocument):
 
     @classmethod
     def is_new_expense(cls, expense):
-        res = cls.objects.filter(amount=expense.amount, timestamp=expense.timestamp)
+        res = cls.objects.filter(amount=expense.amount, timestamp=expense.timestamp, pay_method=expense.pay_method)
         return not bool(res)

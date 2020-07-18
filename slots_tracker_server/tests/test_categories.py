@@ -47,3 +47,10 @@ def test_merge_categories_wrong_type(categories):
 
     with pytest.raises(Exception):
         assert categories['not_user_added_categories'].merge_categories(categories['not_user_added_categories'].id)
+
+
+def test_is_business_name_in_list():
+    test_list = ['xcv']
+    assert Categories.is_business_name_in_list(test_list, 'xcv', )
+    assert not Categories.is_business_name_in_list(test_list, 'xxx')
+    assert Categories.is_business_name_in_list(test_list, 'vcx')

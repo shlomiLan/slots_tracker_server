@@ -80,7 +80,7 @@ def keep_server_alive(_):
 @task(init_app)
 def read_expenses_from_files(c, settings='dev'):
     init_app(c, settings=settings, force=True)
-    from slots_tracker_server.utils import get_parser_from_file_path
+    from slots_tracker_server.parser import get_parser_from_file_path
 
     total_new_expenses, total_new_categories = 0, 0
     for dirpath, _, filenames in os.walk(os.path.join(BASEDIR, 'reports')):
