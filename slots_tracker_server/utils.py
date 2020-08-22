@@ -114,3 +114,17 @@ def read_file(filepath):
         excel_data_df = pd.read_csv(filepath, sep='\t', skiprows=2)
 
     return excel_data_df
+
+
+def remove_new_lines(text):
+    str_to_remove_1 = '\n'
+    str_to_remove_2 = '\t'
+    new_str = ' '
+    encoding = 'utf8'
+
+    if isinstance(text, bytes):
+        str_to_remove_1 = bytes(str_to_remove_1, encoding=encoding)
+        str_to_remove_2 = bytes(str_to_remove_2, encoding=encoding)
+        new_str = bytes(new_str, encoding=encoding)
+
+    return text.replace(str_to_remove_1, new_str).replace(str_to_remove_2, new_str)

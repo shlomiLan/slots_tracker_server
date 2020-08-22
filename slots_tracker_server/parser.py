@@ -1,4 +1,6 @@
+import json
 from datetime import datetime
+from typing import Tuple
 
 import pandas as pd
 import re
@@ -6,40 +8,39 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from slots_tracker_server.models import Expense, Categories, PayMethods
-from slots_tracker_server.utils import read_file
+from slots_tracker_server.utils import read_file, remove_new_lines
 
 ISRACARD_NAME = 'isracard'
 VISA_NAME = 'visa'
 
 
+def validate_pay_method(pay_methods: list, pay_method_text: str):
+    if len(pay_methods) != 1:
+        if len(pay_methods) > 1:
+            raise Exception(f'Found more than 1 pay method with text: {pay_method_text}')
+        else:
+            raise Exception(f'Did not found any pay method text: {pay_method_text}')
+    return pay_methods[0]
+
+
+def get_pay_method(pay_method_text: str):
+    regex = re.compile(f'.*{pay_method_text}.*', re.IGNORECASE)
+    pay_method = PayMethods.objects(name=regex)
+
+    return validate_pay_method(pay_method, pay_method_text)
+
+
 class ExpenseParser(ABC):
     @abstractmethod
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.df = read_file(self.filepath)
-        self.card_digits = None
+    def __init__(self):
         self.pay_method = None
+        self.bill_month = None
         self.new_categories = set()
         self.new_expenses = set()
-        self.bill_month = None
-
-    def validate_pay_method(self, pay_method):
-        if len(pay_method) != 1:
-            if len(pay_method) > 1:
-                raise Exception(f'Found more than 1 pay method with card digits: {self.card_digits}')
-            else:
-                raise Exception(f'Did not found any pay method with card digits: {self.card_digits}')
-        return pay_method[0]
-
-    def get_pay_method(self):
-        regex = re.compile(f'.*{self.card_digits}.*')
-        pay_method = PayMethods.objects(name=regex)
-
-        return self.validate_pay_method(pay_method)
 
     def process_new_expense(self, business_name, amount, date, is_payments, bill_date):
         expense = Expense(amount=amount, timestamp=date, business_name=business_name, pay_method=self.pay_method)
-        if is_payments and bill_date.month != expense.timestamp.month:
+        if is_payments and bill_date and bill_date.month != expense.timestamp.month:
             expense.timestamp = bill_date
 
         if not Expense.is_new_expense(expense):
@@ -54,7 +55,19 @@ class ExpenseParser(ABC):
             self.new_expenses.add(expense)
 
 
-class VisaParser(ExpenseParser):
+class ExpenseFileParser(ExpenseParser):
+    @abstractmethod
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        self.df = read_file(self.filepath)
+
+    @abstractmethod
+    def parse_file(self) -> Tuple[set, set]:
+        pass
+
+
+class VisaParser(ExpenseFileParser):
     BUSINESS_NAME_KEY = "שם בית העסק"
     AMOUNT_KEY = "סכום החיוב"
     DATE_KEY = "תאריך העסקה"
@@ -66,19 +79,16 @@ class VisaParser(ExpenseParser):
     def __init__(self, filepath):
         super().__init__(filepath)
         self.path_obj = Path(filepath)
-        self.card_digits = self.get_card_digits()
-        self.pay_method = self.get_pay_method()
+        card_digits = self.get_card_digits()
+        self.pay_method = get_pay_method(card_digits)
         self.bill_month, self.bill_year = map(int, self.path_obj.stem.split('_'))
 
     def get_card_digits(self):
         return self.path_obj.parts[-2]
 
-    def get_bill_date_from_file_name(self):
-        p = Path(self.filepath)
-
     def check_if_payments_expense(self, row):
         payment_value = row[self.PAYMENTS_COLUMN]
-        if pd.notna(payment_value) and (self.IS_PAYMENTS_KEY_1 in payment_value or self.IS_PAYMENTS_KEY_2 in payment_value):
+        if pd.notna(payment_value) and (self.IS_PAYMENTS_KEY_1 in payment_value or self.IS_PAYMENTS_KEY_2 in payment_value):  # noqa
             return True
 
         return False
@@ -103,7 +113,7 @@ class VisaParser(ExpenseParser):
         return self.new_expenses, self.new_categories
 
 
-class IsracardParser(ExpenseParser):
+class IsracardParser(ExpenseFileParser):
     BUSINESS_NAME_KEY = "שם בית עסק"
     BASE_DATE_KEY = 'חיוב לתאריך'
     DATE_KEY = "תאריך"
@@ -119,9 +129,9 @@ class IsracardParser(ExpenseParser):
         super().__init__(filepath)
 
         self.titles_col = self.df['Unnamed: 0']
-        self.card_digits = self.titles_col.value_counts().idxmax()
-        self.pay_method = self.get_pay_method()
-        self.card_name_rows = self.df.index[self.titles_col == self.card_digits].tolist()
+        card_digits = self.titles_col.value_counts().idxmax()
+        self.pay_method = get_pay_method(card_digits)
+        self.card_name_rows = self.df.index[self.titles_col == card_digits].tolist()
 
     def find_inx(self, keyword, is_start):
         data = self.df[self.titles_col.str.contains(keyword, na=False)]
@@ -171,7 +181,48 @@ class IsracardParser(ExpenseParser):
         return self.new_expenses, self.new_categories
 
 
-def get_parser_from_file_path(filepath):
+class ColuParser(ExpenseParser):
+    CURRENCY_NAME = 'Shekels'
+    PAT = re.compile(
+        r"Payment Sent To: (?P<name>\w+).*Payment Confirmation\*.*(?P<date>\d{2}/\d{2}/\d{4}).*You just paid.*\*"
+        r"(?P<amount>\d+\.\d+)\* (?P<real_money>.*?) At (.*?)\| (?P<business_name>.*?) *Thank",
+        re.IGNORECASE)
+
+    def __init__(self, json_message):
+        super().__init__()
+        if not isinstance(json_message, dict):
+            json_message = json.loads(json_message)
+        self.message_text = json_message.get('body')
+        self.message_text = remove_new_lines(self.message_text)
+
+    @staticmethod
+    def strip_all_strings(matches):
+        for k, v in matches.items():
+            matches[k] = v.strip()
+
+    def get_message_attributes(self):
+        matches = re.search(self.PAT, self.message_text)
+        if matches:
+            match_data = matches.groupdict()
+            return match_data
+        else:
+            raise Exception(f'Could not find any match, original message: {self.message_text}')
+
+    def parse_message(self) -> Tuple[set, set]:
+        match_data = self.get_message_attributes()
+        self.strip_all_strings(match_data)
+        self.pay_method = get_pay_method(f'Colu - {match_data.get("name")}')
+        if match_data.get('real_money') == self.CURRENCY_NAME:
+            # noinspection PyTypeChecker
+            self.process_new_expense(match_data.get('business_name'), match_data.get('amount'),
+                                     match_data.get('date'), is_payments=False, bill_date=None)
+        else:
+            raise Exception(f'Unknown currency. match data: {match_data}, original message: {self.message_text}')
+
+        return self.new_expenses, self.new_categories
+
+
+def get_parser_from_file_path(filepath: str) -> ExpenseFileParser:
     if ISRACARD_NAME in filepath.lower():
         return IsracardParser(filepath)
     elif VISA_NAME in filepath.lower():

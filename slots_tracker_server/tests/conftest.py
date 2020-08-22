@@ -26,6 +26,8 @@ def client():
     PayMethods(name='Visa3333').save()
 
     PayMethods(name='Parser 1234').save()
+    # Colu
+    PayMethods(name='Colu - Xxxxxx').save()
 
     category = Categories(name='Cat 1').save()
     cat2 = Categories(name='Cat 11').save()

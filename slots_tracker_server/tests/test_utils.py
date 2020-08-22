@@ -127,3 +127,6 @@ def test_is_prod():
         assert is_prod()
 
     assert not is_prod()
+
+
+# TODO: add tests for remove_new_lines
