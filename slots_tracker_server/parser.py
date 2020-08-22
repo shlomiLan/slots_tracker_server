@@ -213,9 +213,10 @@ class ColuParser(ExpenseParser):
         self.strip_all_strings(match_data)
         self.pay_method = get_pay_method(f'Colu - {match_data.get("name")}')
         if match_data.get('real_money') == self.CURRENCY_NAME:
+            date = datetime.strptime(match_data.get('date'), '%d/%m/%Y')
             # noinspection PyTypeChecker
             self.process_new_expense(match_data.get('business_name'), match_data.get('amount'),
-                                     match_data.get('date'), is_payments=False, bill_date=None)
+                                     date, is_payments=False, bill_date=None)
         else:
             raise Exception(f'Unknown currency. match data: {match_data}, original message: {self.message_text}')
 
