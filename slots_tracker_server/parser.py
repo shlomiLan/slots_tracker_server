@@ -185,7 +185,7 @@ class ColuParser(ExpenseParser):
     CURRENCY_NAME = 'Shekels'
     PAT = re.compile(
         r"Payment Sent To: (?P<name>\w+).*Payment Confirmation\*.*(?P<date>\d{2}/\d{2}/\d{4}).*You just paid.*\*"
-        r"(?P<amount>\d+\.\d+)\* (?P<real_money>.*?) At (.*?)\| (?P<business_name>.*?) *Thank",
+        r"(?P<amount>\d+\.\d+)\* (?P<real_money>.*?) At (?P<business_name>.*?) *Thank",
         re.IGNORECASE)
 
     def __init__(self, json_message):
@@ -200,10 +200,15 @@ class ColuParser(ExpenseParser):
         for k, v in matches.items():
             matches[k] = v.strip()
 
+    @staticmethod
+    def extract_hebrew_business_name(business_name):
+        return business_name.split('|')[-1].strip()
+
     def get_message_attributes(self):
         matches = re.search(self.PAT, self.message_text)
         if matches:
             match_data = matches.groupdict()
+            match_data['business_name'] = self.extract_hebrew_business_name(match_data.get('business_name'))
             return match_data
         else:
             raise Exception(f'Could not find any match, original message: {self.message_text}')

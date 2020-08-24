@@ -11,6 +11,7 @@ TEST_DATA_FOLDER = os.path.join(BASEDIR, 'slots_tracker_server', 'tests', 'test_
 COLU_FOLDER = os.path.join(TEST_DATA_FOLDER, 'colu')
 COLU_MESSAGE_FILEPATH = os.path.join(COLU_FOLDER, 'test.json')
 COLU_MESSAGE_WITH_UNKNOWN_CURRENCY_FILEPATH = os.path.join(COLU_FOLDER, 'test_unknown_currency.json')
+COLU_MESSAGE_WITH_PIPE_IN_BUSINESS_NAME_FILEPATH = os.path.join(COLU_FOLDER, 'test_name_without_pipe.json')
 TOTAL_NEW_EXPENSES_COLU = 1
 TOTAL_NEW_CATEGORIES_COLU = 1
 
@@ -21,6 +22,7 @@ EXPENSE_YEAR = '2020'
 EXPENSE_DATE = f'{EXPENSE_DAY}/{EXPENSE_MONTH}/{EXPENSE_YEAR}'
 EXPENSE_AMOUNT = '95.00'
 EXPENSE_BUSINESS_NAME = 'סילון בר'
+EXPENSE_BUSINESS_NAME_WITHOUT_PIPE = 'La Fruiteria של איציק מיציק'
 
 
 def test_message_parse():
@@ -50,6 +52,24 @@ def test_message_parse():
         new_expenses, new_categories = parser.parse_message()
         assert len(new_expenses) == 0
         assert len(new_categories) == 0
+
+
+def test_business_nmae_without_pipe():
+    with open(COLU_MESSAGE_WITH_PIPE_IN_BUSINESS_NAME_FILEPATH) as json_file:
+        message_data = json.load(json_file)
+        parser = ColuParser(message_data)
+        new_expenses, new_categories = parser.parse_message()
+        assert len(new_expenses) == TOTAL_NEW_EXPENSES_COLU
+        assert len(new_categories) == TOTAL_NEW_CATEGORIES_COLU
+
+        for exp in new_expenses:
+            assert exp.amount == float(EXPENSE_AMOUNT)
+
+            assert exp.timestamp.day == int(EXPENSE_DAY)
+            assert exp.timestamp.month == int(EXPENSE_MONTH)
+            assert exp.timestamp.year == int(EXPENSE_YEAR)
+
+            assert exp.business_name == EXPENSE_BUSINESS_NAME_WITHOUT_PIPE
 
 
 def test_message_parse_with_unknown_currency():
