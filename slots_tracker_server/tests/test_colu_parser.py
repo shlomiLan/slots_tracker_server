@@ -15,7 +15,7 @@ COLU_MESSAGE_WITH_PIPE_IN_BUSINESS_NAME_FILEPATH = os.path.join(COLU_FOLDER, 'te
 TOTAL_NEW_EXPENSES_COLU = 1
 TOTAL_NEW_CATEGORIES_COLU = 1
 
-EXPENSE_NAME = 'Xxxxxx'
+EXPENSE_NAME = 'Xxxx'
 EXPENSE_DAY = '05'
 EXPENSE_MONTH = '07'
 EXPENSE_YEAR = '2020'
@@ -83,6 +83,7 @@ def test_message_attributes():
     with open(COLU_MESSAGE_FILEPATH) as json_file:
         parser = ColuParser(json_file.read())
         message_attributes = parser.get_message_attributes()
+        parser.strip_all_strings(message_attributes)
 
         assert message_attributes.get('name') == EXPENSE_NAME
         assert message_attributes.get('date') == EXPENSE_DATE

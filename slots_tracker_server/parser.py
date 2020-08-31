@@ -184,8 +184,8 @@ class IsracardParser(ExpenseFileParser):
 class ColuParser(ExpenseParser):
     CURRENCY_NAME = 'Shekels'
     PAT = re.compile(
-        r"Payment Sent To: (?P<name>\w+).*Payment Confirmation\*.*(?P<date>\d{2}/\d{2}/\d{4}).*You just paid.*\*"
-        r"(?P<amount>\d+\.\d+)\* (?P<real_money>.*?) At (?P<business_name>.*?) *Thank",
+        r"Payment Confirmation\*[\s\S]*(?P<date>\d{2}/\d{2}/\d{4})[\s\S]*\*Hi (?P<name>\w*)[\s\S]*You just paid[\s\S]*\*"
+        r"(?P<amount>\d+\.\d+)\* (?P<real_money>[\s\S]*?) At (?P<business_name>[\s\S]*)Thank",
         re.IGNORECASE)
 
     def __init__(self, json_message):
