@@ -9,11 +9,11 @@ flask-shell-ipython==0.4.1
 mypy==0.782
 
 # testing
-pytest-cov==2.10.0
+pytest-cov==2.10.1
 pytest==6.0.1
-codecov==2.1.8
-hypothesis==5.23.8
-python_http_client==3.2.7
+codecov==2.1.9
+hypothesis==5.30.0
+python_http_client==3.3.1
 
 # CLI
 click==7.1.2
