@@ -11,7 +11,7 @@ gspread==3.6.0
 oauth2client==4.1.3
 
 # Emails
-sendgrid==6.4.4
+sendgrid==6.4.6
 
 # Charts
 pandas==1.1.0
