@@ -21,3 +21,8 @@ Each expense is been writing to a Google spreadsheet
 
 
 * Use this is notebook doesn't work: https://taufiqhabib.wordpress.com/2016/12/18/intalling-jupyter-in-a-virtualenv/
+
+**Parser:**
+
+* Visa - File need to saved locally with UTF-8 encoding
+* Mastercard - no changes needed

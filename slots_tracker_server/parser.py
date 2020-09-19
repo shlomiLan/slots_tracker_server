@@ -119,7 +119,8 @@ class IsracardParser(ExpenseFileParser):
     DATE_KEY = "תאריך"
     AMOUNT_KEY = "סכום חיוב בש''ח"
     LOCAL_EXPENSES_KEY = "פירוט עבור הכרטיסים בארץ"
-    ABROAD_EXPENSES_KEY = "פירוט עבור הכרטיסים בחו''ל בדולר"
+    ABROAD_EXPENSES_KEY = "פירוט עבור הכרטיסים בחו''ל"
+    ABROAD_EXPENSES_IN_DOLLARS_KEY = "פירוט עבור הכרטיסים בחו''ל בדולר"
     ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY = "פירוט עבור הכרטיסים בחו''ל בשקל"
     CARD_NAME = "שם כרטיס"
     PAYMENTS_COLUMN = 'תאור סוג עסקת אשראי'
@@ -133,20 +134,28 @@ class IsracardParser(ExpenseFileParser):
         self.pay_method = get_pay_method(card_digits)
         self.card_name_rows = self.df.index[self.titles_col == card_digits].tolist()
 
-    def find_inx(self, keyword, is_start):
-        data = self.df[self.titles_col.str.contains(keyword, na=False)]
-        if len(data) != 1:
-            raise Exception(f"Didnt found a single value for start index, data: {data}")
+    def find_inx_by_keyword(self, keywords):
+        for keyword in keywords:
+            data = self.df[self.titles_col.str.contains(keyword, na=False)]
+            if len(data) == 1:
+                return data
+
+    def find_inx(self, keywords, is_start):
+        data = self.find_inx_by_keyword(keywords)
+
+        if data is None:
+            raise Exception(f"Did not found a single value for start index, columns: {self.titles_col} keywords: {keywords}")  # noqa
+
         keyword_inx = data.index[0]
         if is_start:
             return min(i for i in self.card_name_rows if i > keyword_inx)
         else:
             return max(i for i in self.card_name_rows if i < keyword_inx)
 
-    def get_section_data(self, start_keyword, end_keyword):
-        section_start_inx = self.find_inx(start_keyword, is_start=True)
-        if end_keyword:
-            section_end_inx = self.find_inx(end_keyword, is_start=False)
+    def get_section_data(self, start_keywords, end_keywords):
+        section_start_inx = self.find_inx(start_keywords, is_start=True)
+        if end_keywords:
+            section_end_inx = self.find_inx(end_keywords, is_start=False)
         else:
             section_end_inx = self.card_name_rows[-1] + 1
 
@@ -162,8 +171,8 @@ class IsracardParser(ExpenseFileParser):
 
         return False
 
-    def process_section(self, start_keyword, end_keyword):
-        section = self.get_section_data(start_keyword, end_keyword)
+    def process_section(self, start_keywords, end_keywords):
+        section = self.get_section_data(start_keywords, end_keywords)
 
         for _, row in section.iterrows():
             business_name = row[self.BUSINESS_NAME_KEY]
@@ -175,8 +184,8 @@ class IsracardParser(ExpenseFileParser):
             self.process_new_expense(business_name, amount, date, is_payments, bill_date)
 
     def parse_file(self):
-        self.process_section(self.LOCAL_EXPENSES_KEY, self.ABROAD_EXPENSES_KEY)
-        self.process_section(self.ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY, end_keyword=None)
+        self.process_section([self.LOCAL_EXPENSES_KEY], [self.ABROAD_EXPENSES_IN_DOLLARS_KEY, self.ABROAD_EXPENSES_KEY])
+        self.process_section([self.ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY, self.ABROAD_EXPENSES_KEY], end_keywords=None)
 
         return self.new_expenses, self.new_categories
 

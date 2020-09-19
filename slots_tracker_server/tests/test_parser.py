@@ -25,11 +25,11 @@ UNKNOWN_FILEPATH = os.path.join(TEST_DATA_FOLDER, 'xxx.xlsx')
 
 def test_get_index():
     isracard_parser = IsracardParser(ISRACARD_FILEPATH)
-    assert isracard_parser.find_inx(keyword=isracard_parser.LOCAL_EXPENSES_KEY, is_start=True) == FIRST_SECTION_START_INX  # noqa
+    assert isracard_parser.find_inx(keywords=[isracard_parser.LOCAL_EXPENSES_KEY], is_start=True) == FIRST_SECTION_START_INX  # noqa
 
-    assert isracard_parser.find_inx(keyword=isracard_parser.ABROAD_EXPENSES_KEY, is_start=False) == FIRST_SECTION_END_INX  # noqa
+    assert isracard_parser.find_inx(keywords=[isracard_parser.ABROAD_EXPENSES_IN_DOLLARS_KEY], is_start=False) == FIRST_SECTION_END_INX  # noqa
 
-    assert isracard_parser.find_inx(keyword=isracard_parser.ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY, is_start=True) == SECOND_SECTION_START_INX  # noqa
+    assert isracard_parser.find_inx(keywords=[isracard_parser.ABROAD_IN_LOCAL_CURRENCY_EXPENSES_KEY], is_start=True) == SECOND_SECTION_START_INX  # noqa
 
 
 def test_parse_file():

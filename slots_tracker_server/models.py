@@ -19,7 +19,7 @@ class Categories(BaseDocument):
     parser_class = db.StringField(max_length=200)
 
     # TODO: move to DB
-    BUSINESS_IGNORE = ['colu', 'bit', 'box העברה באפליקציית', 'paypal']
+    BUSINESS_IGNORE = ['colu', 'bit', 'box העברה באפליקציית', 'paypal', 'paybox']
     CATEGORY_TO_BUSINESS_NAME = {
         'Transportation': ["באבאל", "gett"],
         'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור', 'נונה',

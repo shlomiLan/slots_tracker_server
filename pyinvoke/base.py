@@ -91,6 +91,7 @@ def read_expenses_from_files(c, settings='dev'):
                     continue
 
                 filepath = os.path.join(dirpath, filename)
+                print(f'Working on file: {filepath}')
                 parser = get_parser_from_file_path(filepath)
                 if parser:
                     new_expenses, new_categories = parser.parse_file()
