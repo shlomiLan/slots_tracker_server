@@ -46,7 +46,7 @@ def test_get_category(client):
 def test_post_category(client):
     cat_name = 'New cat'
     data = {'name': cat_name}
-    expected_data = {'name': cat_name, 'active': True, 'instances': 0, 'added_by_user': True}
+    expected_data = {'name': cat_name, 'active': True, 'instances': 0, 'added_by_user': True, 'businesses': []}
 
     rv = client.post('/categories/', json=data)
     result = json.loads(rv.get_data(as_text=True))
@@ -60,7 +60,7 @@ def test_post_category(client):
 def test_post_category_not_added_by_user(client):
     cat_name = 'New cat'
     data = {'name': cat_name, 'added_by_user': False}
-    expected_data = {'name': cat_name, 'active': True, 'instances': 0, 'added_by_user': False}
+    expected_data = {'name': cat_name, 'active': True, 'instances': 0, 'added_by_user': False, 'businesses': []}
 
     rv = client.post('/categories/', json=data)
     result = json.loads(rv.get_data(as_text=True))

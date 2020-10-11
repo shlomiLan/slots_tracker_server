@@ -39,6 +39,8 @@ def test_field_does_not_exist():
 
 def test_merge_categories(categories):
     assert categories['not_user_added_categories'].merge_categories(categories['user_added_categories'].id)
+    categories['user_added_categories'].reload()
+    assert len(categories['user_added_categories'].businesses) == 1
 
 
 def test_merge_categories_wrong_type(categories):

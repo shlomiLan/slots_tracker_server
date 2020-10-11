@@ -84,8 +84,7 @@ def add_count_to_ref_fields(c, settings=None):
 
 
 def get_db_info():
-    # Use get to not get error when loading the 'dev' settings
-    return os.environ['DB_HOST'], os.environ['DB_PORT'], os.environ['DB_NAME'], os.environ.get('DB_USERNAME'), \
+    return os.environ['DB_HOST'], os.environ['DB_NAME'], os.environ.get('DB_USERNAME'), \
            os.environ.get('DB_PASS')
 
 
@@ -129,9 +128,44 @@ def restore_db(c, date, backup_db_name='slots_tracker', settings='dev'):
         raise Exception('Manually remove this line to restore to prod DB?')
 
     init_app(c, settings=settings, force=True)
-    host, port, db_name, username, password = get_db_info()
+    host, db_name, username, password = get_db_info()
     source_path = os.path.join(BACKUPS, date, backup_db_name)
     if settings == 'dev':
-        run(c, f'mongorestore -h {host}:{port} -d {db_name} {source_path} --drop', False)
+        run(c, f'mongorestore -h {host} -d {db_name} {source_path} --drop', False)
     else:
-        run(c, f'mongorestore -h {host}:{port} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
+        run(c, f'mongorestore -h {host} -d {db_name} -u {username} -p {password} {source_path} --drop', False)
+
+
+@task()
+def bus_to_cat_data_to_db(c, settings='dev'):
+    init_app(c, settings=settings)
+
+    from slots_tracker_server.models import Categories
+
+    category_to_business_name = {
+        'Transportation': ["באבאל", "gett"],
+        'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור', 'נונה',
+                       'שולי לוצי', 'הכובשים', 'בוטיק סנטרל', 'לחם ושות', 'gin club', 'ארומה'],
+        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה', 'סונול', 'רכב חובה', 'פנגו', 'דואלי מכונות אוטומטיות', 'ביטוח רכב'],
+        'Groceries': ["אי אם פי אם", 'am pm', 'pm am', 'am:pm', 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן',
+                      'שופרסל', 'טיב טעם',
+                      'מגה בעיר', 'שוקיט', 'ויקטורי', 'פירות', 'יוכי אספרגוס'],
+        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי', 'spotify', 'zagg', 'hot', 'הוט נט'],
+        'Home': ['מקס סטוק', 'חברת חשמל לישראל', 'חברת החשמל לישראל', 'netflix', 'עתיקות אוחיון', 'שטראוס מים בע"מ',
+                 'סולתם', 'הום סנטר'],
+        'Shows': ['רב חן'],
+        'Health': ['קרן מכבי'],
+        'Insurance': ['הסתדרות העובדים הכלל'],
+        'Super-Pharm': ['סופר פארם'],
+        'Gifts': ['kiwico'],
+        'Baby': ['יופיי ליגת לה לצה'],
+        'Sport': ['סטודיו טשרנחובסקי', 'כפיים שיווק וקידום מכירות']
+    }
+
+    for cat_name, businesses in category_to_business_name.items():
+        category = Categories.objects.get(name=cat_name)
+        for business in businesses:
+            if business not in category.businesses:
+                category.businesses.append(business)
+
+        category.save()

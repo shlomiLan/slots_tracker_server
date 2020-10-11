@@ -17,28 +17,9 @@ class Categories(BaseDocument):
     instances = db.IntField(required=True, default=0)
     added_by_user = db.BooleanField(default=True)
     parser_class = db.StringField(max_length=200)
+    businesses = db.SortedListField(db.StringField(max_length=200))
 
-    # TODO: move to DB
     BUSINESS_IGNORE = ['colu', 'bit', 'box העברה באפליקציית', 'paypal', 'paybox']
-    CATEGORY_TO_BUSINESS_NAME = {
-        'Transportation': ["באבאל", "gett"],
-        'Eating out': ["eatmeat", "ג'ירף", "קונדיטוריה", "קפה", 'בייקרי', 'מאפה נאמן', 'רולדין', 'לנדוור', 'נונה',
-                       'שולי לוצי', 'הכובשים', 'בוטיק סנטרל', 'לחם ושות', 'gin club', 'ארומה'],
-        'Car': ["חניון", "דור - יקום-צמרת", 'דלק', 'מנטה', 'סונול', 'רכב חובה', 'פנגו', 'דואלי מכונות אוטומטיות', 'ביטוח רכב'],
-        'Groceries': ["אי אם פי אם", 'am pm', 'pm am', 'am:pm', 'גרציאני', 'מרקטו', 'מלכה מרקט אקספרס', 'יינות ביתן',
-                      'שופרסל', 'טיב טעם',
-                      'מגה בעיר', 'שוקיט', 'ויקטורי', 'פירות', 'יוכי אספרגוס'],
-        'Communication': ['פלאפון חשבון תקופתי', 'קיי אס פי', 'spotify', 'zagg', 'hot', 'הוט נט'],
-        'Home': ['מקס סטוק', 'חברת חשמל לישראל', 'חברת החשמל לישראל', 'netflix', 'עתיקות אוחיון', 'שטראוס מים בע"מ',
-                 'סולתם', 'הום סנטר'],
-        'Shows': ['רב חן'],
-        'Health': ['קרן מכבי'],
-        'Insurance': ['הסתדרות העובדים הכלל'],
-        'Super-Pharm': ['סופר פארם'],
-        'Gifts': ['kiwico'],
-        'Baby': ['יופיי ליגת לה לצה'],
-        'Sport': ['סטודיו טשרנחובסקי', 'כפיים שיווק וקידום מכירות']
-    }
 
     @staticmethod
     def is_business_name_in_list(values, business_name):
@@ -51,10 +32,10 @@ class Categories(BaseDocument):
             app.logger.info(f'business name: {business_name} is in ignore list')
             return None
 
-        for category_name, values in cls.CATEGORY_TO_BUSINESS_NAME.items():
-            if cls.is_business_name_in_list(values, clean_business_name):
-                app.logger.info(f'business name: {business_name} is part of category: {category_name}')
-                return category_name
+        for category in cls.objects():
+            if cls.is_business_name_in_list(category.businesses, clean_business_name):
+                app.logger.info(f'business name: {business_name} is part of category: {category.name}')
+                return category.name
 
         print(f'Can not find group for {clean_business_name}, creating new category')
         return False
@@ -88,6 +69,8 @@ class Categories(BaseDocument):
             raise Exception(f'Can not merge, {cat_to_merge_into.name} was not added by user')
 
         Expense.objects.filter(category=self.id).update(multi=True, **{'category': cat_to_merge_into})
+        cat_to_merge_into.businesses.append(self.name)
+        cat_to_merge_into.save()
         self.delete()
         return f'Category {self.name} was merged with {cat_to_merge_into.name}'
 
