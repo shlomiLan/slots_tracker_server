@@ -100,3 +100,5 @@ def read_expenses_from_files(c, settings='dev'):
 
     print(f'Total number of new expenses: {total_new_expenses}')
     print(f'Total number of new categories: {total_new_categories}')
+    from slots_tracker_server.views import monthly_update
+    monthly_update()
