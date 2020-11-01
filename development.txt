@@ -6,13 +6,13 @@ PyYAML==5.3.1
 flask-shell-ipython==0.4.1
 
 # Type checking
-mypy==0.782
+mypy==0.790
 
 # testing
 pytest-cov==2.10.1
-pytest==6.1.0
-codecov==2.1.9
-hypothesis==5.36.1
+pytest==6.1.2
+codecov==2.1.10
+hypothesis==5.41.0
 python_http_client==3.3.1
 
 # CLI
@@ -20,5 +20,5 @@ click==7.1.2
 progress==1.5
 
 # Notebook
-ipython==7.16.1
+ipython==7.19.0
 jupyter==1.0.0
