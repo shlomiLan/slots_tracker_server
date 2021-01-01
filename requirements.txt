@@ -28,7 +28,7 @@ python-dateutil==2.8.1
 firebase-admin==4.5.0
 pyfcm==1.5.1
 grpcio==1.34.0
-requests==2.25.0
+requests==2.25.1
 
 # Parser
 xlrd==1.2.0
