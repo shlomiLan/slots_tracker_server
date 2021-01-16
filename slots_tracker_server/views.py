@@ -7,7 +7,6 @@ from slots_tracker_server import app, sentry
 from slots_tracker_server.api.expenses import ExpenseAPI, PayMethodsAPI, CategoriesAPI
 from slots_tracker_server.charts import Charts
 from slots_tracker_server.notifications import Notifications
-from slots_tracker_server.parser import ColuParser
 from slots_tracker_server.utils import register_api, remove_new_lines
 
 BACKUPS = os.path.join('/tmp', 'backups')
@@ -46,18 +45,6 @@ def monthly_update():
             return 'Error occurred, error message: {}'.format(res)
 
     return f'Empty DB, no monthly update'
-
-
-@app.route('/parse_colu/', methods=['POST'])
-def parse_colu():
-    parser = ColuParser(remove_new_lines(request.data))
-    new_expenses, new_categories = parser.parse_message()
-    if new_expenses:
-        return 'New expenses was added'
-    elif new_expenses is None:
-        return 'Payment was not in local currency, no action taken'
-    else:
-        return 'Duplicate expense, no action taken'
 
 
 # def validate_run_response_or_raise(response):
